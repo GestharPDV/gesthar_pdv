@@ -29,5 +29,6 @@
 ```
 docs(readme): documenta o padrão de commits do projeto
 
-Esta alteração adiciona uma seção detalhada ao README para formalizar o padrão de mensagens de commit (Conventional Commits) a ser utilizado no projeto.
+Esta alteração adiciona uma seção detalhada ao README para formalizar o padrão de
+mensagens de commit (Conventional Commits) a ser utilizado no projeto.
 ```
