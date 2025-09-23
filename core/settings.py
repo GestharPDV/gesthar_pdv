@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "global",
     "product",
     "customer",
 ]
@@ -56,7 +57,7 @@ ROOT_URLCONF = "core.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "base"],
+        "DIRS": [BASE_DIR / "global"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -117,7 +118,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "static/"
-STATICFILES_DIRS = [BASE_DIR / "base" / "static"]
+# STATICFILES_DIRS = [BASE_DIR / "global" / "static"]
 STATIC_ROOT = BASE_DIR / "static_files"
 
 # Default primary key field type
