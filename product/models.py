@@ -5,18 +5,50 @@ class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True, null=True)
 
+    class Meta:
+        verbose_name = "Categoria"
+        verbose_name_plural = "Categorias"
+        ordering = ["name"]
+    
+    def __str__(self):
+        return self.name
+
 
 class Color(models.Model):
     name = models.CharField(max_length=50, unique=True)
+
+    class Meta:
+        verbose_name = "Cor"
+        verbose_name_plural = "Cores"
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
 
 
 class Size(models.Model):
     name = models.CharField(max_length=50, unique=True)
     code = models.CharField(max_length=10, unique=True)
 
+    class Meta:
+        verbose_name = "Tamanho"
+        verbose_name_plural = "Tamanhos"
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
 
 class Supplier(models.Model):
     name = models.CharField(max_length=100, unique=True)
+
+    class Meta:
+        verbose_name = "Fornecedor"
+        verbose_name_plural = "Fornecedores"
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
 
 
 class Product(models.Model):
@@ -50,6 +82,14 @@ class Product(models.Model):
         Retorna o estoque total somando o estoque de todas as variações do produto.
         """
         return sum(variation.stock for variation in self.variations.all())
+    
+    class Meta:
+        verbose_name = "Produto"
+        verbose_name_plural = "Produtos"
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
 
 
 class ProductVariation(models.Model):
@@ -65,4 +105,10 @@ class ProductVariation(models.Model):
     size = models.ForeignKey(Size, on_delete=models.PROTECT)
 
     class Meta:
+        verbose_name = "Variação de Produto"
+        verbose_name_plural = "Variações de Produtos"
+        ordering = ["product", "color", "size"]
         unique_together = ("product", "color", "size")
+
+    def __str__(self):
+        return f"{self.product.name} - {self.color.name} - {self.size.name}"
