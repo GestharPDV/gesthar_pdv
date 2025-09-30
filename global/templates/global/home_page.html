@@ -1,1 +1,5 @@
 <h1>Bem-vindo, {{ user.email }}</h1>
+<form action="{% url 'logout' %}" method="post">
+    {% csrf_token %}
+    <button type="submit">Logout</button>
+</form>

@@ -18,3 +18,8 @@ def login_view(request):
     else:
         form = EmailAuthenticationForm()
     return render(request, "user/login_page.html", {"form": form}) # Renderiza o template de login com o formulário
+
+def logout_view(request):
+    logout(request)
+    return redirect("global:home")  # Redireciona para a página inicial após o logout
+
