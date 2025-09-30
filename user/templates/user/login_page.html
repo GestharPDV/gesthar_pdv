@@ -1,15 +1,53 @@
-<!-- templates/login.html -->
+{% load widget_tweaks %}
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
-    <title>Login</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Gesthar - login</title>
 </head>
-<body>
-  <h2>Login</h2>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Entrar</button>
-  </form>
+<body class="flex flex-col items-center justify-center min-h-screen bg-gray-50">
+
+    <div class="mb-8">
+        <img src="#" alt="logo gesthar" class="mx-auto">
+    </div>
+
+    <div class="bg-pink-100 p-8 rounded-lg shadow-md w-full max-w-sm">
+        <img src="##" alt="logo linda gestante" class="mx-auto mb-4">
+        <h2 class="text-center text-xl font-semibold mb-2">BEM-VINDO(A) AO <span class="font-bold">GESTHAR</span></h2>
+        <h4 class="text-center text-sm mb-6">SISTEMA DE GESTÃO!</h4>
+
+        <!-- Formulário Django -->
+        <form method="post" class="flex flex-col gap-4">
+            {% csrf_token %}
+            
+            <!-- Campo email/username -->
+            <div>
+                {{ form.username.label_tag }}
+                {{ form.username|add_class:"w-full px-3 py-2 border rounded" }}
+                {% if form.username.errors %}
+                    <p class="text-red-500 text-sm">{{ form.username.errors }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Campo senha -->
+            <div>
+                {{ form.password.label_tag }}
+                {{ form.password|add_class:"w-full px-3 py-2 border rounded" }}
+                {% if form.password.errors %}
+                    <p class="text-red-500 text-sm">{{ form.password.errors }}</p>
+                {% endif %}
+            </div>
+
+            <div class="flex justify-between items-center text-sm">
+                <a href="#">Esqueceu sua senha? Clique aqui.</a>
+            </div>
+
+            <button type="submit" class="bg-pink-500 text-white px-4 py-2 rounded mt-2 hover:bg-pink-600">ENTRAR</button>
+        </form>
+    </div>
+
+    <footer class="mt-8 text-sm text-gray-500">&copy;Gesthar - 2025</footer>
 </body>
 </html>
