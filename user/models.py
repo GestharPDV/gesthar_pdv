@@ -39,6 +39,7 @@ class CustomUserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 
+''''Modelo de usuário customizado no django'''
 class UserGesthar(AbstractUser):
     # O campo 'username' é opcional para a proposta do sistema
     # Como se trata de um campo herdado e obrigatório, ele é mantido
