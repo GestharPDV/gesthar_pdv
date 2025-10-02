@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Fonte Montserrat -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/heroicons@2.0.16/24/outline/index.js"></script>
+
+    <title>Gesthar</title>
+
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+        }
+    </style>
+
+</head>
+
+<body class="bg-[#F9FAFB] text-gray-600">
+
+
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-[#F9FAFB] shadow-md flex flex-col">
+            <div class="p-4 text-center ">
+                <img src="images/logo_lg.png" alt="Logo" class="mx-auto h-14 mb-2">
+            </div>
+
+
+            <nav class="flex-1 p-4 space-y-2">
+                <!-- PDV com submenu expansível -->
+                <div>
+                    <button data-toggle="submenu" data-target="ponto-venda" aria-expanded="false"
+                        class="w-full flex items-center justify-between p-2 rounded-lg font-semibold hover:bg-pink-100">
+                        <span class="ml-2 text-left">PONTO DE VENDA</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="chev h-5 w-5 text-gray-500 transition-transform"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+
+                    <div id="ponto-venda" class="hidden ml-4 mt-2 space-y-1 text-sm">
+                        <a href="#" class="block p-2 rounded hover:bg-pink-50">REALIZAR VENDA</a>
+                        <a href="#" class="block p-2 rounded hover:bg-pink-50">CONSULTAR VENDAS</a>
+                    </div>
+                </div>
+
+                <div>
+                    <button data-toggle="submenu" data-target="produtos-menu" aria-expanded="false"
+                        class="w-full flex items-center justify-between p-2 rounded-lg font-semibold hover:bg-pink-100">
+                        <span class="ml-2 text-left">PRODUTOS</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="chev h-5 w-5 text-gray-500 transition-transform"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+
+                    <div id="produtos-menu" class="hidden ml-4 mt-2 space-y-1 text-sm">
+                        <a href="#" class="block p-2 rounded hover:bg-pink-50">CADASTRAR PRODUTO</a>
+                        <a href="#" class="block p-2 rounded hover:bg-pink-50">CONSULTAR PRODUTOS</a>
+                    </div>
+                </div>
+
+                <div>
+                    <button data-toggle="submenu" data-target="clientes-menu" aria-expanded="false"
+                        class="w-full flex items-center justify-between p-2 rounded-lg font-semibold hover:bg-pink-100">
+                        <span class="ml-2 text-left">CLIENTES</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="chev h-5 w-5 text-gray-500 transition-transform"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+
+                    <div id="clientes-menu" class="hidden ml-4 mt-2 space-y-1 text-sm">
+                        <a href="#" class="block p-2 rounded hover:bg-pink-50">CADASTRAR CLIENTE</a>
+                        <a href="#" class="block p-2 rounded hover:bg-pink-50">CONSULTAR CLIENTES</a>
+                    </div>
+                </div>
+
+                <div>
+                    <button data-toggle="submenu" data-target="relatorios" aria-expanded="false"
+                        class="w-full flex items-center justify-between p-2 rounded-lg font-semibold hover:bg-pink-100">
+                        <span class="ml-2 text-left">RELATÓRIOS</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="chev h-5 w-5 text-gray-500 transition-transform"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+
+                    <div id="relatorios" class="hidden ml-4 mt-2 space-y-1 text-sm">
+                        <a href="#" class="block p-2 rounded hover:bg-pink-50">RELATÓRIO DE ESTOQUE</a>
+                        <a href="#" class="block p-2 rounded hover:bg-pink-50">RELATÓRIO FINANCEIRO</a>
+                        <a href="#" class="block p-2 rounded hover:bg-pink-50">RELATÓRIO DE VENDAS</a>
+                        <a href="#" class="block p-2 rounded hover:bg-pink-50">RELATÓRIO DE DIVERGÊNCIAS</a>
+                    </div>
+                </div>
+
+                <div>
+                    <button data-toggle="submenu" data-target="usuarios" aria-expanded="false"
+                        class="w-full flex items-center justify-between p-2 rounded-lg font-semibold hover:bg-pink-100">
+                        <span class="ml-2 text-left">USUÁRIOS</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="chev h-5 w-5 text-gray-500 transition-transform"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+
+                    <div id="usuarios" class="hidden ml-4 mt-2 space-y-1 text-sm">
+                        <a href="#" class="block p-2 rounded hover:bg-pink-50">CADASTRAR USUÁRIO</a>
+                        <a href="#" class="block p-2 rounded hover:bg-pink-50">VISUALIZAR USUÁRIO</a>
+                    </div>
+                </div>
+            </nav>
+
+
+            <div class="p-6 mt-auto">
+                <img src="images/logo_gesthar.png" alt="Logo Gesthar" class="mx-auto h-40">
+            </div>
+
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-8 bg-no-repeat bg-right-bottom bg-[length:50%] bg-[url('images/Vector.svg')]">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+    <script>
+        document.querySelectorAll('[data-toggle="submenu"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = btn.getAttribute('data-target');
+                const menu = document.getElementById(id);
+                const expanded = btn.getAttribute('aria-expanded') === 'true';
+                btn.setAttribute('aria-expanded', String(!expanded));
+                menu.classList.toggle('hidden');
+                const icon = btn.querySelector('.chev');
+                if (icon) icon.classList.toggle('rotate-90');
+            });
+        });
+    </script>
+</body>
+
+</html>
