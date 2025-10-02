@@ -1,5 +1,32 @@
-<h1>Bem-vindo, {{ user.email }}</h1>
-<form action="{% url 'logout' %}" method="post">
-    {% csrf_token %}
-    <button type="submit">Logout</button>
-</form>
+{% extends "global/sidebar.html" %}
+
+{% block content %}
+<div class="flex flex-col items-center justify-center mt-12">
+    
+    <!-- Mensagem de boas-vindas -->
+    <h1 class="text-2xl font-bold text-pink-500 mb-12 ">
+        Bem-vindo(a) ao Gesthar, {{ user.email }}!
+    </h1>
+
+    <!-- Botões principais -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Ponto de Venda -->
+        <a href="#" 
+           class="bg-pink-400 text-white text-lg font-bold px-12 py-16 rounded-lg shadow-md hover:bg-pink-500 transition duration-200 text-center">
+            PONTO DE VENDA
+        </a>
+
+        <!-- Estoque -->
+        <a href="#" 
+           class="bg-pink-400 text-white text-lg font-bold px-12 py-16 rounded-lg shadow-md hover:bg-pink-500 transition duration-200 text-center">
+            ESTOQUE
+        </a>
+
+        <!-- Cadastro de Cliente -->
+        <a href="#" 
+           class="bg-pink-400 text-white text-lg font-bold px-12 py-16 rounded-lg shadow-md hover:bg-pink-500 transition duration-200 text-center">
+            CADASTRAR CLIENTE
+        </a>
+    </div>
+</div>
+{% endblock %}
