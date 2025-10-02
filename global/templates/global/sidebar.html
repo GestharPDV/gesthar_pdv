@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
 
@@ -5,7 +6,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- Fonte Montserrat -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/heroicons@2.0.16/24/outline/index.js"></script>
 
@@ -23,15 +23,13 @@
 
 
     <div class="flex min-h-screen">
-        <!-- Sidebar -->
         <aside class="w-64 bg-[#F9FAFB] shadow-md flex flex-col">
             <div class="p-4 text-center ">
-                <img src="images/logo_lg.png" alt="Logo" class="mx-auto h-14 mb-2">
+                <img src="{% static 'images/logo_lg.png' %}" alt="Logo" class="mx-auto h-14 mb-2">
             </div>
 
 
             <nav class="flex-1 p-4 space-y-2">
-                <!-- PDV com submenu expansível -->
                 <div>
                     <button data-toggle="submenu" data-target="ponto-venda" aria-expanded="false"
                         class="w-full flex items-center justify-between p-2 rounded-lg font-semibold hover:bg-pink-100">
@@ -115,15 +113,22 @@
                 </div>
             </nav>
 
-
             <div class="p-6 mt-auto">
-                <img src="images/logo_gesthar.png" alt="Logo Gesthar" class="mx-auto h-40">
+                <img src="{% static 'logo_gesthar.png' %}" alt="Logo Gesthar" class="mx-auto h-40">
+                <form action="{% url 'logout' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full flex items-center justify-center p-2 rounded-lg text-white bg-pink-500 hover:bg-pink-600 transition-colors font-semibold">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+                        </svg>
+                        <span>Sair</span>
+                    </button>
+                </form>
             </div>
 
         </aside>
 
-        <!-- Main Content -->
-        <main class="flex-1 p-8 bg-no-repeat bg-right-bottom bg-[length:50%] bg-[url('images/Vector.svg')]">
+        <main class="flex-1 p-8 bg-no-repeat bg-right-bottom bg-[length:50%] bg-[url('{% static 'images/Vector.svg' %}')]">
             {% block content %}{% endblock %}
         </main>
     </div>
