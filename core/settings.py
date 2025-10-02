@@ -37,6 +37,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "global",
+    "product",
+    "customer",
+    "user",
+    'widget_tweaks',
 ]
 
 MIDDLEWARE = [
@@ -54,7 +59,7 @@ ROOT_URLCONF = "core.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "base"],
+        "DIRS": [BASE_DIR / "global"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -115,10 +120,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "static/"
-STATICFILES_DIRS = [BASE_DIR / "base" / "static"]
+# STATICFILES_DIRS = [BASE_DIR / "global" / "static"]
 STATIC_ROOT = BASE_DIR / "static_files"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Definir o modelo de usuário personalizado como o modelo de usuário padrão
+AUTH_USER_MODEL = "user.UserGesthar"
