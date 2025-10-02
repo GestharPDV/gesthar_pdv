@@ -10,6 +10,7 @@
     <script src="https://unpkg.com/heroicons@2.0.16/24/outline/index.js"></script>
 
     <title>Gesthar</title>
+    <link rel="icon" href="{% static 'images/Vector.svg' %}" type="image/x-icon">
 
     <style>
         body {
@@ -114,7 +115,7 @@
             </nav>
 
             <div class="p-6 mt-auto">
-                <img src="{% static 'logo_gesthar.png' %}" alt="Logo Gesthar" class="mx-auto h-40">
+                <img src="{% static 'images/logo_gesthar.png' %}" alt="Logo Gesthar" class="mx-auto h-40">
                 <form action="{% url 'logout' %}" method="post">
                     {% csrf_token %}
                     <button type="submit" class="w-full flex items-center justify-center p-2 rounded-lg text-white bg-pink-500 hover:bg-pink-600 transition-colors font-semibold">
