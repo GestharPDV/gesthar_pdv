@@ -103,6 +103,7 @@ class ProductVariation(models.Model):
     )
     color = models.ForeignKey(Color, on_delete=models.PROTECT)
     size = models.ForeignKey(Size, on_delete=models.PROTECT)
+    is_active = models.BooleanField(default=True, verbose_name="Ativo")
 
     class Meta:
         verbose_name = "Variação de Produto"
