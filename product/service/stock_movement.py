@@ -16,6 +16,14 @@ def add_stock(
     """
     Adiciona uma quantidade de estoque a uma variação de produto e registra o movimento de forma atômica.
     """
+    VALID_MOVEMENT_TYPES = {
+        StockMovement.MovementType.ENTRADA,
+        StockMovement.MovementType.AJUSTE_ENTRADA,
+        StockMovement.MovementType.DEVOLUCAO,
+    }
+    if movement_type not in VALID_MOVEMENT_TYPES:
+        raise ValueError(f"Tipo de movimento inválido para adição de estoque: {movement_type}")
+
     try:
         product_variation = ProductVariation.objects.select_for_update().get(
             id=product_variation_id
@@ -51,6 +59,14 @@ def remove_stock(
     """
     Remove uma quantidade de estoque de uma variação de produto e registra o movimento de forma atômica. Garante que o estoque não fique negativo.
     """
+    VALID_MOVEMENT_TYPES = {
+        StockMovement.MovementType.SAIDA,
+        StockMovement.MovementType.AJUSTE_SAIDA,
+    }
+
+    if movement_type not in VALID_MOVEMENT_TYPES:
+        raise ValueError(f"Tipo de movimento inválido para remoção de estoque: {movement_type}")
+
     if quantity <= 0:
         raise ValueError("A quantidade a ser removida deve ser maior que zero.")
     
