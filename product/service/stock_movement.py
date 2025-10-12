@@ -38,3 +38,43 @@ def add_stock(
     )
 
     return product_variation
+
+
+@transaction.atomic
+def remove_stock(
+    product_variation_id: int,
+    quantity: int,
+    user: UserGesthar,
+    movement_type: str = StockMovement.MovementType.SAIDA,
+    notes: str = None,
+):
+    """
+    Remove uma quantidade de estoque de uma variação de produto e registra o movimento de forma atômica. Garante que o estoque não fique negativo.
+    """
+    if quantity <= 0:
+        raise ValueError("A quantidade a ser removida deve ser maior que zero.")
+    
+    try:
+        product_variation = ProductVariation.objects.select_for_update().get(
+            id=product_variation_id
+        )
+    except ProductVariation.DoesNotExist:
+        raise ValueError("Variação de produto não encontrada.")
+
+    if product_variation.stock < quantity:
+        raise ValueError(
+            f"Estoque insuficiente para a remoção solicitada. Estoque atual: {product_variation.stock}, Quantidade solicitada: {quantity}"
+        )
+
+    product_variation.stock -= quantity
+    product_variation.save()
+
+    StockMovement.objects.create(
+        product_variation=product_variation,
+        quantity=quantity,
+        user=user,
+        movement_type=movement_type,
+        notes=notes,
+    )
+
+    return product_variation
