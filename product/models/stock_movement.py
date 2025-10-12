@@ -54,7 +54,9 @@ class StockMovement(models.Model):
         errors = {}
         # Validação para garantir que a quantidade seja positiva
         if self.quantity <= 0:
-            errors["quantity"] = ValidationError("A quantidade deve ser um número positivo.")
+            errors["quantity"] = ValidationError(
+                "A quantidade deve ser um número positivo."
+            )
 
         # Validação para garantir que o preço unitário seja fornecido para certos tipos de movimento
         if self.movement_type in {

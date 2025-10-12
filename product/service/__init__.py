@@ -1,0 +1,1 @@
+from .stock_movement import add_stock
