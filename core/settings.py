@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "customer",
     "user",
     "widget_tweaks",
+    "stock",
 ]
 
 MIDDLEWARE = [

@@ -1,5 +1,5 @@
 from django.db import models
-from .product import ProductVariation
+from product.models import ProductVariation, Supplier
 from user.models import UserGesthar
 from django.core.exceptions import ValidationError
 
@@ -39,6 +39,15 @@ class StockMovement(models.Model):
         related_name="stock_movements",
         verbose_name="Usuário",
     )
+    supplier = models.ForeignKey(
+        Supplier,
+        on_delete=models.SET_NULL,  # Se um fornecedor for deletado, não perdemos o histórico
+        null=True,                 
+        blank=True,                
+        related_name="stock_movements",
+        verbose_name="Fornecedor",
+    )
+
 
     class Meta:
         verbose_name = "Movimento de Estoque"
