@@ -156,13 +156,17 @@ class Product(StandardizeNameMixin, models.Model):
         Supplier, through="ProductSupplier", related_name="products"
     )
     is_active = models.BooleanField(default=True, verbose_name="Ativo")
+    has_variation = models.BooleanField(
+        default=False, verbose_name="Possui Variação"
+    ) 
+    
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Criado em")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Atualizado em")
 
     objects = ProductQuerySet.as_manager()
 
     class Meta:
-        verbose_name = "Produto"
+        verbose_name = "Produto"    
         verbose_name_plural = "Produtos"
         ordering = ["name"]
 
