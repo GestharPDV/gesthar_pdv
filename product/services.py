@@ -1,47 +1,35 @@
-def generate_product_part(product_name):
+# product/services/product_services.py
+from django.db.models import Q
+from django.core.paginator import Paginator
+from product.models import Product
+
+
+def get_filtered_products(query: str = "", page_number: int = 1, per_page: int = 10):
     """
-    Gera a parte do SKU referente ao produto de forma robusta.
-    Regra: 3 letras da 1ª palavra, 2 da 2ª, e 1 de todas as subsequentes.
+    Serviço que retorna produtos com filtros, paginação e anotações de estoque e margem de lucro.
     """
-    words = product_name.upper().split()
-    parts = []
+    products = (
+        Product.objects.with_stock()
+        .with_average_profit_margin()
+        .select_related("category")
+        .prefetch_related("suppliers")
+        .order_by("name")
+    )
 
-    if len(words) >= 1:
-        parts.append(words[0][:3])
+    # Filtro de busca (nome, categoria ou SKU)
+    if query:
+        products = products.filter(
+            Q(name__icontains=query)
+            | Q(category__name__icontains=query)
+            | Q(variations__sku__icontains=query)
+        ).distinct()
 
-    if len(words) >= 2:
-        parts.append(words[1][:2])
+    # Paginação
+    paginator = Paginator(products, per_page)
+    page_obj = paginator.get_page(page_number)
 
-    if len(words) >= 3:
-        for word in words[2:]:
-            parts.append(word[0])
-
-    return "".join(parts)
-
-
-def _generate_color_part(color_name):
-    """
-    Gera a parte do SKU referente à cor.
-    Regra: Primeira letra de cada palavra.
-    """
-    words = color_name.upper().split()
-    return "".join([word[0] for word in words])
-
-
-def generate_size_part(size_code):
-    """
-    Gera a parte do SKU referente ao tamanho.
-    Regra: Apenas o código em maiúsculas.
-    """
-    return size_code.upper()
-
-
-def generate_sku(variation):
-    """
-    Orquestra a criação do SKU final para um objeto ProductVariation.
-    """
-    product_part = generate_product_part(variation.product.name)
-    color_part = _generate_color_part(variation.color.name)
-    size_part = generate_size_part(variation.size.code)
-
-    return f"{product_part}-{color_part}-{size_part}"
+    return {
+        "products": page_obj,  # objeto paginado pronto para o template
+        "paginator": paginator,
+        "page_obj": page_obj,
+    }

@@ -16,7 +16,6 @@ from .models import (
     Size,
 )
 
-
 # Formulário para o modelo Product
 class ProductForm(ModelForm):
     class Meta:
