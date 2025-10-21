@@ -58,7 +58,7 @@
                     </button>
 
                     <div id="produtos-menu" class="hidden ml-4 mt-2 space-y-1 text-sm">
-                        <a href="#" class="block p-2 rounded hover:bg-pink-50">CADASTRAR PRODUTO</a>
+                        <a href="{% url 'product:product-create' %}" class="block p-2 rounded hover:bg-pink-50">CADASTRAR PRODUTO</a>
                         <a href="{% url 'product:product-list' %}" class="block p-2 rounded hover:bg-pink-50">CONSULTAR PRODUTOS</a>
                     </div>
                 </div>

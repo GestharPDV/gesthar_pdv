@@ -1,10 +1,9 @@
-# from django import forms
+from django import forms
 from django.forms import (
     ModelForm,
-    Widget,
+    Textarea,
     inlineformset_factory,
     BaseInlineFormSet,
-    add_error,
 )
 from .models import (
     Product,
@@ -15,6 +14,9 @@ from .models import (
     Color,
     Size,
 )
+
+# Classes do Tailwind CSS para estilização dos campos do formulário
+TAILWIND_CLASSES = "w-full border border-gray-300 rounded-lg py-2 px-4 bg-white focus:outline-none focus:ring-2 focus:ring-rose-400"
 
 # Formulário para o modelo Product
 class ProductForm(ModelForm):
@@ -29,7 +31,7 @@ class ProductForm(ModelForm):
             "has_variation",
         ]
         widgets = {
-            "description": Widget(attrs={"rows": 4}),
+            "description": Textarea(attrs={"rows": 4}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -37,9 +39,13 @@ class ProductForm(ModelForm):
 
         self.fields["category"].queryset = Category.objects.filter(is_active=True)
 
-        # Adiciona classe CSS para estilização a todfos os campos
-        for _field_name, field in self.fields.items():
-            field.widget.attrs["class"] = "form-control"
+        for field_name, field in self.fields.items():
+            # Pulamos checkboxes, pois eles são estilizados de forma diferente no HTML
+            if field.widget.__class__.__name__ == "CheckboxInput":
+                continue
+
+            # Aplicamos as classes do Tailwind a todos os outros
+            field.widget.attrs["class"] = TAILWIND_CLASSES
 
 
 class ProductSupplierForm(ModelForm):
@@ -49,10 +55,15 @@ class ProductSupplierForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # Lógica de Negócio
         self.fields["supplier"].queryset = Supplier.objects.filter(is_active=True)
 
-        for _field_name, field in self.fields.items():
-            field.widget.attrs["class"] = "form-control"
+        # Lógica de Estilização
+        for field_name, field in self.fields.items():
+            if field.widget.__class__.__name__ == "CheckboxInput":
+                continue
+            field.widget.attrs["class"] = TAILWIND_CLASSES
 
 
 class ProductVariationForm(ModelForm):
@@ -62,32 +73,34 @@ class ProductVariationForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # Lógica de Negócio
         self.fields["color"].queryset = Color.objects.all()
         self.fields["size"].queryset = Size.objects.filter(is_active=True)
 
-        for _field_name, field in self.fields.items():
-            field.widget.attrs["class"] = "form-control"
+        # Lógica de Estilização
+        for field_name, field in self.fields.items():
+            if field.widget.__class__.__name__ == "CheckboxInput":
+                continue
+            field.widget.attrs["class"] = TAILWIND_CLASSES
 
 
 class BaseProductVariationInlineFormSet(BaseInlineFormSet):
     def clean(self):
         super().clean()
-
         variations_exist = set()
-
         for form in self.forms:
-
             if not form.is_valid() or form.cleaned_data.get("DELETE", False):
                 continue
-
             color = form.cleaned_data.get("color")
             size = form.cleaned_data.get("size")
             if color and size:
                 variation_tuple = (color, size)
-
                 if variation_tuple in variations_exist:
-                    add_error(None, "Variações duplicadas não são permitidas.")
-
+                    form.add_error(
+                        None,
+                        "Variações duplicadas (mesma cor e tamanho) não são permitidas.",
+                    )
                 variations_exist.add(variation_tuple)
 
 
@@ -96,7 +109,7 @@ ProductSupplierFormSet = inlineformset_factory(
     parent_model=Product,
     model=ProductSupplier,
     form=ProductSupplierForm,
-    extra=1,
+    extra=0,
     can_delete=True,
     min_num=1,
     validate_min=True,
