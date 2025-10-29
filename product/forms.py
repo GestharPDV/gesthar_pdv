@@ -18,6 +18,7 @@ from .models import (
 # Classes do Tailwind CSS para estilização dos campos do formulário
 TAILWIND_CLASSES = "w-full border border-gray-300 rounded-lg py-2 px-4 bg-white focus:outline-none focus:ring-2 focus:ring-rose-400"
 
+
 # Formulário para o modelo Product
 class ProductForm(ModelForm):
     class Meta:
@@ -28,7 +29,6 @@ class ProductForm(ModelForm):
             "selling_price",
             "category",
             "is_active",
-            "has_variation",
         ]
         widgets = {
             "description": Textarea(attrs={"rows": 4}),
@@ -69,7 +69,7 @@ class ProductSupplierForm(ModelForm):
 class ProductVariationForm(ModelForm):
     class Meta:
         model = ProductVariation
-        fields = ["color", "size", "minimum_stock", "is_active"]
+        fields = ["color", "size", "stock","minimum_stock", "is_active"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -120,8 +120,8 @@ ProductVariationFormSet = inlineformset_factory(
     model=ProductVariation,
     form=ProductVariationForm,
     formset=BaseProductVariationInlineFormSet,
-    extra=1,
+    extra=0,
     can_delete=True,
-    min_num=0,
-    validate_min=False,
+    min_num=1,
+    validate_min=True,
 )

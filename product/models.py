@@ -118,8 +118,7 @@ class Color(StandardizeNameMixin, models.Model):
 
 
 class Size(StandardizeNameMixin, models.Model):
-    name = models.CharField(max_length=50, verbose_name="Nome")
-    code = models.CharField(max_length=10, unique=True, verbose_name="Código")
+    name = models.CharField(max_length=50, unique=True, verbose_name="Nome")
     is_active = models.BooleanField(default=True, verbose_name="Ativo")
 
     class Meta:
@@ -130,10 +129,13 @@ class Size(StandardizeNameMixin, models.Model):
     def __str__(self):
         return self.name
 
-    def clean(self):
-        super().clean()
-        if self.code:
-            self.code = self.code.strip().upper()
+
+def get_default_color():
+    return Color.objects.get_or_create(name="N/A")[0].pk
+
+
+def get_default_size():
+    return Size.objects.get_or_create(name="N/A")[0].pk
 
 
 class Supplier(StandardizeNameMixin, models.Model):
@@ -165,8 +167,6 @@ class Product(StandardizeNameMixin, models.Model):
         Supplier, through="ProductSupplier", related_name="products"
     )
     is_active = models.BooleanField(default=True, verbose_name="Ativo")
-    has_variation = models.BooleanField(default=False, verbose_name="Possui Variação")
-
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Criado em")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Atualizado em")
 
@@ -224,8 +224,12 @@ class ProductVariation(models.Model):
     product = models.ForeignKey(
         Product, on_delete=models.CASCADE, related_name="variations"
     )
-    color = models.ForeignKey(Color, on_delete=models.PROTECT, verbose_name="Cor")
-    size = models.ForeignKey(Size, on_delete=models.PROTECT, verbose_name="Tamanho")
+    color = models.ForeignKey(
+        Color, on_delete=models.PROTECT, verbose_name="Cor", default=get_default_color
+    )
+    size = models.ForeignKey(
+        Size, on_delete=models.PROTECT, verbose_name="Tamanho", default=get_default_size
+    )
     is_active = models.BooleanField(default=True, verbose_name="Ativo")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Criado em")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Atualizado em")

@@ -1,7 +1,8 @@
 # product/services/product_services.py
 from django.db.models import Q
 from django.core.paginator import Paginator
-from product.models import Category, Product, Supplier
+from product.models import Category, Color, Product, Size, Supplier
+from .utils import standardize_name
 
 
 def get_filtered_products(query: str = "", page_number: int = 1, per_page: int = 10):
@@ -37,17 +38,20 @@ def get_filtered_products(query: str = "", page_number: int = 1, per_page: int =
 
 class ServiceValidationError(ValueError):
     """Erro de validação de dados (Ex: nome em branco)."""
+
     pass
+
 
 class ServiceDuplicateError(ValueError):
     """Erro de violação de unicidade (Ex: nome já existe)."""
+
     pass
 
 
 def create_category(name: str) -> Category:
     """
     Cria uma nova Categoria.
-    
+
     Args:
         name: O nome da categoria.
 
@@ -60,36 +64,47 @@ def create_category(name: str) -> Category:
     """
     if not name or not name.strip():
         raise ServiceValidationError("O nome é obrigatório.")
-    
+
     # Seu StandardizeNameMixin deve ser executado pelo .save() do get_or_create
-    category, created = Category.objects.get_or_create(name=name)
-    
+    category, created = Category.objects.get_or_create(name=standardize_name(name))
+
     if not created:
         raise ServiceDuplicateError("Uma categoria com este nome já existe.")
-        
+
     return category
 
 
 def create_supplier(name: str) -> Supplier:
-    """
-    Cria um novo Fornecedor.
-    
-    Args:
-        name: O nome do fornecedor.
-
-    Returns:
-        O objeto Supplier criado.
-
-    Raises:
-        ServiceValidationError: Se o nome for nulo ou vazio.
-        ServiceDuplicateError: Se o fornecedor já existir.
-    """
     if not name or not name.strip():
         raise ServiceValidationError("O nome é obrigatório.")
-        
-    supplier, created = Supplier.objects.get_or_create(name=name)
-    
+
+    supplier, created = Supplier.objects.get_or_create(name=standardize_name(name))
+
     if not created:
         raise ServiceDuplicateError("Um fornecedor com este nome já existe.")
-        
+
     return supplier
+
+
+def create_color(name: str) -> Color:
+    if not name or not name.strip():
+        raise ServiceValidationError("O nome é obrigatório.")
+
+    color, created = Color.objects.get_or_create(name=standardize_name(name))
+
+    if not created:
+        raise ServiceDuplicateError("Uma cor com este nome já existe.")
+
+    return color
+
+
+def create_size(name: str) -> Size:
+    if not name or not name.strip():
+        raise ServiceValidationError("O nome é obrigatório.")
+
+    size, created = Size.objects.get_or_create(name=standardize_name(name))
+
+    if not created:
+        raise ServiceDuplicateError("Um tamanho com este nome já existe.")
+
+    return size

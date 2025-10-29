@@ -24,24 +24,32 @@ def _generate_color_part(color_name):
     Gera a parte do SKU referente à cor.
     Regra: Primeira letra de cada palavra.
     """
+    name = color_name.upper()
+    if name == "N/A":
+        return "NA"
+    
     words = color_name.upper().split()
     return "".join([word[0] for word in words])
 
 
-def generate_size_part(size_code):
+def generate_size_part(size_name):
     """
     Gera a parte do SKU referente ao tamanho.
     Regra: Apenas o código em maiúsculas.
     """
-    return size_code.upper()
+    name = size_name.upper()
+    if name == "N/A":
+        return "UN"
+    
+    return size_name.upper()
 
 
 def generate_sku(variation):
     """
-    Orquestra a criação do SKU final para um objeto ProductVariation.
+    Cria SKU final para um objeto ProductVariation.
     """
     product_part = generate_product_part(variation.product.name)
     color_part = _generate_color_part(variation.color.name)
-    size_part = generate_size_part(variation.size.code)
+    size_part = generate_size_part(variation.size.name)
 
     return f"{product_part}-{color_part}-{size_part}"
