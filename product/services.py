@@ -23,6 +23,7 @@ def get_filtered_products(query: str = "", page_number: int = 1, per_page: int =
             Q(name__icontains=query)
             | Q(category__name__icontains=query)
             | Q(variations__sku__icontains=query)
+            | Q(suppliers__name__icontains=query)
         ).distinct()
 
     # Paginação
