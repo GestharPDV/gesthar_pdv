@@ -131,3 +131,5 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Definir o modelo de usuário personalizado como o modelo de usuário padrão
 AUTH_USER_MODEL = "user.UserGesthar"
+
+LOGIN_URL = "user:login"

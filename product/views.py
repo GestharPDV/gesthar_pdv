@@ -15,11 +15,13 @@ from product.services import (
     create_size,
     get_filtered_products,
 )
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from .models import Product
 from .forms import ProductForm, ProductSupplierFormSet, ProductVariationFormSet
 
 
-class ProductCreateView(View):
+class ProductCreateView(LoginRequiredMixin, View):
     template_name = "product/product_form.html"
 
     def get(self, request, *args, **kwargs):
@@ -78,8 +80,9 @@ class ProductCreateView(View):
                 "button_text": "Finalizar Cadastro",
             }
             return render(request, self.template_name, context)
-        
-class ProductUpdateView(View):
+
+
+class ProductUpdateView(LoginRequiredMixin, View):
     template_name = "product/product_form.html"
 
     def get(self, request, pk, *args, **kwargs):
@@ -89,7 +92,9 @@ class ProductUpdateView(View):
         # 2. Pré-preenche os formulários com a 'instance' do produto
         product_form = ProductForm(instance=product)
         supplier_formset = ProductSupplierFormSet(instance=product, prefix="suppliers")
-        variation_formset = ProductVariationFormSet(instance=product, prefix="variations")
+        variation_formset = ProductVariationFormSet(
+            instance=product, prefix="variations"
+        )
 
         context = {
             "product_form": product_form,
@@ -121,7 +126,7 @@ class ProductUpdateView(View):
             and is_supplier_formset_valid
             and is_variation_formset_valid
         ):
-            
+
             product = product_form.save()
             supplier_formset.save()
             variation_formset.save()
@@ -136,12 +141,13 @@ class ProductUpdateView(View):
                 "product_form": product_form,
                 "supplier_formset": supplier_formset,
                 "variation_formset": variation_formset,
-                "page_title": "Editar Produto",  
-                "button_text": "Salvar Alterações",  
+                "page_title": "Editar Produto",
+                "button_text": "Salvar Alterações",
             }
             return render(request, self.template_name, context)
 
 
+@login_required
 def product_list_view(request):
     query = request.GET.get("query", "").strip()
     page_number = request.GET.get("page", 1)
@@ -156,14 +162,16 @@ def product_list_view(request):
     return render(request, "product/product_list.html", context)
 
 
+@login_required
 def product_detail_view(request, pk):
-    product = get_object_or_404(
-        Product.objects.with_average_profit_margin(), 
-        pk=pk
-    )
+    product = get_object_or_404(Product.objects.with_average_profit_margin(), pk=pk)
 
-    variations = product.variations.select_related('color', 'size').order_by('color', 'size')
-    suppliers = product.productsupplier_set.select_related('supplier').order_by('supplier__name')
+    variations = product.variations.select_related("color", "size").order_by(
+        "color", "size"
+    )
+    suppliers = product.productsupplier_set.select_related("supplier").order_by(
+        "supplier__name"
+    )
     profit_value = product.selling_price - product.average_cost_price
 
     context = {
@@ -177,6 +185,7 @@ def product_detail_view(request, pk):
     return render(request, "product/product_detail.html", context)
 
 
+@login_required
 @require_POST
 def category_create_view(request):
     """
@@ -213,6 +222,7 @@ def category_create_view(request):
         )
 
 
+@login_required
 @require_POST
 def supplier_create_view(request):
     """
@@ -249,6 +259,7 @@ def supplier_create_view(request):
         )
 
 
+@login_required
 @require_POST
 def color_create_view(request):
     try:
@@ -276,6 +287,7 @@ def color_create_view(request):
         )
 
 
+@login_required
 @require_POST
 def size_create_view(request):
     try:
