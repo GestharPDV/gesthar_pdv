@@ -82,6 +82,18 @@
           {% for form in supplier_formset %}
             <div class="supplier-form grid grid-cols-1 md:grid-cols-10 gap-4 items-end border-b border-gray-200 pb-4">
               {{ form.id }}
+
+              {% if form.non_field_errors %}
+                <div class="md:col-span-10 bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded-lg -mb-2">
+                  <p class="font-bold">Erro neste fornecedor:</p>
+                  <ul class="list-disc ml-5">
+                    {% for error in form.non_field_errors %}
+                      <li>{{ error }}</li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              {% endif %}
+
               <div class="md:col-span-5">
                 <label for="{{ form.supplier.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">FORNECEDOR</label>
                 <div class="flex items-center gap-2">
@@ -142,6 +154,17 @@
           {% for form in variation_formset %}
             <div class="variation-form grid grid-cols-1 md:grid-cols-12 gap-4 items-end border-b border-gray-200 pb-4">
               {{ form.id }}
+
+              {% if form.non_field_errors %}
+                <div class="md:col-span-12 bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded-lg -mb-2">
+                  <p class="font-bold">Erro nesta variação:</p>
+                  <ul class="list-disc ml-5">
+                    {% for error in form.non_field_errors %}
+                      <li>{{ error }}</li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              {% endif %}
 
               <div class="md:col-span-3">
                 <label for="{{ form.color.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">COR</label>
@@ -237,9 +260,11 @@
       </div>
     </div>
 
-    <button type="submit" class="bg-[#FF7690] hover:bg-[#e66a82] text-white px-8 py-3 rounded-lg font-bold text-lg transition-colors shadow-lg">
-        {{ button_text|upper }}
-    </button>
+    <div class="mt-6 flex justify-start space-x-4">
+      <button type="submit" class="bg-[#FF7690] hover:bg-[#e66a82] text-white px-8 py-3 rounded-lg font-bold text-lg transition-colors shadow-lg">{{ button_text|upper }}</button>
+
+      <a href="{% url 'product:product-list' %}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-8 py-3 rounded-lg font-bold text-lg transition-colors shadow-lg">CANCELAR</a>
+    </div>
   </form>
 
   <div id="category-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50">
@@ -531,14 +556,13 @@
       }
     
       // ----------------------------------------
-      // [NOVO] Lógica do Modal de Cor
+      // [ORIGINAL] Lógica do Modal de Cor
       // ----------------------------------------
       const colorModal = document.getElementById('color-modal')
       const cancelColorBtn = document.getElementById('cancel-color-btn')
       const colorModalForm = document.getElementById('color-modal-form')
       const colorNameInput = document.getElementById('id_new_color_name')
       const colorModalError = document.getElementById('color-modal-error')
-    
       let activeColorSelect = null // Guarda qual <select> de cor ativou o modal
     
       // Delegação de evento para .add-color-btn
@@ -610,14 +634,13 @@
       }
     
       // ----------------------------------------
-      // [NOVO] Lógica do Modal de Tamanho
+      // [ORIGINAL] Lógica do Modal de Tamanho
       // ----------------------------------------
       const sizeModal = document.getElementById('size-modal')
       const cancelSizeBtn = document.getElementById('cancel-size-btn')
       const sizeModalForm = document.getElementById('size-modal-form')
       const sizeNameInput = document.getElementById('id_new_size_name')
       const sizeModalError = document.getElementById('size-modal-error')
-    
       let activeSizeSelect = null // Guarda qual <select> de tamanho ativou o modal
     
       // Delegação de evento para .add-size-btn

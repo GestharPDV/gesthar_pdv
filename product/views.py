@@ -156,6 +156,27 @@ def product_list_view(request):
     return render(request, "product/product_list.html", context)
 
 
+def product_detail_view(request, pk):
+    product = get_object_or_404(
+        Product.objects.with_average_profit_margin(), 
+        pk=pk
+    )
+
+    variations = product.variations.select_related('color', 'size').order_by('color', 'size')
+    suppliers = product.productsupplier_set.select_related('supplier').order_by('supplier__name')
+    profit_value = product.selling_price - product.average_cost_price
+
+    context = {
+        "product": product,
+        "variations": variations,
+        "suppliers": suppliers,
+        "profit_value": profit_value,
+        "page_title": f"Detalhes: {product.name}",
+    }
+
+    return render(request, "product/product_detail.html", context)
+
+
 @require_POST
 def category_create_view(request):
     """

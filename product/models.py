@@ -87,7 +87,7 @@ class ActiveProductVariationManager(models.Manager):
     """Manager que retorna apenas as variações de produto ativas."""
 
     def get_queryset(self):
-        return super().get_queryset().filter(is_active=True)
+        return super().get_queryset().filter(is_active=True, product__is_active=True)
 
 
 # Models
