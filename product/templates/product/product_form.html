@@ -1,0 +1,715 @@
+{% extends 'global/sidebar.html' %}
+{% load static %}
+
+{% block content %}
+  <h1 class="text-2xl font-bold text-[#FF7690] mb-6">{{ page_title|upper }}</h1>
+
+  {% comment %}Bloco para exibir erros gerais do formulário (ex: validações do clean){% endcomment %}
+  {% if product_form.non_field_errors or supplier_formset.non_field_errors or variation_formset.non_field_errors %}
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-6" role="alert">
+      <strong class="font-bold">Ocorreram erros ao salvar:</strong>
+      <ul class="list-disc ml-5 mt-2">
+        {% for error in product_form.non_field_errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+        {% for error in supplier_formset.non_field_errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+        {% for error in variation_formset.non_field_errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  <form method="post" id="product-form" class="space-y-6">
+    {% csrf_token %}
+
+    <div class="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-300">
+      <h2 class="text-lg font-semibold text-gray-800 p-4 bg-gray-50 border-b border-gray-300">Dados do Produto</h2>
+      <div class="p-6 space-y-4">
+        <div>
+          <label for="{{ product_form.name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">NOME</label>
+          {{ product_form.name }}
+          {% for error in product_form.name.errors %}
+            <p class="text-red-600 text-xs mt-1">{{ error }}</p>
+          {% endfor %}
+        </div>
+
+        <div>
+          <label for="{{ product_form.description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">DESCRIÇÃO</label>
+          {{ product_form.description }}
+          {% for error in product_form.description.errors %}
+            <p class="text-red-600 text-xs mt-1">{{ error }}</p>
+          {% endfor %}
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label for="{{ product_form.selling_price.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">PREÇO DE VENDA</label>
+            {{ product_form.selling_price }}
+            {% for error in product_form.selling_price.errors %}
+              <p class="text-red-600 text-xs mt-1">{{ error }}</p>
+            {% endfor %}
+          </div>
+          <div>
+            <label for="{{ product_form.category.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">CATEGORIA</label>
+            <div class="flex items-center gap-2">
+              <div class="flex-grow">{{ product_form.category }}</div>
+              <button type="button" id="add-category-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-3 rounded-lg text-sm" title="Adicionar nova categoria">+</button>
+            </div>
+            {% for error in product_form.category.errors %}
+              <p class="text-red-600 text-xs mt-1">{{ error }}</p>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-6 pt-2">
+          <div class="flex items-center">
+            {{ product_form.is_active }}
+            <label for="{{ product_form.is_active.id_for_label }}" class="ml-2 block text-sm text-gray-900 cursor-pointer">Ativo</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-300">
+      <h2 class="text-lg font-semibold text-gray-800 p-4 bg-gray-50 border-b border-gray-300">Fornecedores e Preços de Custo</h2>
+      <div class="p-6">
+        {{ supplier_formset.management_form }}
+
+        <div id="supplier-form-list" class="space-y-4">
+          {% for form in supplier_formset %}
+            <div class="supplier-form grid grid-cols-1 md:grid-cols-10 gap-4 items-end border-b border-gray-200 pb-4">
+              {{ form.id }}
+
+              {% if form.non_field_errors %}
+                <div class="md:col-span-10 bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded-lg -mb-2">
+                  <p class="font-bold">Erro neste fornecedor:</p>
+                  <ul class="list-disc ml-5">
+                    {% for error in form.non_field_errors %}
+                      <li>{{ error }}</li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              {% endif %}
+
+              <div class="md:col-span-5">
+                <label for="{{ form.supplier.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">FORNECEDOR</label>
+                <div class="flex items-center gap-2">
+                  <div class="flex-grow">{{ form.supplier }}</div>
+                  <button type="button" class="add-supplier-btn bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-3 rounded-lg text-sm" title="Adicionar novo fornecedor">+</button>
+                </div>
+                {% for error in form.supplier.errors %}
+                  <p class="text-red-600 text-xs mt-1">{{ error }}</p>
+                {% endfor %}
+              </div>
+              <div class="md:col-span-3">
+                <label for="{{ form.cost_price.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">PREÇO DE COMPRA</label>
+                {{ form.cost_price }}
+                {% for error in form.cost_price.errors %}
+                  <p class="text-red-600 text-xs mt-1">{{ error }}</p>
+                {% endfor %}
+              </div>
+              <div class="md:col-span-2 flex items-center justify-end h-full pb-1">
+                <button type="button" class="remove-form-btn text-red-600 hover:text-red-800 font-medium text-sm">Remover</button>
+                <div class="hidden">{{ form.DELETE }}</div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <div id="empty-supplier-form" class="hidden">
+          <div class="supplier-form grid grid-cols-1 md:grid-cols-10 gap-4 items-end border-b border-gray-200 pb-4">
+            {{ supplier_formset.empty_form.id }}
+            <div class="hidden">{{ supplier_formset.empty_form.DELETE }}</div>
+
+            <div class="md:col-span-5">
+              <label class="block text-sm font-medium text-gray-700 mb-1">FORNECEDOR</label>
+              <div class="flex items-center gap-2">
+                <div class="flex-grow">{{ supplier_formset.empty_form.supplier }}</div>
+                <button type="button" class="add-supplier-btn bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-3 rounded-lg text-sm" title="Adicionar novo fornecedor">+</button>
+              </div>
+            </div>
+            <div class="md:col-span-3">
+              <label class="block text-sm font-medium text-gray-700 mb-1">PREÇO DE COMPRA</label>
+              {{ supplier_formset.empty_form.cost_price }}
+            </div>
+            <div class="md:col-span-2 flex items-center justify-end h-full pb-1">
+              <button type="button" class="remove-form-btn text-red-600 hover:text-red-800 font-medium text-sm">Remover</button>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" id="add-supplier-form" class="mt-4 bg-[#F1F0BE] hover:bg-[#E0DFAB] text-[#555555] px-4 py-2 rounded-lg font-medium transition-colors">+ Adicionar Fornecedor</button>
+      </div>
+    </div>
+
+    <div id="variations-card" class="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-300">
+      <h2 class="text-lg font-semibold text-gray-800 p-4 bg-gray-50 border-b border-gray-300">Variações do Produto (Cor/Tamanho)</h2>
+      <div class="p-6">
+        {{ variation_formset.management_form }}
+
+        <div id="variation-form-list" class="space-y-4">
+          {% for form in variation_formset %}
+            <div class="variation-form grid grid-cols-1 md:grid-cols-12 gap-4 items-end border-b border-gray-200 pb-4">
+              {{ form.id }}
+
+              {% if form.non_field_errors %}
+                <div class="md:col-span-12 bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded-lg -mb-2">
+                  <p class="font-bold">Erro nesta variação:</p>
+                  <ul class="list-disc ml-5">
+                    {% for error in form.non_field_errors %}
+                      <li>{{ error }}</li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              {% endif %}
+
+              <div class="md:col-span-3">
+                <label for="{{ form.color.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">COR</label>
+                <div class="flex items-center gap-2">
+                  <div class="flex-grow">{{ form.color }}</div>
+                  <button type="button" class="add-color-btn bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-3 rounded-lg text-sm" title="Adicionar nova cor">+</button>
+                </div>
+                {% for error in form.color.errors %}
+                  <p class="text-red-600 text-xs mt-1">{{ error }}</p>
+                {% endfor %}
+              </div>
+
+              <div class="md:col-span-3">
+                <label for="{{ form.size.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">TAMANHO</label>
+                <div class="flex items-center gap-2">
+                  <div class="flex-grow">{{ form.size }}</div>
+                  <button type="button" class="add-size-btn bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-3 rounded-lg text-sm" title="Adicionar novo tamanho">+</button>
+                </div>
+                {% for error in form.size.errors %}
+                  <p class="text-red-600 text-xs mt-1">{{ error }}</p>
+                {% endfor %}
+              </div>
+
+              <div class="md:col-span-2">
+                <label for="{{ form.stock.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">ESTOQUE</label>
+                {{ form.stock }}
+                {% for error in form.stock.errors %}
+                  <p class="text-red-600 text-xs mt-1">{{ error }}</p>
+                {% endfor %}
+              </div>
+
+              <div class="md:col-span-2">
+                <label for="{{ form.minimum_stock.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">ESTOQUE MÍNIMO</label>
+                {{ form.minimum_stock }}
+                {% for error in form.minimum_stock.errors %}
+                  <p class="text-red-600 text-xs mt-1">{{ error }}</p>
+                {% endfor %}
+              </div>
+
+              <div class="md:col-span-1 flex items-center h-full pb-2">
+                {{ form.is_active }}
+                <label for="{{ form.is_active.id_for_label }}" class="ml-2 text-sm text-gray-900 cursor-pointer">Ativo</label>
+              </div>
+
+              <div class="md:col-span-1 flex items-center justify-end h-full pb-1">
+                <button type="button" class="remove-form-btn text-red-600 hover:text-red-800 font-medium text-sm">Remover</button>
+                <div class="hidden">{{ form.DELETE }}</div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <div id="empty-variation-form" class="hidden">
+          <div class="variation-form grid grid-cols-1 md:grid-cols-12 gap-4 items-end border-b border-gray-200 pb-4">
+            {{ variation_formset.empty_form.id }}
+            <div class="hidden">{{ variation_formset.empty_form.DELETE }}</div>
+
+            <div class="md:col-span-3">
+              <label class="block text-sm font-medium text-gray-700 mb-1">COR</label>
+              <div class="flex items-center gap-2">
+                <div class="flex-grow">{{ variation_formset.empty_form.color }}</div>
+                <button type="button" class="add-color-btn bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-3 rounded-lg text-sm" title="Adicionar nova cor">+</button>
+              </div>
+            </div>
+
+            <div class="md:col-span-3">
+              <label class="block text-sm font-medium text-gray-700 mb-1">TAMANHO</label>
+              <div class="flex items-center gap-2">
+                <div class="flex-grow">{{ variation_formset.empty_form.size }}</div>
+                <button type="button" class="add-size-btn bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-3 rounded-lg text-sm" title="Adicionar novo tamanho">+</button>
+              </div>
+            </div>
+
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-1">ESTOQUE</label>{{ variation_formset.empty_form.stock }}
+            </div>
+
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-1">ESTOQUE MÍNIMO</label>{{ variation_formset.empty_form.minimum_stock }}
+            </div>
+
+            <div class="md:col-span-1 flex items-center h-full pb-2">
+              {{ variation_formset.empty_form.is_active }}<label class="ml-2 text-sm text-gray-900 cursor-pointer">Ativo</label>
+            </div>
+
+            <div class="md:col-span-1 flex items-center justify-end h-full pb-1">
+              <button type="button" class="remove-form-btn text-red-600 hover:text-red-800 font-medium text-sm">Remover</button>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" id="add-variation-form" class="mt-4 bg-[#F1F0BE] hover:bg-[#E0DFAB] text-[#555555] px-4 py-2 rounded-lg font-medium transition-colors">+ Adicionar Variação</button>
+      </div>
+    </div>
+
+    <div class="mt-6 flex justify-start space-x-4">
+      <button type="submit" class="bg-[#FF7690] hover:bg-[#e66a82] text-white px-8 py-3 rounded-lg font-bold text-lg transition-colors shadow-lg">{{ button_text|upper }}</button>
+
+      <a href="{% url 'product:product-list' %}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-8 py-3 rounded-lg font-bold text-lg transition-colors shadow-lg">CANCELAR</a>
+    </div>
+  </form>
+
+  <div id="category-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+      <h3 class="text-lg font-bold mb-4">Nova Categoria</h3>
+      <form id="category-modal-form">
+        <div>
+          <label for="id_new_category_name" class="block text-sm font-medium text-gray-700">Nome</label>
+          <input type="text" id="id_new_category_name" class="w-full border border-gray-300 rounded-lg py-2 px-4 mt-1" required />
+          <p id="category-modal-error" class="text-red-600 text-xs mt-1 hidden"></p>
+        </div>
+        <div class="mt-6 flex justify-end gap-3">
+          <button type="button" id="cancel-category-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg">Cancelar</button>
+          <button type="submit" class="bg-[#FF7690] hover:bg-[#e66a82] text-white px-4 py-2 rounded-lg">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="supplier-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+      <h3 class="text-lg font-bold mb-4">Novo Fornecedor</h3>
+      <form id="supplier-modal-form">
+        <div>
+          <label for="id_new_supplier_name" class="block text-sm font-medium text-gray-700">Nome</label>
+          <input type="text" id="id_new_supplier_name" class="w-full border border-gray-300 rounded-lg py-2 px-4 mt-1" required />
+          <p id="supplier-modal-error" class="text-red-600 text-xs mt-1 hidden"></p>
+        </div>
+        <div class="mt-6 flex justify-end gap-3">
+          <button type="button" id="cancel-supplier-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg">Cancelar</button>
+          <button type="submit" class="bg-[#FF7690] hover:bg-[#e66a82] text-white px-4 py-2 rounded-lg">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="color-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+      <h3 class="text-lg font-bold mb-4">Nova Cor</h3>
+      <form id="color-modal-form">
+        <div>
+          <label for="id_new_color_name" class="block text-sm font-medium text-gray-700">Nome</label>
+          <input type="text" id="id_new_color_name" class="w-full border border-gray-300 rounded-lg py-2 px-4 mt-1" required />
+          <p id="color-modal-error" class="text-red-600 text-xs mt-1 hidden"></p>
+        </div>
+        <div class="mt-6 flex justify-end gap-3">
+          <button type="button" id="cancel-color-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg">Cancelar</button>
+          <button type="submit" class="bg-[#FF7690] hover:bg-[#e66a82] text-white px-4 py-2 rounded-lg">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="size-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+      <h3 class="text-lg font-bold mb-4">Novo Tamanho</h3>
+      <form id="size-modal-form">
+        <div>
+          <label for="id_new_size_name" class="block text-sm font-medium text-gray-700">Nome</label>
+          <input type="text" id="id_new_size_name" class="w-full border border-gray-300 rounded-lg py-2 px-4 mt-1" required />
+          <p id="size-modal-error" class="text-red-600 text-xs mt-1 hidden"></p>
+        </div>
+        <div class="mt-6 flex justify-end gap-3">
+          <button type="button" id="cancel-size-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg">Cancelar</button>
+          <button type="submit" class="bg-[#FF7690] hover:bg-[#e66a82] text-white px-4 py-2 rounded-lg">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // ----------------------------------------
+      // [ORIGINAL] Função utilitária para pegar o CSRF token
+      // ----------------------------------------
+      function getCsrfToken() {
+        return document.querySelector('input[name="csrfmiddlewaretoken"]').value
+      }
+    
+      // ----------------------------------------
+      // [ORIGINAL] Lógica de adicionar formset
+      // ----------------------------------------
+      function setupAddFormButton(buttonId, listId, emptyFormId, prefix) {
+        const addBtn = document.getElementById(buttonId)
+        if (!addBtn) return
+    
+        addBtn.addEventListener('click', function () {
+          const formList = document.getElementById(listId)
+          const emptyFormTemplate = document.getElementById(emptyFormId).innerHTML
+          const totalFormsInput = document.getElementById(`id_${prefix}-TOTAL_FORMS`)
+    
+          let formNum = parseInt(totalFormsInput.value)
+          let newFormHTML = emptyFormTemplate.replace(/__prefix__/g, formNum)
+    
+          const div = document.createElement('div')
+          div.innerHTML = newFormHTML
+          formList.appendChild(div.firstElementChild)
+    
+          totalFormsInput.value = formNum + 1
+        })
+      }
+    
+      // ----------------------------------------
+      // [ORIGINAL] Lógica de remover formset
+      // ----------------------------------------
+      function setupRemoveFormButtons(listId, formRowClass) {
+        const formList = document.getElementById(listId)
+        if (!formList) return
+    
+        formList.addEventListener('click', function (event) {
+          if (event.target.classList.contains('remove-form-btn')) {
+            const formRow = event.target.closest(`.${formRowClass}`)
+            if (formRow) {
+              const deleteCheckbox = formRow.querySelector('input[type="checkbox"][name*="DELETE"]')
+              if (deleteCheckbox) {
+                // Marca para deleção e oculta o formulário existente
+                deleteCheckbox.checked = true
+                formRow.style.display = 'none'
+              } else {
+                // Apenas remove o formulário novo (que ainda não foi salvo) do DOM
+                formRow.remove()
+                // Nota: Se remover um formulário novo, o TOTAL_FORMS não é decrementado
+                // Isso é o comportamento padrão do Django e é gerenciado pelo formset.
+              }
+            }
+          }
+        })
+      }
+    
+      // Inicializa a funcionalidade para ambos os formsets
+      setupAddFormButton('add-supplier-form', 'supplier-form-list', 'empty-supplier-form', 'suppliers')
+      setupAddFormButton('add-variation-form', 'variation-form-list', 'empty-variation-form', 'variations')
+    
+      // Inicializa os botões de remover para ambos os formsets
+      setupRemoveFormButtons('supplier-form-list', 'supplier-form')
+      setupRemoveFormButtons('variation-form-list', 'variation-form')
+    
+      // ----------------------------------------
+      // [ORIGINAL] Lógica do Modal de Categoria
+      // ----------------------------------------
+      const categoryModal = document.getElementById('category-modal')
+      const addCategoryBtn = document.getElementById('add-category-btn')
+      const cancelCategoryBtn = document.getElementById('cancel-category-btn')
+      const categoryModalForm = document.getElementById('category-modal-form')
+      const categoryNameInput = document.getElementById('id_new_category_name')
+      const categoryModalError = document.getElementById('category-modal-error')
+    
+      if (addCategoryBtn) {
+        addCategoryBtn.addEventListener('click', () => {
+          categoryModal.classList.remove('hidden')
+          categoryModal.classList.add('flex')
+          categoryNameInput.value = '' // Limpa o campo
+          categoryModalError.classList.add('hidden') // Oculta erros
+          categoryNameInput.focus()
+        })
+      }
+    
+      if (cancelCategoryBtn) {
+        cancelCategoryBtn.addEventListener('click', () => {
+          categoryModal.classList.add('hidden')
+          categoryModal.classList.remove('flex')
+        })
+      }
+    
+      if (categoryModalForm) {
+        categoryModalForm.addEventListener('submit', function (e) {
+          e.preventDefault()
+          const categoryName = categoryNameInput.value
+    
+          fetch("{% url 'product:category-create' %}", {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify({ name: categoryName })
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.status === 'success') {
+                // 1. Cria a nova <option>
+                // (valor, texto, selecionado por padrão, selecionado agora)
+                const newOption = new Option(data.name, data.id, true, true)
+    
+                // 2. Adiciona ao <select> principal e o seleciona
+                const mainCategorySelect = document.getElementById('{{ product_form.category.id_for_label }}')
+                mainCategorySelect.appendChild(newOption)
+                mainCategorySelect.value = data.id // Garante que está selecionado
+    
+                // 3. Fecha o modal
+                cancelCategoryBtn.click()
+              } else {
+                // Mostra o erro no modal
+                categoryModalError.textContent = data.message
+                categoryModalError.classList.remove('hidden')
+              }
+            })
+            .catch((error) => {
+              console.error('Erro no AJAX:', error)
+              categoryModalError.textContent = 'Erro de conexão. Tente novamente.'
+              categoryModalError.classList.remove('hidden')
+            })
+        })
+      }
+    
+      // ----------------------------------------
+      // [ORIGINAL] Lógica do Modal de Fornecedor
+      // ----------------------------------------
+      const supplierModal = document.getElementById('supplier-modal')
+      const cancelSupplierBtn = document.getElementById('cancel-supplier-btn')
+      const supplierModalForm = document.getElementById('supplier-modal-form')
+      const supplierNameInput = document.getElementById('id_new_supplier_name')
+      const supplierModalError = document.getElementById('supplier-modal-error')
+      const mainForm = document.getElementById('product-form') // Já definido, mas bom para clareza
+    
+      // Guarda qual <select> de fornecedor ativou o modal
+      let activeSupplierSelect = null
+    
+      // Usamos delegação de evento, pois os botões '+' do formset são criados dinamicamente
+      if (mainForm) {
+        mainForm.addEventListener('click', function (event) {
+          // Verifica se o clique foi em um botão de adicionar fornecedor
+          if (event.target.classList.contains('add-supplier-btn')) {
+            // Encontra o <select> mais próximo desse botão
+            activeSupplierSelect = event.target.closest('.flex').querySelector('select')
+    
+            // Abre o modal
+            supplierModal.classList.remove('hidden')
+            supplierModal.classList.add('flex')
+            supplierNameInput.value = ''
+            supplierModalError.classList.add('hidden')
+            supplierNameInput.focus()
+          }
+        })
+      }
+    
+      if (cancelSupplierBtn) {
+        cancelSupplierBtn.addEventListener('click', () => {
+          supplierModal.classList.add('hidden')
+          supplierModal.classList.remove('flex')
+          activeSupplierSelect = null // Limpa a referência
+        })
+      }
+    
+      if (supplierModalForm) {
+        supplierModalForm.addEventListener('submit', function (e) {
+          e.preventDefault()
+          const supplierName = supplierNameInput.value
+    
+          fetch("{% url 'product:supplier-create' %}", {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify({ name: supplierName })
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.status === 'success') {
+                // 1. Encontra TODOS os selects de fornecedor no documento
+                // (incluindo o template do formset)
+                const allSupplierSelects = document.querySelectorAll('select[name*="-supplier"]')
+    
+                // 2. Adiciona a nova opção a cada um deles
+                allSupplierSelects.forEach((select) => {
+                  const newOption = new Option(data.name, data.id)
+                  select.appendChild(newOption)
+                })
+    
+                // 3. Seleciona o novo valor APENAS no <select> que abriu o modal
+                if (activeSupplierSelect) {
+                  activeSupplierSelect.value = data.id
+                }
+    
+                // 4. Fecha o modal
+                cancelSupplierBtn.click()
+              } else {
+                supplierModalError.textContent = data.message
+                supplierModalError.classList.remove('hidden')
+              }
+            })
+            .catch((error) => {
+              console.error('Erro no AJAX:', error)
+              supplierModalError.textContent = 'Erro de conexão. Tente novamente.'
+              supplierModalError.classList.remove('hidden')
+            })
+        })
+      }
+    
+      // ----------------------------------------
+      // [ORIGINAL] Lógica do Modal de Cor
+      // ----------------------------------------
+      const colorModal = document.getElementById('color-modal')
+      const cancelColorBtn = document.getElementById('cancel-color-btn')
+      const colorModalForm = document.getElementById('color-modal-form')
+      const colorNameInput = document.getElementById('id_new_color_name')
+      const colorModalError = document.getElementById('color-modal-error')
+      let activeColorSelect = null // Guarda qual <select> de cor ativou o modal
+    
+      // Delegação de evento para .add-color-btn
+      if (mainForm) {
+        mainForm.addEventListener('click', function (event) {
+          if (event.target.classList.contains('add-color-btn')) {
+            activeColorSelect = event.target.closest('.flex').querySelector('select')
+    
+            colorModal.classList.remove('hidden')
+            colorModal.classList.add('flex')
+            colorNameInput.value = ''
+            colorModalError.classList.add('hidden')
+            colorNameInput.focus()
+          }
+        })
+      }
+    
+      if (cancelColorBtn) {
+        cancelColorBtn.addEventListener('click', () => {
+          colorModal.classList.add('hidden')
+          colorModal.classList.remove('flex')
+          activeColorSelect = null // Limpa a referência
+        })
+      }
+    
+      if (colorModalForm) {
+        colorModalForm.addEventListener('submit', function (e) {
+          e.preventDefault()
+          const colorName = colorNameInput.value
+    
+          fetch("{% url 'product:color-create' %}", {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify({ name: colorName })
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.status === 'success') {
+                // 1. Encontra TODOS os selects de cor
+                const allColorSelects = document.querySelectorAll('select[name*="-color"]')
+    
+                // 2. Adiciona a nova opção a cada um deles
+                allColorSelects.forEach((select) => {
+                  const newOption = new Option(data.name, data.id)
+                  select.appendChild(newOption)
+                })
+    
+                // 3. Seleciona o novo valor APENAS no <select> que abriu o modal
+                if (activeColorSelect) {
+                  activeColorSelect.value = data.id
+                }
+    
+                // 4. Fecha o modal
+                cancelColorBtn.click()
+              } else {
+                colorModalError.textContent = data.message
+                colorModalError.classList.remove('hidden')
+              }
+            })
+            .catch((error) => {
+              console.error('Erro no AJAX:', error)
+              colorModalError.textContent = 'Erro de conexão. Tente novamente.'
+              colorModalError.classList.remove('hidden')
+            })
+        })
+      }
+    
+      // ----------------------------------------
+      // [ORIGINAL] Lógica do Modal de Tamanho
+      // ----------------------------------------
+      const sizeModal = document.getElementById('size-modal')
+      const cancelSizeBtn = document.getElementById('cancel-size-btn')
+      const sizeModalForm = document.getElementById('size-modal-form')
+      const sizeNameInput = document.getElementById('id_new_size_name')
+      const sizeModalError = document.getElementById('size-modal-error')
+      let activeSizeSelect = null // Guarda qual <select> de tamanho ativou o modal
+    
+      // Delegação de evento para .add-size-btn
+      if (mainForm) {
+        mainForm.addEventListener('click', function (event) {
+          if (event.target.classList.contains('add-size-btn')) {
+            activeSizeSelect = event.target.closest('.flex').querySelector('select')
+    
+            sizeModal.classList.remove('hidden')
+            sizeModal.classList.add('flex')
+            sizeNameInput.value = ''
+            sizeModalError.classList.add('hidden')
+            sizeNameInput.focus()
+          }
+        })
+      }
+    
+      if (cancelSizeBtn) {
+        cancelSizeBtn.addEventListener('click', () => {
+          sizeModal.classList.add('hidden')
+          sizeModal.classList.remove('flex')
+          activeSizeSelect = null // Limpa a referência
+        })
+      }
+    
+      if (sizeModalForm) {
+        sizeModalForm.addEventListener('submit', function (e) {
+          e.preventDefault()
+          const sizeName = sizeNameInput.value
+    
+          fetch("{% url 'product:size-create' %}", {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify({ name: sizeName })
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.status === 'success') {
+                // 1. Encontra TODOS os selects de tamanho
+                const allSizeSelects = document.querySelectorAll('select[name*="-size"]')
+    
+                // 2. Adiciona a nova opção a cada um deles
+                allSizeSelects.forEach((select) => {
+                  const newOption = new Option(data.name, data.id)
+                  select.appendChild(newOption)
+                })
+    
+                // 3. Seleciona o novo valor APENAS no <select> que abriu o modal
+                if (activeSizeSelect) {
+                  activeSizeSelect.value = data.id
+                }
+    
+                // 4. Fecha o modal
+                cancelSizeBtn.click()
+              } else {
+                sizeModalError.textContent = data.message
+                sizeModalError.classList.remove('hidden')
+              }
+            })
+            .catch((error) => {
+              console.error('Erro no AJAX:', error)
+              sizeModalError.textContent = 'Erro de conexão. Tente novamente.'
+              sizeModalError.classList.remove('hidden')
+            })
+        })
+      }
+    })
+  </script>
+{% endblock %}

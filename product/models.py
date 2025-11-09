@@ -15,7 +15,7 @@ from django.db.models import (
 from django.db.models.functions import Coalesce
 from django.forms import ValidationError
 from product.mixins import StandardizeNameMixin
-from .services import generate_sku
+from .utils import generate_sku
 
 
 # Managers
@@ -34,11 +34,10 @@ class ProductQuerySet(models.QuerySet):
 
     def with_average_profit_margin(self):
         """
-        Anota a margem de lucro de cada produto, baseada no PREÇO DE CUSTO MÉDIO
-        de todos os seus fornecedores associados.
+        Anota a margem de lucro (%) e custo médio de cada produto,
+        garantindo tipos compatíveis (DecimalField).
         """
-        # 1. Cria uma subquery para calcular o custo médio de cada produto.
-        # OuterRef('pk') refere-se ao ID do produto da consulta principal.
+
         avg_cost_subquery = (
             ProductSupplier.objects.filter(product=OuterRef("pk"))
             .values("product")
@@ -46,29 +45,39 @@ class ProductQuerySet(models.QuerySet):
             .values("avg_cost")
         )
 
-        # 2. Anota o queryset principal com o resultado da subquery.
-        # Coalesce para o caso de um produto não ter fornecedor (custo será 0).
         queryset = self.annotate(
             average_cost_price=Coalesce(
-                Subquery(avg_cost_subquery, output_field=DecimalField()), Value(0.0)
+                Subquery(
+                    avg_cost_subquery,
+                    output_field=DecimalField(max_digits=10, decimal_places=2),
+                ),
+                Value(0, output_field=DecimalField(max_digits=10, decimal_places=2)),
             )
         )
 
-        # 3. calcula a margem de lucro usando o custo médio anotado.
-        profit = F("selling_price") - F("average_cost_price")
-        margin_expression = (profit * 100.0) / F("selling_price")
+        # 🔢 Calcular margem de lucro com tipos Decimal coerentes
+        profit = ExpressionWrapper(
+            F("selling_price") - F("average_cost_price"),
+            output_field=DecimalField(max_digits=10, decimal_places=2),
+        )
+
+        margin_expression = ExpressionWrapper(
+            (
+                profit
+                * Value(100, output_field=DecimalField(max_digits=5, decimal_places=2))
+            )
+            / F("selling_price"),
+            output_field=DecimalField(max_digits=5, decimal_places=2),
+        )
 
         return queryset.annotate(
             profit_margin=Case(
                 When(
                     selling_price__gt=0,
-                    then=ExpressionWrapper(
-                        margin_expression,
-                        output_field=DecimalField(max_digits=5, decimal_places=2),
-                    ),
+                    then=margin_expression,
                 ),
                 default=Value(
-                    0.0, output_field=DecimalField(max_digits=5, decimal_places=2)
+                    0, output_field=DecimalField(max_digits=5, decimal_places=2)
                 ),
             )
         )
@@ -78,7 +87,7 @@ class ActiveProductVariationManager(models.Manager):
     """Manager que retorna apenas as variações de produto ativas."""
 
     def get_queryset(self):
-        return super().get_queryset().filter(is_active=True)
+        return super().get_queryset().filter(is_active=True, product__is_active=True)
 
 
 # Models
@@ -109,8 +118,7 @@ class Color(StandardizeNameMixin, models.Model):
 
 
 class Size(StandardizeNameMixin, models.Model):
-    name = models.CharField(max_length=50, verbose_name="Nome")
-    code = models.CharField(max_length=10, unique=True, verbose_name="Código")
+    name = models.CharField(max_length=50, unique=True, verbose_name="Nome")
     is_active = models.BooleanField(default=True, verbose_name="Ativo")
 
     class Meta:
@@ -121,10 +129,13 @@ class Size(StandardizeNameMixin, models.Model):
     def __str__(self):
         return self.name
 
-    def clean(self):
-        super().clean()
-        if self.code:
-            self.code = self.code.strip().upper()
+
+def get_default_color():
+    return Color.objects.get_or_create(name="N/A")[0].pk
+
+
+def get_default_size():
+    return Size.objects.get_or_create(name="N/A")[0].pk
 
 
 class Supplier(StandardizeNameMixin, models.Model):
@@ -213,8 +224,12 @@ class ProductVariation(models.Model):
     product = models.ForeignKey(
         Product, on_delete=models.CASCADE, related_name="variations"
     )
-    color = models.ForeignKey(Color, on_delete=models.PROTECT, verbose_name="Cor")
-    size = models.ForeignKey(Size, on_delete=models.PROTECT, verbose_name="Tamanho")
+    color = models.ForeignKey(
+        Color, on_delete=models.PROTECT, verbose_name="Cor", default=get_default_color
+    )
+    size = models.ForeignKey(
+        Size, on_delete=models.PROTECT, verbose_name="Tamanho", default=get_default_size
+    )
     is_active = models.BooleanField(default=True, verbose_name="Ativo")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Criado em")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Atualizado em")
