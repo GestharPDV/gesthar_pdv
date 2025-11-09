@@ -74,8 +74,8 @@
                     </button>
 
                     <div id="clientes-menu" class="hidden ml-4 mt-2 space-y-1 text-sm">
-                        <a href="#" class="block p-2 rounded hover:bg-pink-50">CADASTRAR CLIENTE</a>
-                        <a href="#" class="block p-2 rounded hover:bg-pink-50">CONSULTAR CLIENTES</a>
+                        <a href="{% url 'customer:customer_create' %}" class="block p-2 rounded hover:bg-pink-50">CADASTRAR CLIENTE</a>
+                        <a href="{% url 'customer:customer_list' %}" class="block p-2 rounded hover:bg-pink-50">CONSULTAR CLIENTES</a>
                     </div>
                 </div>
 
