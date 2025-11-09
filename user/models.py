@@ -51,7 +51,7 @@ class UserGesthar(AbstractUser):
         blank=True,
         null=True,
     )
-    cpf = models.CharField(max_length=14, unique=True, verbose_name="CPF")
+    cpf = models.CharField(max_length=14, verbose_name="CPF")
     email = models.EmailField(unique=True, verbose_name="E-mail")
     phone_number = models.CharField(
         max_length=15, verbose_name="Telefone", blank=True, null=True

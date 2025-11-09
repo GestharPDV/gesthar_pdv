@@ -22,7 +22,7 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
-    return redirect("global:home")  # Redireciona para a página inicial após o logout
+    return redirect("user:login")  # Redireciona para a página inicial após o logout
 
 def register_view(request):
     if request.method == 'POST':
