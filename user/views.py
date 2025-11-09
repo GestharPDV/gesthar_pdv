@@ -1,5 +1,6 @@
 from django.shortcuts import render,redirect
 from django.contrib.auth import authenticate, login,logout
+from .forms import UserGestharCreationForm
 
 from .form import EmailAuthenticationForm
 
@@ -22,4 +23,16 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect("global:home")  # Redireciona para a página inicial após o logout
+
+def register_view(request):
+    if request.method == 'POST':
+        form = UserGestharCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('global:home')
+    else:
+        form = UserGestharCreationForm()
+
+    return render(request, 'user/register.html', {'form': form})
 
