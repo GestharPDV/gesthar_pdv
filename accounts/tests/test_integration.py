@@ -21,7 +21,7 @@ class IntegrationTests(TestCase):
     def test_fluxo_completo_login_logout(self):
         """Teste o fluxo completo: login -> verificar autenticação -> logout"""
         # Login
-        login_response = self.client.post(reverse('user:login'), {
+        login_response = self.client.post(reverse('accounts:login'), {
             'username': 'integracao@exemplo.com',
             'password': 'senha123'
         }, follow=True)
@@ -30,7 +30,7 @@ class IntegrationTests(TestCase):
         self.assertEqual(login_response.wsgi_request.user.email, 'integracao@exemplo.com')
         
         # Logout
-        logout_response = self.client.get(reverse('user:logout'), follow=True)
+        logout_response = self.client.get(reverse('accounts:logout'), follow=True)
         self.assertFalse(logout_response.wsgi_request.user.is_authenticated)
     
     def test_superusuario_tem_permissoes(self):

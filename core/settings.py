@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "global",
     "product",
     "customer",
+    "accounts",
     "user",
     "widget_tweaks",
     "stock",
@@ -132,5 +133,5 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Definir o modelo de usuário personalizado como o modelo de usuário padrão
 AUTH_USER_MODEL = "user.UserGesthar"
 
-LOGIN_URL = "user:login"
-LOGOUT_REDIRECT_URL = "user:login"
+LOGIN_URL = "accounts:login"
+LOGOUT_REDIRECT_URL = "accounts:login"

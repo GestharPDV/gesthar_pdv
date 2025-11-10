@@ -11,8 +11,8 @@ class LogoutViewTests(TestCase):
     def setUp(self):
         """Configuração inicial para os testes de logout"""
         self.client = Client()
-        self.logout_url = reverse('user:logout')
-        self.login_url = reverse('user:login')
+        self.logout_url = reverse('accounts:logout')
+        self.login_url = reverse('accounts:login')
         self.user = User.objects.create_user(
             email='teste@exemplo.com',
             password='senha123'
