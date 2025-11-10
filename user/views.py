@@ -54,7 +54,7 @@ class UserDetailView(LoginRequiredMixin, DetailView):
         #Retorna o usuario logado
         return get_object_or_404(UserGesthar, pk=self.request.user.pk)
 
-class UserListView(LoginRequiredMixin, ListView):
+class UserListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = UserGesthar
     template_name = 'user/user_list.html'
     context_object_name = 'users'
@@ -71,11 +71,11 @@ def profile_edit_view(request):
         form = UserGestharChangeForm(request.POST, instance=user)
         if form.is_valid():
             form.save()
-            return redirect('user-profile') #redireciona para a pagina de perfil
+            return redirect('user:user-profile') #redireciona para a pagina de perfil
     else:
         form = UserGestharChangeForm(instance=user)
 
-    return render(request, 'users/user_form.html', {'form': form})
+    return render(request, 'user/user_form.html', {'form': form})
 
 @login_required
 def password_change_view(request):
@@ -84,12 +84,12 @@ def password_change_view(request):
         if form.is_valid():
             user = form.save()
             update_session_auth_hash(request, user) # mantém o usuario logado
-            return redirect('user-profile')
+            return redirect('user:user-profile')
 
     else:
         form = PasswordChangeForm(request.user)
 
-    return render(request, 'users/password_change.html', {'form': form})
+    return render(request, 'user/password_change.html', {'form': form})
 
 
 # apenas superusuarios podem excluir
@@ -102,13 +102,13 @@ def user_delete_view(request, pk):
     user_to_delete = get_object_or_404(UserGesthar, pk=pk)
 
     if user_to_delete == request.user:
-        return render(request, 'users/user_confirm_delete.html', {
+        return render(request, 'user/user_confirm_delete.html', {
             'user_to_delete': user_to_delete,
             'error_message': 'Você não pode excluir a si mesmo.'
         })
 
     if request.method == 'POST':
         user_to_delete.delete()
-        return redirect('user-list') # depois de excluir volta para lista de usuarios
+        return redirect('user:user-list') # depois de excluir volta para lista de usuarios
     
-    return render(request, 'users/user_confirm_delete.html', {'user_to_delete': user_to_delete})
+    return render(request, 'user/user_confirm_delete.html', {'user_to_delete': user_to_delete})

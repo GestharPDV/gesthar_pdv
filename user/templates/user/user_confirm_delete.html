@@ -11,6 +11,6 @@
   <form method="post">
     {% csrf_token %}
     <button type="submit">Confirmar Exclusão</button>
-    <a href="{% url 'user-list' %}">Cancelar</a>
+    <a href="{% url 'user:user-list' %}">Cancelar</a>
   </form>
 {% endblock %}
