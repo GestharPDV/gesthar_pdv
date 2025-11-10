@@ -1,6 +1,6 @@
 from django.shortcuts import render,redirect
 from django.contrib.auth import authenticate, login,logout
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
@@ -91,3 +91,24 @@ def password_change_view(request):
 
     return render(request, 'users/password_change.html', {'form': form})
 
+
+# apenas superusuarios podem excluir
+def superuser_required(user):
+    return user.is_superuser
+
+@login_required
+@user_passes_test(superuser_required)
+def user_delete_view(request, pk):
+    user_to_delete = get_object_or_404(UserGesthar, pk=pk)
+
+    if user_to_delete == request.user:
+        return render(request, 'users/user_confirm_delete.html', {
+            'user_to_delete': user_to_delete,
+            'error_message': 'Você não pode excluir a si mesmo.'
+        })
+
+    if request.method == 'POST':
+        user_to_delete.delete()
+        return redirect('user-list') # depois de excluir volta para lista de usuarios
+    
+    return render(request, 'users/user_confirm_delete.html', {'user_to_delete': user_to_delete})
