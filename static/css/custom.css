@@ -1,0 +1,147 @@
+:root {
+  /* ------------------------------------ */ 
+  /* Cores */ 
+  /* ------------------------------------ */ 
+  
+  /* Cores de botão */
+  --cor-botao-principal-rosa: #ff7690;
+  --cor-botao-secundario-rosa: #f7e8eb;
+  --cor-botao-verde: #d4ffc6;
+  --cor-botao-amarelo: #f1f0be;
+  --cor-botao-vermelho: #ea8484; 
+  
+  /* Cores da fonte */
+  --cor-fonte-preta: #555555;
+  --cor-fonte-cinza: #a59e9f;
+  --cor-fonte-rosa: #ff7690;
+  --cor-fonte-branca: #ffffff; 
+  
+  /* Cores de fundo */
+  --cor-fundo-site: #f9fafb;
+  --cor-fundo-cabecalho: #f7e8eb;
+  --cor-fundo-linha: #ededed; 
+  
+  /* Cores da sidebar */
+  --cor-fundo-categoria: #f7e8eb;
+  --cor-fundo-categoria-ativa: #ff7690; 
+  
+  
+  /* ------------------------------------ */ 
+  /* Tamanhos */ 
+  /* ------------------------------------ */ 
+  
+  /* Tamanhos da fonte do Login*/
+  --fonte-titulo-login: 1.5rem;
+  --fonte-login: 1.2rem; 
+  
+  /* Tamanhos da fonte da Home */
+  --fonte-titulo-home: 1.5rem; 
+  
+  /* Tamanhos da fonte da Main */
+  --fonte-titulo-main: 1.5rem;
+  --fonte-subtitulo-main: 1.2rem;
+  --fonte-texto-main: 1rem; 
+  
+  /* Tamanhos da fonte do Sidebar */
+  --tamanho-fonte-sidebar: 1.1rem; 
+  --fonte-sidebar: var(--tamanho-fonte-sidebar);
+  
+  /* Raio padrão dos botões rosa */
+  --radius-botao-rosa: 0.375rem;
+  
+  /* ------------------------------------ */ 
+  /* Texto (demais formatações) */ 
+  /* ------------------------------------ */ 
+  
+  
+  /* ------------------------------------ */ 
+  /* Botões */ 
+  /* ------------------------------------ */
+
+
+
+} 
+/* Tipografia/global */
+body {
+  font-family: "Montserrat", sans-serif;
+  background-color: var(--cor-fundo-site);
+  color: var(--cor-fonte-preta);
+}
+
+.titulo {
+  font-size: var(--fonte-titulo-home);
+  font-weight: bold;
+  color: var(--cor-fonte-rosa) !important;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.botao-rosa{
+  background-color: var(--cor-botao-principal-rosa);
+  color: var(--cor-fonte-branca);
+}
+.botao-rosa:hover {
+  background-color: #ff5c76;
+
+}
+/* ------------------------------------ */ 
+/* Configurações Variáveis */ 
+/* ------------------------------------ */ 
+
+/* ------------------------------------ */ 
+/* Sidebar */ 
+/* ------------------------------------ */ 
+
+.link-sidebar:hover {
+  background-color: var(--cor-botao-secundario-rosa);
+  text-decoration: none;
+}
+.link-sidebar {
+  color: var(--cor-fonte-preta);
+  font-size: var(--tamanho-fonte-sidebar);
+  text-decoration: none;
+}
+.botao-rosa{
+  background-color: var(--cor-botao-principal-rosa);
+  color: var(--cor-fonte-branca);
+  border: none;
+  border-radius: var(--radius-botao-rosa);
+  text-decoration: none;
+}
+.chev {
+  width: 20px;
+  height: 20px;
+  transition: transform 0.2s;
+}
+a[aria-expanded="true"] .chev {
+  transform: rotate(90deg);
+}
+a[aria-expanded="false"] .chev {
+  transform: rotate(0deg);
+
+
+
+} /* links principais do menu */
+.offcanvas .nav-link {
+  color: var(--cor-fonte-rosa);
+  font-size: 14px;
+  letter-spacing: 0.7px;
+  text-decoration: none;
+} /* sub-itens */
+.offcanvas .collapse a {
+  color: var(--cor-texto-menu);
+  font-size: 13px;
+  text-decoration: none;
+}
+.offcanvas .collapse a:hover {
+  text-decoration: underline;
+} /* espaçamento entre grupos */
+.nav-item {
+  padding-bottom: 6px;
+  border-bottom: 1px solid #eee;
+}
+
+/* ------------------------------------ */
+/* Formularios */ 
+/* ------------------------------------ */
+

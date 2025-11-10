@@ -1,8 +1,8 @@
-{% extends 'global/sidebar.html' %}
+{% extends 'global/base.html' %}
 {% load static %}
 
 {% block content %}
-  <h1 class="text-2xl font-bold text-[#FF7690] mb-6">{{ page_title|upper }}</h1>
+  <h1 class="fs-2 fw-bold titulo">{{ page_title|upper }}</h1>
 
   {% comment %}Bloco para exibir erros gerais do formulário (ex: validações do clean){% endcomment %}
   {% if product_form.non_field_errors or supplier_formset.non_field_errors or variation_formset.non_field_errors %}

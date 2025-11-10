@@ -1,151 +1,112 @@
 {% load static %}
-<!DOCTYPE html>
-<html lang="pt-br">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/heroicons@2.0.16/24/outline/index.js"></script>
-
-    <title>Gesthar</title>
-    <link rel="icon" href="{% static 'images/Vector.svg' %}" type="image/x-icon">
-
-    <style>
-        body {
-            font-family: 'Montserrat', sans-serif;
-        }
-    </style>
-
-</head>
-
-<body class="bg-[#F9FAFB] text-gray-600">
-
-
-    <div class="flex min-h-screen">
-        <aside class="w-64 bg-[#F9FAFB] shadow-md flex flex-col">
-            <div class="p-4 text-center ">
-                <img src="{% static 'images/logo_lg.png' %}" alt="Logo" class="mx-auto h-14 mb-2">
-            </div>
-
-
-            <nav class="flex-1 p-4 space-y-2">
-                <div>
-                    <button data-toggle="submenu" data-target="ponto-venda" aria-expanded="false"
-                        class="w-full flex items-center justify-between p-2 rounded-lg font-semibold hover:bg-pink-100">
-                        <span class="ml-2 text-left">PONTO DE VENDA</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="chev h-5 w-5 text-gray-500 transition-transform"
-                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                        </svg>
-                    </button>
-
-                    <div id="ponto-venda" class="hidden ml-4 mt-2 space-y-1 text-sm">
-                        <a href="#" class="block p-2 rounded hover:bg-pink-50">REALIZAR VENDA</a>
-                        <a href="#" class="block p-2 rounded hover:bg-pink-50">CONSULTAR VENDAS</a>
-                    </div>
-                </div>
-
-                <div>
-                    <button data-toggle="submenu" data-target="produtos-menu" aria-expanded="false"
-                        class="w-full flex items-center justify-between p-2 rounded-lg font-semibold hover:bg-pink-100">
-                        <span class="ml-2 text-left">PRODUTOS</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="chev h-5 w-5 text-gray-500 transition-transform"
-                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                        </svg>
-                    </button>
-
-                    <div id="produtos-menu" class="hidden ml-4 mt-2 space-y-1 text-sm">
-                        <a href="{% url 'product:product-create' %}" class="block p-2 rounded hover:bg-pink-50">CADASTRAR PRODUTO</a>
-                        <a href="{% url 'product:product-list' %}" class="block p-2 rounded hover:bg-pink-50">CONSULTAR PRODUTOS</a>
-                    </div>
-                </div>
-
-                <div>
-                    <button data-toggle="submenu" data-target="clientes-menu" aria-expanded="false"
-                        class="w-full flex items-center justify-between p-2 rounded-lg font-semibold hover:bg-pink-100">
-                        <span class="ml-2 text-left">CLIENTES</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="chev h-5 w-5 text-gray-500 transition-transform"
-                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                        </svg>
-                    </button>
-
-                    <div id="clientes-menu" class="hidden ml-4 mt-2 space-y-1 text-sm">
-                        <a href="#" class="block p-2 rounded hover:bg-pink-50">CADASTRAR CLIENTE</a>
-                        <a href="#" class="block p-2 rounded hover:bg-pink-50">CONSULTAR CLIENTES</a>
-                    </div>
-                </div>
-
-                <div>
-                    <button data-toggle="submenu" data-target="relatorios" aria-expanded="false"
-                        class="w-full flex items-center justify-between p-2 rounded-lg font-semibold hover:bg-pink-100">
-                        <span class="ml-2 text-left">RELATÓRIOS</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="chev h-5 w-5 text-gray-500 transition-transform"
-                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                        </svg>
-                    </button>
-
-                    <div id="relatorios" class="hidden ml-4 mt-2 space-y-1 text-sm">
-                        <a href="#" class="block p-2 rounded hover:bg-pink-50">RELATÓRIO DE ESTOQUE</a>
-                        <a href="#" class="block p-2 rounded hover:bg-pink-50">RELATÓRIO FINANCEIRO</a>
-                        <a href="#" class="block p-2 rounded hover:bg-pink-50">RELATÓRIO DE VENDAS</a>
-                        <a href="#" class="block p-2 rounded hover:bg-pink-50">RELATÓRIO DE DIVERGÊNCIAS</a>
-                    </div>
-                </div>
-
-                <div>
-                    <button data-toggle="submenu" data-target="usuarios" aria-expanded="false"
-                        class="w-full flex items-center justify-between p-2 rounded-lg font-semibold hover:bg-pink-100">
-                        <span class="ml-2 text-left">USUÁRIOS</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="chev h-5 w-5 text-gray-500 transition-transform"
-                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                        </svg>
-                    </button>
-
-                    <div id="usuarios" class="hidden ml-4 mt-2 space-y-1 text-sm">
-                        <a href="#" class="block p-2 rounded hover:bg-pink-50">CADASTRAR USUÁRIO</a>
-                        <a href="#" class="block p-2 rounded hover:bg-pink-50">VISUALIZAR USUÁRIO</a>
-                    </div>
-                </div>
-            </nav>
-
-            <div class="p-6 mt-auto">
-                <img src="{% static 'images/logo_gesthar.svg' %}" alt="Logo Gesthar" class="mx-auto h-40">
-                <form action="{% url 'user:logout' %}" method="post">
-                    {% csrf_token %}
-                    <button type="submit" class="w-full flex items-center justify-center p-2 rounded-lg text-white bg-[#FF7690] hover:bg-pink-600 transition-colors font-semibold">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
-                        </svg>
-                        <span>Sair</span>
-                    </button>
-                </form>
-            </div>
-
-        </aside>
-
-        <main class="flex-1 p-8 bg-no-repeat bg-right-bottom bg-[length:50%] bg-[url('{% static 'images/Vector.svg' %}')]">
-            {% block content %}{% endblock %}
-        </main>
+<aside class="w-25 shadow d-flex flex-column sidebar-global">
+    <div class="p-4">
+        <img src="{% static 'images/logo_lg.png' %}" alt="Logo" class="mx-auto mb-2" />
     </div>
-    <script>
-        document.querySelectorAll('[data-toggle="submenu"]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const id = btn.getAttribute('data-target');
-                const menu = document.getElementById(id);
-                const expanded = btn.getAttribute('aria-expanded') === 'true';
-                btn.setAttribute('aria-expanded', String(!expanded));
-                menu.classList.toggle('hidden');
-                const icon = btn.querySelector('.chev');
-                if (icon) icon.classList.toggle('rotate-90');
-            });
-        });
-    </script>
-</body>
+    <nav class="flex-grow-1 p-4 d-flex flex-column gap-2">
+        <div class="mb-2">
+            <a class="w-100 d-flex align-items-center justify-content-between p-2 fw-semibold link-sidebar collapsed"
+                data-bs-toggle="collapse" href="#ponto-venda" role="button" aria-expanded="false"
+                aria-controls="ponto-venda">
+                <span class="ms-2 text-start">PONTO DE VENDA</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="chev text-secondary" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </a>
+            <div class="collapse ms-4 mt-2" id="ponto-venda">
+                <a href="#" class="d-block p-2 link-sidebar">REALIZAR VENDA</a>
+                <a href="#" class="d-block p-2 link-sidebar">CONSULTAR VENDAS</a>
+            </div>
+        </div>
+        <div class="mb-2">
+            <a class="w-100 d-flex align-items-center justify-content-between p-2 fw-semibold link-sidebar collapsed"
+                data-bs-toggle="collapse" href="#produtos-menu" role="button" aria-expanded="false"
+                aria-controls="produtos-menu">
+                <span class="ms-2 text-start">PRODUTOS</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="chev text-secondary" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </a>
 
-</html>
+            <div class="collapse ms-4 mt-2" id="produtos-menu">
+                <a href="{% url 'product:product-create' %}" class="d-block p-2 link-sidebar">CADASTRAR
+                    PRODUTO</a>
+                <a href="{% url 'product:product-list' %}" class="d-block p-2 link-sidebar">CONSULTAR
+                    PRODUTOS</a>
+            </div>
+        </div>
+
+        <div class="mb-2">
+            <a class="w-100 d-flex align-items-center justify-content-between p-2 fw-semibold link-sidebar collapsed"
+                data-bs-toggle="collapse" href="#clientes-menu" role="button" aria-expanded="false"
+                aria-controls="clientes-menu">
+                <span class="ms-2 text-start">CLIENTES</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="chev text-secondary" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </a>
+
+            <div class="collapse ms-4 mt-2" id="clientes-menu">
+                <a href="#" class="d-block p-2 link-sidebar">CADASTRAR CLIENTE</a>
+                <a href="#" class="d-block p-2 link-sidebar">CONSULTAR CLIENTES</a>
+            </div>
+        </div>
+
+        <div class="mb-2">
+            <a class="w-100 d-flex align-items-center justify-content-between p-2 fw-semibold link-sidebar collapsed"
+                data-bs-toggle="collapse" href="#relatorios" role="button" aria-expanded="false"
+                aria-controls="relatorios">
+                <span class="ms-2 text-start">RELATÓRIOS</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="chev text-secondary" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </a>
+
+            <div class="collapse ms-4 mt-2" id="relatorios">
+                <a href="#" class="d-block p-2 link-sidebar">RELATÓRIO DE ESTOQUE</a>
+                <a href="#" class="d-block p-2 link-sidebar">RELATÓRIO FINANCEIRO</a>
+                <a href="#" class="d-block p-2 link-sidebar">RELATÓRIO DE VENDAS</a>
+                <a href="#" class="d-block p-2 link-sidebar">RELATÓRIO DE DIVERGÊNCIAS</a>
+            </div>
+        </div>
+
+        <div class="mb-2">
+            <a class="w-100 d-flex align-items-center justify-content-between p-2 fw-semibold link-sidebar collapsed"
+                data-bs-toggle="collapse" href="#usuarios" role="button" aria-expanded="false" aria-controls="usuarios">
+                <span class="ms-2 text-start">USUÁRIOS</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="chev text-secondary" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </a>
+
+            <div class="collapse ms-4 mt-2" id="usuarios">
+                <a href="#" class="d-block p-2 link-sidebar">CADASTRAR USUÁRIO</a>
+                <a href="#" class="d-block p-2 link-sidebar">VISUALIZAR USUÁRIO</a>
+            </div>
+        </div>
+    </nav>
+    <div class="p-4 mt-auto">
+        <img src="{% static 'images/logo_gesthar.svg' %}" alt="Logo Gesthar" class="d-block mx-auto mb-3"
+            style="height: 160px;" />
+
+        <form action="{% url 'user:logout' %}" method="post">
+            {% csrf_token %}
+            <button type="submit"
+                class="w-100 mx-auto d-flex align-items-center justify-content-center p-2 fw-semibold botao-rosa">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="me-2" style="width: 20px; height: 20px;">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+                </svg>
+                <span>Sair</span>
+            </button>
+        </form>
+    </div>
+
+</aside>

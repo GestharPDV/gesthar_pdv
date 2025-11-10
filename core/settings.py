@@ -134,3 +134,4 @@ AUTH_USER_MODEL = "user.UserGesthar"
 
 LOGIN_URL = "user:login"
 LOGOUT_REDIRECT_URL = "user:login"
+LOGIN_REDIRECT_URL = "/"
