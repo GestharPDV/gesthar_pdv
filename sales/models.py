@@ -12,13 +12,13 @@ from django.core.exceptions import ValidationError
 
 # --- Dependências de outros Apps ---
 # Model de Produto (para saber O QUE foi vendido)
-from product.models import ProductVariation 
+from product.models import ProductVariation
 
 # Model de Usuário (para saber QUEM vendeu e QUEM operou o caixa)
-from user.models import UserGesthar 
+from user.models import UserGesthar
 
 # Model de Cliente (para saber PARA QUEM foi vendido)
-from customer.models import Customer 
+from customer.models import Customer
 
 
 # -----------------------------------------------------------------------------
@@ -29,6 +29,7 @@ class CashRegister(models.Model):
     Gerencia a abertura, fechamento e movimentações de um caixa.
     Representa uma "sessão" de trabalho de um usuário.
     """
+
     class CashRegisterStatus(models.TextChoices):
         OPEN = "OPEN", "Aberto"
         CLOSED = "CLOSED", "Fechado"
@@ -37,15 +38,15 @@ class CashRegister(models.Model):
         UserGesthar,
         on_delete=models.PROTECT,
         related_name="cash_registers",
-        verbose_name="Usuário"
+        verbose_name="Usuário",
     )
     status = models.CharField(
-        max_length=10, 
-        choices=CashRegisterStatus.choices, 
+        max_length=10,
+        choices=CashRegisterStatus.choices,
         default=CashRegisterStatus.OPEN,
-        verbose_name="Status"
+        verbose_name="Status",
     )
-    
+
     # Datas
     opening_time = models.DateTimeField(
         default=timezone.now, verbose_name="Data de Abertura"
@@ -59,7 +60,7 @@ class CashRegister(models.Model):
         max_digits=10,
         decimal_places=2,
         verbose_name="Valor Inicial (Troco)",
-        validators=[MinValueValidator(Decimal("0.00"))]
+        validators=[MinValueValidator(Decimal("0.00"))],
     )
 
     # Valores de Fechamento (O que o usuário INFORMA ter contado)
@@ -68,33 +69,33 @@ class CashRegister(models.Model):
         decimal_places=2,
         blank=True,
         null=True,
-        verbose_name="Valor Final (Informado)"
+        verbose_name="Valor Final (Informado)",
     )
-    
+
     # Valores Calculados (O que o SISTEMA calcula)
     total_sales = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         default=Decimal("0.00"),
-        verbose_name="Total em Vendas (Calculado)"
+        verbose_name="Total em Vendas (Calculado)",
     )
     total_withdrawals = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         default=Decimal("0.00"),
-        verbose_name="Total de Sangrias"
+        verbose_name="Total de Sangrias",
     )
     total_deposits = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         default=Decimal("0.00"),
-        verbose_name="Total de Suprimentos"
+        verbose_name="Total de Suprimentos",
     )
     difference = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         default=Decimal("0.00"),
-        verbose_name="Diferença (Quebra de Caixa)"
+        verbose_name="Diferença (Quebra de Caixa)",
     )
 
     class Meta:
@@ -107,7 +108,7 @@ class CashRegister(models.Model):
                 fields=["user"],
                 # CORREÇÃO APLICADA AQUI:
                 condition=Q(status="OPEN"),
-                name="unique_open_cash_register_per_user"
+                name="unique_open_cash_register_per_user",
             )
         ]
 
@@ -121,11 +122,13 @@ class CashRegister(models.Model):
         # Note que aqui "self.CashRegisterStatus.CLOSED" funciona, pois
         # dentro de um método, 'self' nos dá o escopo correto.
         if self.status == self.CashRegisterStatus.CLOSED and self.final_value is None:
-             raise ValidationError("O 'Valor Final Informado' é obrigatório para fechar o caixa.")
-        
+            raise ValidationError(
+                "O 'Valor Final Informado' é obrigatório para fechar o caixa."
+            )
+
         # Garante que o horário de fechamento seja registrado
         if self.status == self.CashRegisterStatus.CLOSED and not self.closing_time:
-             self.closing_time = timezone.now()
+            self.closing_time = timezone.now()
 
 
 # -----------------------------------------------------------------------------
@@ -136,6 +139,7 @@ class Sale(models.Model):
     Registra o "cabeçalho" da Venda.
     Associa Cliente, Vendedor, Caixa e os valores totais.
     """
+
     class PaymentMethod(models.TextChoices):
         CASH = "CASH", "Dinheiro"
         CREDIT_CARD = "CREDIT_CARD", "Cartão de Crédito"
@@ -145,28 +149,28 @@ class Sale(models.Model):
         OTHER = "OTHER", "Outro"
 
     class SaleStatus(models.TextChoices):
-        PENDING = "PENDING", "Pendente" # Pode ser um orçamento
-        COMPLETED = "COMPLETED", "Concluída" # Paga e finalizada
-        CANCELLED = "CANCELLED", "Cancelada" # Venda desfeita
+        PENDING = "PENDING", "Pendente"  # Pode ser um orçamento
+        COMPLETED = "COMPLETED", "Concluída"  # Paga e finalizada
+        CANCELLED = "CANCELLED", "Cancelada"  # Venda desfeita
 
     # --- Relacionamentos Fundamentais ---
     customer = models.ForeignKey(
         Customer,
-        on_delete=models.PROTECT, # Protege o histórico de vendas do cliente
+        on_delete=models.PROTECT,  # Protege o histórico de vendas do cliente
         related_name="sales",
-        verbose_name="Cliente"
+        verbose_name="Cliente",
     )
     user = models.ForeignKey(
         UserGesthar,
-        on_delete=models.PROTECT, # Protege o histórico do vendedor
+        on_delete=models.PROTECT,  # Protege o histórico do vendedor
         related_name="sales",
-        verbose_name="Vendedor"
+        verbose_name="Vendedor",
     )
     cash_register = models.ForeignKey(
         CashRegister,
-        on_delete=models.PROTECT, # Protege o histórico do caixa
+        on_delete=models.PROTECT,  # Protege o histórico do caixa
         related_name="sales",
-        verbose_name="Caixa"
+        verbose_name="Caixa",
     )
 
     # --- Data e Status ---
@@ -175,19 +179,22 @@ class Sale(models.Model):
         max_length=20,
         choices=SaleStatus.choices,
         default=SaleStatus.PENDING,
-        verbose_name="Status"
+        verbose_name="Status",
     )
 
     # --- Valores Totais ---
     subtotal = models.DecimalField(
-        max_digits=10, decimal_places=2, default=Decimal("0.00"), verbose_name="Subtotal"
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        verbose_name="Subtotal",
     )
     discount = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         default=Decimal("0.00"),
         verbose_name="Desconto (R$)",
-        validators=[MinValueValidator(Decimal("0.00"))]
+        validators=[MinValueValidator(Decimal("0.00"))],
     )
     total = models.DecimalField(
         max_digits=10, decimal_places=2, default=Decimal("0.00"), verbose_name="Total"
@@ -195,14 +202,10 @@ class Sale(models.Model):
 
     # --- Pagamento ---
     payment_method = models.CharField(
-        max_length=20,
-        choices=PaymentMethod.choices,
-        verbose_name="Forma de Pagamento"
+        max_length=20, choices=PaymentMethod.choices, verbose_name="Forma de Pagamento"
     )
     installments = models.PositiveIntegerField(
-        default=1,
-        verbose_name="Parcelas",
-        validators=[MinValueValidator(1)]
+        default=1, verbose_name="Parcelas", validators=[MinValueValidator(1)]
     )
 
     class Meta:
@@ -221,17 +224,17 @@ class Sale(models.Model):
         # Coalesce(Sum('...'), 0) é uma forma segura de somar, garantindo que
         # se não houver itens (None), o resultado seja 0 em vez de erro.
         sale_subtotal = self.items.aggregate(
-            total_sub=Coalesce(Sum('subtotal'), Decimal('0.00'))
-        )['total_sub']
+            total_sub=Coalesce(Sum("subtotal"), Decimal("0.00"))
+        )["total_sub"]
 
         self.subtotal = sale_subtotal
-        
+
         # Garante que o desconto não seja maior que o subtotal
         if self.discount > self.subtotal:
             self.discount = self.subtotal
-            
+
         self.total = self.subtotal - self.discount
-        
+
         # O total nunca pode ser negativo
         if self.total < 0:
             self.total = Decimal("0.00")
@@ -239,7 +242,7 @@ class Sale(models.Model):
     def save(self, *args, **kwargs):
         # Atualiza os totais sempre que a Venda for salva
         # (especialmente quando um SaleItem é salvo e chama este método)
-        self.update_totals() 
+        self.update_totals()
         super().save(*args, **kwargs)
 
 
@@ -251,23 +254,23 @@ class SaleItem(models.Model):
     Registra cada item (produto) dentro de uma Venda.
     Esta é a "linha" da nota fiscal.
     """
+
     sale = models.ForeignKey(
         Sale,
-        on_delete=models.CASCADE, # Se a Venda for apagada, os itens vão junto
-        related_name="items", # Permite fazer sale.items.all()
-        verbose_name="Venda"
+        on_delete=models.CASCADE,  # Se a Venda for apagada, os itens vão junto
+        related_name="items",  # Permite fazer sale.items.all()
+        verbose_name="Venda",
     )
-    
+
     product_variation = models.ForeignKey(
         ProductVariation,
-        on_delete=models.PROTECT, # Protege o histórico de vendas do produto
+        on_delete=models.PROTECT,  # Protege o histórico de vendas do produto
         related_name="sale_items",
-        verbose_name="Variação do Produto"
+        verbose_name="Variação do Produto",
     )
 
     quantity = models.PositiveIntegerField(
-        verbose_name="Quantidade",
-        validators=[MinValueValidator(1)]
+        verbose_name="Quantidade", validators=[MinValueValidator(1)]
     )
 
     # --- Preços no Momento da Venda (Histórico) ---
@@ -281,7 +284,7 @@ class SaleItem(models.Model):
         decimal_places=2,
         default=Decimal("0.00"),
         verbose_name="Desconto (R$)",
-        validators=[MinValueValidator(Decimal("0.00"))]
+        validators=[MinValueValidator(Decimal("0.00"))],
     )
     subtotal = models.DecimalField(
         max_digits=10, decimal_places=2, verbose_name="Subtotal do Item"
@@ -295,7 +298,7 @@ class SaleItem(models.Model):
             # DUAS VEZES na MESMA venda.
             models.UniqueConstraint(
                 fields=["sale", "product_variation"],
-                name="unique_sale_product_variation"
+                name="unique_sale_product_variation",
             )
         ]
 
@@ -317,9 +320,9 @@ class SaleItem(models.Model):
         self.subtotal = (self.unit_price * self.quantity) - self.discount
         if self.subtotal < 0:
             self.subtotal = Decimal("0.00")
-            
-        super().save(*args, **kwargs) # Salva o item
-        
+
+        super().save(*args, **kwargs)  # Salva o item
+
         # 2. "AVISA" a Venda-pai que ela precisa se recalcular
         # Isso aciona o Sale.save() que chama o Sale.update_totals()
         self.sale.save()

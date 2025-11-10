@@ -11,6 +11,7 @@ class CashRegisterOpenForm(forms.Form):
     """
     Formulário para capturar o valor inicial de abertura do caixa.
     """
+
     initial_value = forms.DecimalField(
         label="Valor de Abertura (Troco)",
         max_digits=10,
@@ -19,12 +20,9 @@ class CashRegisterOpenForm(forms.Form):
         # Valor inicial padrão de 0.00
         initial=Decimal("0.00"),
         widget=forms.NumberInput(
-            attrs={
-                'step': '0.01', # Permite centavos
-                'placeholder': 'R$ 0,00'
-            }
+            attrs={"step": "0.01", "placeholder": "R$ 0,00"}  # Permite centavos
         ),
-        help_text="Informe o valor de troco inicial na gaveta."
+        help_text="Informe o valor de troco inicial na gaveta.",
     )
 
     def __init__(self, *args, **kwargs):
@@ -32,6 +30,6 @@ class CashRegisterOpenForm(forms.Form):
         Adiciona as classes Tailwind ao widget do campo.
         """
         super().__init__(*args, **kwargs)
-        
+
         # Aplica a classe de estilização
-        self.fields['initial_value'].widget.attrs['class'] = TAILWIND_CLASSES
+        self.fields["initial_value"].widget.attrs["class"] = TAILWIND_CLASSES
