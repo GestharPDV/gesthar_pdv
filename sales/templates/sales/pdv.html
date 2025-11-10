@@ -1,0 +1,386 @@
+{% extends 'global/sidebar.html' %}
+{% load static %}
+{% load i18n %} {% block content %}
+<div class="flex flex-row gap-6">
+
+  <div class="flex-grow w-2/3 flex flex-col">
+
+    <form method="GET" action="" class="mb-4" id="product-search-form">
+      <div class="relative w-full">
+        <input type="text" name="query" placeholder="Pesquisar por Nome ou SKU..."
+          class="w-full border border-gray-300 rounded-lg py-3 pl-4 pr-10 bg-white focus:outline-none focus:ring-2 focus:ring-rose-400 text-lg" />
+        <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+          <button type="submit" class="text-gray-400 hover:text-gray-600">
+            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <div class="flex-grow bg-white rounded-2xl shadow-md border border-gray-300 p-4 overflow-y-auto h-[60vh]">
+      <div id="product-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        
+        {% for product in products %}
+        <div class="product-card border border-gray-200 rounded-lg p-3 cursor-pointer hover:shadow-lg hover:border-rose-300 transition-all"
+             data-id="{{ product.id }}" 
+             data-name="{{ product.name }}" 
+             data-price="{{ product.selling_price }}"
+             data-stock="{{ product.total_stock }}">
+          
+          <div class="bg-gray-100 rounded-lg h-24 w-full flex items-center justify-center text-gray-400">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25A2.25 2.25 0 0 1 13.5 8.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
+            </svg>
+          </div>
+          
+          <p class="mt-2 font-semibold text-gray-800 text-sm truncate" title="{{ product.name }}">{{ product.name }}</p>
+          <p class="text-sm text-rose-600 font-bold">R$ {{ product.selling_price|floatformat:2 }}</p>
+          <p class="text-xs text-gray-500">Estoque: {{ product.total_stock }}</p>
+        </div>
+        {% empty %}
+        <p class="text-gray-500 col-span-full text-center py-10">Nenhum produto encontrado.</p>
+        {% endfor %}
+
+      </div>
+    </div>
+
+    <div class="mt-4 bg-white rounded-2xl shadow-md border border-gray-300 p-3">
+      <div class="flex gap-3 overflow-x-auto pb-2">
+        
+        <button class="category-filter flex-shrink-0 bg-[#FF7690] text-white px-4 py-2 rounded-lg font-medium text-sm" data-category-id="all">
+          Todos
+        </button>
+
+        {% for category in categories %}
+        <button class="category-filter flex-shrink-0 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium text-sm" data-category-id="{{ category.id }}">
+          {{ category.name }}
+        </button>
+        {% endfor %}
+
+      </div>
+    </div>
+  </div>
+
+  <div class="w-1/3">
+    <div class="sticky top-6">
+
+      <div class="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-300">
+        
+        <h2 class="text-lg font-semibold text-gray-800 p-4 bg-gray-50 border-b border-gray-300">Checkout</h2>
+        
+        <div id="cart-items-list" class="p-4 h-[40vh] overflow-y-auto space-y-4">
+          
+          <div id="cart-empty-state" class="flex flex-col items-center justify-center h-full text-center text-gray-400">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-20 h-20 mb-2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+            </svg>
+            <p class="font-medium">Nenhum item adicionado</p>
+          </div>
+          
+          <div id="cart-item-template" class="hidden">
+            <div class="cart-item flex items-center gap-3">
+              <div class="flex-grow">
+                <p class="font-medium text-gray-800 text-sm line-clamp-1 cart-item-name">Nome do Produto</p>
+                <p class="text-xs text-rose-600 font-bold cart-item-price">R$ 0,00</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <button class="cart-item-decrease bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full w-6 h-6 flex items-center justify-center font-bold">-</button>
+                <span class="cart-item-qty font-bold text-sm">1</span>
+                <button class="cart-item-increase bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full w-6 h-6 flex items-center justify-center font-bold">+</button>
+              </div>
+              <button class="cart-item-remove text-red-400 hover:text-red-600">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12.54 0c-.342.052-.682.107-1.022.166m11.522 0h.008v.008h-.008V5.79Z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          
+        </div>
+
+        <div class="p-4 bg-gray-50 border-t border-gray-300 space-y-2">
+          
+          <div class="mb-3">
+             <label class="block text-sm font-medium text-gray-700 mb-1">CLIENTE</label>
+             <div class="flex gap-2">
+                <select id="customer-select" class="w-full border border-gray-300 rounded-lg py-2 px-4 bg-white focus:outline-none focus:ring-2 focus:ring-rose-400">
+                    <option value="">Selecione um cliente...</option>
+                    </select>
+                <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-3 rounded-lg text-sm" title="Adicionar novo cliente">+</button>
+             </div>
+             <p id="customer-error" class="text-red-600 text-xs mt-1 hidden">Cliente é obrigatório.</p>
+          </div>
+
+          <div class="flex justify-between text-gray-600">
+            <span>Subtotal</span>
+            <span id="cart-subtotal">R$ 0,00</span>
+          </div>
+          <div class="flex justify-between text-gray-600">
+            <span>Desconto (R$)</span>
+            <input type="number" id="cart-discount-input" value="0.00" class="w-24 text-right bg-transparent border-b border-gray-400 focus:outline-none focus:border-rose-400" />
+          </div>
+          <div class="flex justify-between text-lg font-bold text-gray-900 mt-2">
+            <span>Total</span>
+            <span id="cart-total">R$ 0,00</span>
+          </div>
+          
+          <button id="pay-button" class="mt-4 w-full bg-[#FF7690] hover:bg-[#e66a82] text-white px-8 py-3 rounded-lg font-bold text-lg transition-colors shadow-lg">
+            PAGAR
+          </button>
+        </div>
+      </div>
+      
+      <div class="mt-4 flex gap-3">
+        <button id="cancel-order-btn" class="flex-1 bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-lg font-medium text-sm">Cancelar Venda</button>
+        <button id="hold-order-btn" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-medium text-sm">Deixar em Espera</button>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  
+  // ----------------------------------------
+  // Estado do Carrinho (em memória)
+  // ----------------------------------------
+  let cart = []; // Array de objetos: { id, name, price, qty, stock }
+
+  // ----------------------------------------
+  // Referências do DOM
+  // ----------------------------------------
+  const productGrid = document.getElementById('product-grid');
+  const cartItemsList = document.getElementById('cart-items-list');
+  const cartEmptyState = document.getElementById('cart-empty-state');
+  const itemTemplate = document.getElementById('cart-item-template');
+  const subtotalEl = document.getElementById('cart-subtotal');
+  const discountInput = document.getElementById('cart-discount-input');
+  const totalEl = document.getElementById('cart-total');
+  const payButton = document.getElementById('pay-button');
+  const customerSelect = document.getElementById('customer-select');
+  const customerError = document.getElementById('customer-error');
+  const cancelOrderBtn = document.getElementById('cancel-order-btn');
+
+  // ----------------------------------------
+  // Event Listeners
+  // ----------------------------------------
+
+  // 1. Clicar em um Produto na Grade
+  productGrid.addEventListener('click', function(e) {
+    const card = e.target.closest('.product-card');
+    if (!card) return; // Não foi um clique em um card
+
+    const product = {
+      id: card.dataset.id,
+      name: card.dataset.name,
+      price: parseFloat(card.dataset.price),
+      stock: parseInt(card.dataset.stock),
+      qty: 1
+    };
+
+    addToCart(product);
+  });
+
+  // 2. Clicar nos botões do Carrinho (+, -, remover)
+  cartItemsList.addEventListener('click', function(e) {
+    const target = e.target;
+    const cartItemDiv = target.closest('.cart-item');
+    if (!cartItemDiv) return;
+
+    const productId = cartItemDiv.dataset.productId;
+
+    if (target.classList.contains('cart-item-increase')) {
+      updateCartItemQty(productId, 1);
+    } else if (target.classList.contains('cart-item-decrease')) {
+      updateCartItemQty(productId, -1);
+    } else if (target.classList.contains('cart-item-remove')) {
+      removeFromCart(productId);
+    }
+  });
+
+  // 3. Mudar o Desconto
+  discountInput.addEventListener('change', renderCartAndTotals);
+
+  // 4. Limpar o Carrinho (Cancelar Venda)
+  cancelOrderBtn.addEventListener('click', () => {
+    if (confirm('Tem certeza que deseja limpar o carrinho?')) {
+      cart = [];
+      renderCartAndTotals();
+    }
+  });
+  
+  // 5. Clicar em Pagar (Validação Front-end)
+  payButton.addEventListener('click', handlePayment);
+
+
+  // ----------------------------------------
+  // Funções de Lógica do Carrinho
+  // ----------------------------------------
+
+  function addToCart(product) {
+    const existingItem = cart.find(item => item.id === product.id);
+
+    if (existingItem) {
+      // Aumenta a quantidade se já existe e não excede o estoque
+      if (existingItem.qty < product.stock) {
+        existingItem.qty++;
+      } else {
+        alert('Estoque máximo atingido para este item.');
+      }
+    } else {
+      // Adiciona novo item se tiver estoque
+      if (product.stock > 0) {
+        cart.push(product);
+      } else {
+        alert('Este produto está sem estoque.');
+      }
+    }
+    renderCartAndTotals();
+  }
+
+  function updateCartItemQty(productId, change) {
+    const item = cart.find(i => i.id === productId);
+    if (!item) return;
+
+    const newQty = item.qty + change;
+
+    if (newQty <= 0) {
+      // Remove se a quantidade for 0 ou menor
+      removeFromCart(productId);
+    } else if (newQty > item.stock) {
+      alert('Estoque máximo atingido para este item.');
+    } else {
+      item.qty = newQty;
+      renderCartAndTotals();
+    }
+  }
+
+  function removeFromCart(productId) {
+    cart = cart.filter(item => item.id !== productId);
+    renderCartAndTotals();
+  }
+
+  // ----------------------------------------
+  // Função Principal de Renderização
+  // ----------------------------------------
+
+  function renderCartAndTotals() {
+    // 1. Limpa a lista de itens (exceto o template)
+    cartItemsList.querySelectorAll('.cart-item').forEach(el => el.remove());
+
+    let subtotal = 0;
+
+    if (cart.length === 0) {
+      // Mostra o estado de carrinho vazio
+      cartEmptyState.classList.remove('hidden');
+    } else {
+      // Oculta o estado de carrinho vazio
+      cartEmptyState.classList.add('hidden');
+
+      cart.forEach(item => {
+        // Clona o template
+        const itemEl = itemTemplate.cloneNode(true);
+        itemEl.classList.remove('hidden');
+        itemEl.classList.add('cart-item');
+        itemEl.dataset.productId = item.id;
+
+        // Preenche os dados do item
+        itemEl.querySelector('.cart-item-name').textContent = item.name;
+        itemEl.querySelector('.cart-item-price').textContent = `R$ ${item.price.toFixed(2)}`;
+        itemEl.querySelector('.cart-item-qty').textContent = item.qty;
+        
+        // Adiciona à lista
+        cartItemsList.appendChild(itemEl);
+
+        // Calcula subtotal
+        subtotal += item.price * item.qty;
+      });
+    }
+
+    // 2. Calcula e Renderiza os Totais
+    const discount = parseFloat(discountInput.value) || 0.00;
+    let total = subtotal - discount;
+    if (total < 0) total = 0;
+
+    subtotalEl.textContent = `R$ ${subtotal.toFixed(2)}`;
+    totalEl.textContent = `R$ ${total.toFixed(2)}`;
+  }
+
+  // ----------------------------------------
+  // Função de Pagamento (Validação e API)
+  // ----------------------------------------
+  
+  function handlePayment() {
+    // 1. Validar Cliente
+    const customerId = customerSelect.value;
+    if (!customerId) {
+      customerError.classList.remove('hidden');
+      customerSelect.focus();
+      return;
+    }
+    customerError.classList.add('hidden');
+
+    // 2. Validar Carrinho Vazio
+    if (cart.length === 0) {
+      alert('Adicione pelo menos um item ao carrinho.');
+      return;
+    }
+
+    // 3. Montar o JSON para enviar ao back-end
+    const orderData = {
+      customer_id: customerId,
+      discount: parseFloat(discountInput.value) || 0.00,
+      items: cart.map(item => ({
+        product_variation_id: item.id,
+        quantity: item.qty,
+        unit_price: item.price
+      }))
+      // TODO: Adicionar 'payment_method'
+    };
+
+    console.log('Enviando para o back-end:', orderData);
+
+    // 4. Chamar a API (AJAX/Fetch)
+    //    Esta é a "Ponte" que falta
+    //    Precisamos de uma nova URL e View (ex: /sales/api/create-sale/)
+    
+    /*
+    fetch("{% url 'sales:api-create-sale' %}", { // URL FUTURA
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token }}'
+      },
+      body: JSON.stringify(orderData)
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === 'success') {
+        alert('Venda criada com sucesso! ID: ' + data.sale_id);
+        // Limpa o carrinho e recarrega
+        cart = [];
+        renderCartAndTotals();
+      } else {
+        alert('Erro ao criar venda: ' + data.message);
+      }
+    })
+    .catch(error => {
+      console.error('Erro no AJAX:', error);
+      alert('Erro de conexão. Tente novamente.');
+    });
+    */
+    
+    alert('Lógica de pagamento (AJAX) ainda não implementada. Veja o console (F12) para os dados do pedido.');
+
+  }
+
+});
+</script>
+{% endblock %}

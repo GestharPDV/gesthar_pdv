@@ -6,9 +6,9 @@ app_name = "sales"
 
 urlpatterns = [
     path(
-        "open-cash-register/",
+        "cash-register-open/",
         views.CashRegisterOpenView.as_view(),
-        name="open_cash_register",
+        name="cash-register-open",
     ),
     path("pdv/", views.PDVView.as_view(), name="pdv"),
 ]
