@@ -48,7 +48,7 @@ def register_view(request):
 class UserDetailView(LoginRequiredMixin, DetailView):
     model = UserGesthar
     template_name = 'user/user_detail.html'
-    context_object_name = 'user'
+    context_object_name = 'user_obj'
 
     def get_object(self):
         #Retorna o usuario logado
