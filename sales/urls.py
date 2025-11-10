@@ -10,4 +10,5 @@ urlpatterns = [
         views.CashRegisterOpenView.as_view(),
         name="open_cash_register",
     ),
+    path("pdv/", views.PDVView.as_view(), name="pdv"),
 ]

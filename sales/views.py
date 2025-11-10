@@ -8,6 +8,10 @@ from django.contrib import messages
 from django.urls import reverse_lazy
 from decimal import Decimal
 
+from product.models import Category
+from product.services import get_filtered_products
+from sales.mixins import CashRegisterRequiredMixin
+
 # Importe os models e serviços que JÁ CRIAMOS
 from .models import CashRegister, Sale
 from .services import complete_sale, SaleCompletionError
@@ -61,3 +65,48 @@ class CashRegisterOpenView(LoginRequiredMixin, View):
                 messages.error(request, f"Erro ao abrir o caixa: {e}")
 
         return render(request, self.template_name, {"form": form})
+
+
+class PDVView(LoginRequiredMixin, CashRegisterRequiredMixin, View):
+    """
+    View principal do Ponto de Venda (PDV).
+    Protegida pelo CashRegisterRequiredMixin.
+    """
+
+    template_name = "sales/pdv.html"  # O template que criaremos a seguir
+
+    def get(self, request, *args, **kwargs):
+        # 1. Busca os produtos para exibir na grade
+        #    Usamos o service que você já tem em product/services.py
+        #    Buscamos todos (query="") na página 1, com um limite alto (ex: 50)
+        product_service_data = get_filtered_products(
+            query="",
+            page_number=1,
+            per_page=50,  # Ajuste este número conforme necessário
+        )
+
+        # 2. Busca as categorias para os botões de filtro
+        categories = Category.objects.filter(is_active=True)
+
+        # 3. Busca o caixa aberto do usuário (o Mixin já garantiu que ele existe)
+        try:
+            current_cash_register = CashRegister.objects.get(
+                user=request.user, status=CashRegister.CashRegisterStatus.OPEN
+            )
+        except CashRegister.DoesNotExist:
+            # Isso "não deveria" acontecer por causa do Mixin,
+            # mas é uma boa prática de defesa.
+            messages.error(
+                request, "Erro crítico: Caixa não encontrado. Abrindo novamente."
+            )
+            return redirect(reverse_lazy("sales:cash-register-open"))
+
+        context = {
+            "products": product_service_data.get("products"),
+            "categories": categories,
+            "cash_register": current_cash_register,
+            # (O 'product_service_data' também contém 'paginator' e 'page_obj'
+            #  se você quiser implementar paginação no PDV no futuro)
+        }
+
+        return render(request, self.template_name, context)
