@@ -1,32 +1,42 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <script src="https://unpkg.com/heroicons@2.0.16/24/outline/index.js"></script>
 
     <title>Gesthar</title>
-    <link rel="icon" href="{% static 'images/Vector.svg' %}" type="image/x-icon">
+    <link rel="icon" href="{% static 'images/Vector.svg' %}" type="image/x-icon" />
 
     <style>
-        body {
-            font-family: 'Montserrat', sans-serif;
-        }
+      body {
+        font-family: 'Montserrat', sans-serif;
+      }
     </style>
+  </head>
 
-</head>
-
-<body class="bg-[#F9FAFB] text-gray-600">
-
-
+  <body class="bg-[#F9FAFB] text-gray-600">
     <div class="flex min-h-screen">
-        <aside class="w-64 bg-[#F9FAFB] shadow-md flex flex-col">
-            <div class="p-4 text-center ">
-                <img src="{% static 'images/logo_lg.png' %}" alt="Logo" class="mx-auto h-14 mb-2">
+      <aside class="w-64 bg-[#F9FAFB] shadow-md flex flex-col">
+        <div class="p-4 text-center">
+          <img src="{% static 'images/logo_lg.png' %}" alt="Logo" class="mx-auto h-14 mb-2" />
+        </div>
+
+        <nav class="flex-1 p-4 space-y-2">
+          <div>
+            <button data-toggle="submenu" data-target="ponto-venda" aria-expanded="false" class="w-full flex items-center justify-between p-2 rounded-lg font-semibold hover:bg-pink-100">
+              <span class="ml-2 text-left">PONTO DE VENDA</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="chev h-5 w-5 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
+            <div id="ponto-venda" class="hidden ml-4 mt-2 space-y-1 text-sm">
+              <a href="#" class="block p-2 rounded hover:bg-pink-50">REALIZAR VENDA</a>
+              <a href="#" class="block p-2 rounded hover:bg-pink-50">CONSULTAR VENDAS</a>
             </div>
 
 
@@ -108,8 +118,8 @@
                     </button>
 
                     <div id="usuarios" class="hidden ml-4 mt-2 space-y-1 text-sm">
-                        <a href="#" class="block p-2 rounded hover:bg-pink-50">CADASTRAR USUÁRIO</a>
-                        <a href="#" class="block p-2 rounded hover:bg-pink-50">VISUALIZAR USUÁRIO</a>
+                        <a href="{% url 'accounts:register' %}" class="block p-2 rounded hover:bg-pink-50">CADASTRAR USUÁRIO</a>
+                        <a href="{% url 'user:user-profile' %}" class="block p-2 rounded hover:bg-pink-50">VISUALIZAR USUÁRIO</a>
                     </div>
                 </div>
             </nav>
@@ -126,26 +136,84 @@
                     </button>
                 </form>
             </div>
+          </div>
 
-        </aside>
+          <div>
+            <button data-toggle="submenu" data-target="clientes-menu" aria-expanded="false" class="w-full flex items-center justify-between p-2 rounded-lg font-semibold hover:bg-pink-100">
+              <span class="ml-2 text-left">CLIENTES</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="chev h-5 w-5 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
 
-        <main class="flex-1 p-8 bg-no-repeat bg-right-bottom bg-[length:50%] bg-[url('{% static 'images/Vector.svg' %}')]">
-            {% block content %}{% endblock %}
-        </main>
+            <div id="clientes-menu" class="hidden ml-4 mt-2 space-y-1 text-sm">
+              <a href="#" class="block p-2 rounded hover:bg-pink-50">CADASTRAR CLIENTE</a>
+              <a href="#" class="block p-2 rounded hover:bg-pink-50">CONSULTAR CLIENTES</a>
+            </div>
+          </div>
+
+          <div>
+            <button data-toggle="submenu" data-target="relatorios" aria-expanded="false" class="w-full flex items-center justify-between p-2 rounded-lg font-semibold hover:bg-pink-100">
+              <span class="ml-2 text-left">RELATÓRIOS</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="chev h-5 w-5 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
+            <div id="relatorios" class="hidden ml-4 mt-2 space-y-1 text-sm">
+              <a href="#" class="block p-2 rounded hover:bg-pink-50">RELATÓRIO DE ESTOQUE</a>
+              <a href="#" class="block p-2 rounded hover:bg-pink-50">RELATÓRIO FINANCEIRO</a>
+              <a href="#" class="block p-2 rounded hover:bg-pink-50">RELATÓRIO DE VENDAS</a>
+              <a href="#" class="block p-2 rounded hover:bg-pink-50">RELATÓRIO DE DIVERGÊNCIAS</a>
+            </div>
+          </div>
+
+          <div>
+            <button data-toggle="submenu" data-target="usuarios" aria-expanded="false" class="w-full flex items-center justify-between p-2 rounded-lg font-semibold hover:bg-pink-100">
+              <span class="ml-2 text-left">USUÁRIOS</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="chev h-5 w-5 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
+            <div id="usuarios" class="hidden ml-4 mt-2 space-y-1 text-sm">
+              <a href="{% url 'accounts:register' %}" class="block p-2 rounded hover:bg-pink-50">CADASTRAR USUÁRIO</a>
+              <a href="{% url 'user:user-profile' %}" class="block p-2 rounded hover:bg-pink-50">VISUALIZAR USUÁRIO</a>
+            </div>
+          </div>
+        </nav>
+
+        <div class="p-6 mt-auto">
+          <img src="{% static 'images/logo_gesthar.svg' %}" alt="Logo Gesthar" class="mx-auto h-40" />
+          <form action="{% url 'accounts:logout' %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="w-full flex items-center justify-center p-2 rounded-lg text-white bg-[#FF7690] hover:bg-pink-600 transition-colors font-semibold">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+              </svg>
+              <span>Sair</span>
+            </button>
+          </form>
+        </div>
+      </aside>
+
+      <main class="flex-1 p-8 bg-no-repeat bg-right-bottom bg-[length:50%] bg-[url('{% static 'images/Vector.svg' %}')]">
+        {% block content %}
+        {% endblock %}
+      </main>
     </div>
     <script>
-        document.querySelectorAll('[data-toggle="submenu"]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const id = btn.getAttribute('data-target');
-                const menu = document.getElementById(id);
-                const expanded = btn.getAttribute('aria-expanded') === 'true';
-                btn.setAttribute('aria-expanded', String(!expanded));
-                menu.classList.toggle('hidden');
-                const icon = btn.querySelector('.chev');
-                if (icon) icon.classList.toggle('rotate-90');
-            });
-        });
+      document.querySelectorAll('[data-toggle="submenu"]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const id = btn.getAttribute('data-target')
+          const menu = document.getElementById(id)
+          const expanded = btn.getAttribute('aria-expanded') === 'true'
+          btn.setAttribute('aria-expanded', String(!expanded))
+          menu.classList.toggle('hidden')
+          const icon = btn.querySelector('.chev')
+          if (icon) icon.classList.toggle('rotate-90')
+        })
+      })
     </script>
-</body>
-
+  </body>
 </html>
