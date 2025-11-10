@@ -13,6 +13,8 @@ class UserGestharCreationForm(UserCreationForm):
         fields = ["username", "email", "password1", "password2"]
 
 class UserGestharChangeForm(UserChangeForm):
+    password = None
+
     class Meta:
         model = UserGesthar
         fields = ["first_name", "last_name", "email", "cpf", "phone_number", "hire_date"]
