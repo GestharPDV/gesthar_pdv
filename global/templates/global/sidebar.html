@@ -38,19 +38,103 @@
               <a href="#" class="block p-2 rounded hover:bg-pink-50">REALIZAR VENDA</a>
               <a href="#" class="block p-2 rounded hover:bg-pink-50">CONSULTAR VENDAS</a>
             </div>
-          </div>
 
-          <div>
-            <button data-toggle="submenu" data-target="produtos-menu" aria-expanded="false" class="w-full flex items-center justify-between p-2 rounded-lg font-semibold hover:bg-pink-100">
-              <span class="ml-2 text-left">PRODUTOS</span>
-              <svg xmlns="http://www.w3.org/2000/svg" class="chev h-5 w-5 text-gray-500 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
 
-            <div id="produtos-menu" class="hidden ml-4 mt-2 space-y-1 text-sm">
-              <a href="{% url 'product:product-create' %}" class="block p-2 rounded hover:bg-pink-50">CADASTRAR PRODUTO</a>
-              <a href="{% url 'product:product-list' %}" class="block p-2 rounded hover:bg-pink-50">CONSULTAR PRODUTOS</a>
+            <nav class="flex-1 p-4 space-y-2">
+                <div>
+                    <button data-toggle="submenu" data-target="ponto-venda" aria-expanded="false"
+                        class="w-full flex items-center justify-between p-2 rounded-lg font-semibold hover:bg-pink-100">
+                        <span class="ml-2 text-left">PONTO DE VENDA</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="chev h-5 w-5 text-gray-500 transition-transform"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+
+                    <div id="ponto-venda" class="hidden ml-4 mt-2 space-y-1 text-sm">
+                        <a href="#" class="block p-2 rounded hover:bg-pink-50">REALIZAR VENDA</a>
+                        <a href="#" class="block p-2 rounded hover:bg-pink-50">CONSULTAR VENDAS</a>
+                    </div>
+                </div>
+
+                <div>
+                    <button data-toggle="submenu" data-target="produtos-menu" aria-expanded="false"
+                        class="w-full flex items-center justify-between p-2 rounded-lg font-semibold hover:bg-pink-100">
+                        <span class="ml-2 text-left">PRODUTOS</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="chev h-5 w-5 text-gray-500 transition-transform"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+
+                    <div id="produtos-menu" class="hidden ml-4 mt-2 space-y-1 text-sm">
+                        <a href="{% url 'product:product-create' %}" class="block p-2 rounded hover:bg-pink-50">CADASTRAR PRODUTO</a>
+                        <a href="{% url 'product:product-list' %}" class="block p-2 rounded hover:bg-pink-50">CONSULTAR PRODUTOS</a>
+                    </div>
+                </div>
+
+                <div>
+                    <button data-toggle="submenu" data-target="clientes-menu" aria-expanded="false"
+                        class="w-full flex items-center justify-between p-2 rounded-lg font-semibold hover:bg-pink-100">
+                        <span class="ml-2 text-left">CLIENTES</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="chev h-5 w-5 text-gray-500 transition-transform"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+
+                    <div id="clientes-menu" class="hidden ml-4 mt-2 space-y-1 text-sm">
+                        <a href="{% url 'customer:customer_create' %}" class="block p-2 rounded hover:bg-pink-50">CADASTRAR CLIENTE</a>
+                        <a href="{% url 'customer:customer_list' %}" class="block p-2 rounded hover:bg-pink-50">CONSULTAR CLIENTES</a>
+                    </div>
+                </div>
+
+                <div>
+                    <button data-toggle="submenu" data-target="relatorios" aria-expanded="false"
+                        class="w-full flex items-center justify-between p-2 rounded-lg font-semibold hover:bg-pink-100">
+                        <span class="ml-2 text-left">RELATÓRIOS</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="chev h-5 w-5 text-gray-500 transition-transform"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+
+                    <div id="relatorios" class="hidden ml-4 mt-2 space-y-1 text-sm">
+                        <a href="#" class="block p-2 rounded hover:bg-pink-50">RELATÓRIO DE ESTOQUE</a>
+                        <a href="#" class="block p-2 rounded hover:bg-pink-50">RELATÓRIO FINANCEIRO</a>
+                        <a href="#" class="block p-2 rounded hover:bg-pink-50">RELATÓRIO DE VENDAS</a>
+                        <a href="#" class="block p-2 rounded hover:bg-pink-50">RELATÓRIO DE DIVERGÊNCIAS</a>
+                    </div>
+                </div>
+
+                <div>
+                    <button data-toggle="submenu" data-target="usuarios" aria-expanded="false"
+                        class="w-full flex items-center justify-between p-2 rounded-lg font-semibold hover:bg-pink-100">
+                        <span class="ml-2 text-left">USUÁRIOS</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="chev h-5 w-5 text-gray-500 transition-transform"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+
+                    <div id="usuarios" class="hidden ml-4 mt-2 space-y-1 text-sm">
+                        <a href="{% url 'accounts:register' %}" class="block p-2 rounded hover:bg-pink-50">CADASTRAR USUÁRIO</a>
+                        <a href="{% url 'user:user-profile' %}" class="block p-2 rounded hover:bg-pink-50">VISUALIZAR USUÁRIO</a>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="p-6 mt-auto">
+                <img src="{% static 'images/logo_gesthar.svg' %}" alt="Logo Gesthar" class="mx-auto h-40">
+                <form action="{% url 'user:logout' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full flex items-center justify-center p-2 rounded-lg text-white bg-[#FF7690] hover:bg-pink-600 transition-colors font-semibold">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+                        </svg>
+                        <span>Sair</span>
+                    </button>
+                </form>
             </div>
           </div>
 
