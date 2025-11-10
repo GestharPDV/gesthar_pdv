@@ -1,7 +1,8 @@
 from django.db import transaction
 from decimal import Decimal
 from user.models import UserGesthar
-from product.models import ProductVariation, StockMovement
+from product.models import ProductVariation
+from .models import StockMovement
 
 @transaction.atomic
 def add_stock(
