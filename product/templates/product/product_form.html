@@ -2,8 +2,8 @@
 {% load static %}
 
 {% block content %}
-<div class="pr-10 pl-10">
-  <h1 class="fs-2 fw-bold titulo">{{ page_title|upper }}</h1>
+<div class="pr-15 pl-15">
+  <h1 class="titulo">{{ page_title|upper }}</h1>
 
   {% comment %}Bloco para exibir erros gerais do formulário (ex: validações do clean){% endcomment %}
   {% if product_form.non_field_errors or supplier_formset.non_field_errors or variation_formset.non_field_errors %}
@@ -25,11 +25,11 @@
   {% endif %}
 
 
-  <form method="post" id="product-form" class="space-y-6 mt-10">
+  <form method="post" id="product-form" class="space-y-6">
     {% csrf_token %}
 
-    <div class="card border mb-4">
-      <h2 class="cabecalho-formulario">DADOS DO PRODUTO</h2>
+    <div class="card border-light mb-4">
+      <h2 class="subtitulo">DADOS DO PRODUTO</h2>
       <div class="card-body">
 
         <div class="mb-3">
@@ -80,8 +80,8 @@
       </div>
     </div>
 
-    <div class="card border mb-4">
-      <h2 class="cabecalho-formulario">FORNECEDORES E CUSTOS</h2>
+    <div class="card border-light mb-4">
+      <h2 class="subtitulo">FORNECEDORES E CUSTOS</h2>
       <div class="card-body">
 
         {{ supplier_formset.management_form }}
@@ -89,9 +89,6 @@
         <div id="supplier-form-list">
           {% for form in supplier_formset.forms %}
           <div class="border rounded p-3 mb-3 position-relative supplier-form-item">
-
-            <button type="button" class="btn-close position-absolute top-1 end-1 remove-supplier-btn remove-form-btn"
-              aria-label="Excluir"></button>
 
             <div class="row">
               <div class="col-md-6 mb-3">
@@ -123,7 +120,6 @@
         <!-- template oculto para novo fornecedor -->
         <div id="empty-supplier-form" class="d-none">
           <div class="border rounded p-3 mb-3 position-relative supplier-form-item">
-            <button type="button" class="btn-close position-absolute top-1 end-1 remove-supplier-btn remove-form-btn" aria-label="Excluir"></button>
             <div class="row">
               <div class="col-md-6 mb-3">
                 <label class="form-label">FORNECEDOR</label>
@@ -141,24 +137,25 @@
           </div>
         </div>
 
-        <!-- botão de adicionar fornecedor -->
-        <button type="button" id="add-supplier-btn" class="botao-verde p-2">
-          + Adicionar Fornecedor
-        </button>
+        <!-- botão de adicionar fornecedor removido conforme solicitado -->
 
       </div>
     </div>
 
 
-    <div id="variations-card" class="card border mb-4">
-      <h2 class="cabecalho-formulario">VARIAÇÕES DO PRODUTO</h2>
+    <div id="variations-card" class="card border-light mb-4">
+      <h2 class="subtitulo">VARIAÇÕES DO PRODUTO</h2>
 
       <div class="card-body">
         {{ variation_formset.management_form }}
 
         <div id="variation-form-list">
           {% for form in variation_formset.forms %}
+
           <div class="border rounded p-3 mb-3 position-relative variation-form">
+
+            <button type="button" class="btn-close position-absolute top-1 end-1 remove-variation-btn remove-form-btn"
+              aria-label="Excluir"></button>
 
             {{ form.id }}
 
@@ -178,8 +175,8 @@
               <div class="col-md-3">
                 <label class="form-label" for="{{ form.color.id_for_label }}">COR</label>
                 <div class="d-flex gap-2 align-items-center">
-                    <div class="flex-grow-1">{{ form.color }}</div>
-                    <button type="button" class="botao-verde p-2 add-color-btn" title="Adicionar Cor">+</button>
+                  <div class="flex-grow-1">{{ form.color }}</div>
+                  <button type="button" class="botao-verde p-2 add-color-btn" title="Adicionar Cor">+</button>
                 </div>
                 {% for error in form.color.errors %}
                 <div class="text-danger small">{{ error }}</div>
@@ -189,8 +186,8 @@
               <div class="col-md-3">
                 <label class="form-label" for="{{ form.size.id_for_label }}">TAMANHO</label>
                 <div class="d-flex gap-2 align-items-center">
-                    <div class="flex-grow-1">{{ form.size }}</div>
-                    <button type="button" class="botao-verde p-2 add-size-btn" title="Adicionar Tamanho">+</button>
+                  <div class="flex-grow-1">{{ form.size }}</div>
+                  <button type="button" class="botao-verde p-2 add-size-btn" title="Adicionar Tamanho">+</button>
                 </div>
                 {% for error in form.size.errors %}
                 <div class="text-danger small">{{ error }}</div>
@@ -214,15 +211,12 @@
               </div>
 
               <div class="col-md-2 d-flex flex-column align-items-center justify-content-center gap-2">
-                <div class="form-check">
+                <div class="form-check align-items-center justify-content-center">
                   {{ form.is_active }}
-                  <label class="form-check-label pr-5" for="{{ form.is_active.id_for_label }}">Ativo</label>
+                  <label class="form-check-label pr-5" for="{{ form.is_active.id_for_label }}">ATIVO</label>
                 </div>
 
-                <div>
-                  <button type="button" class="botao-vermelho p-2 remove-form-btn" title="Remover">Remover</button>
-                  <div class="d-none">{{ form.DELETE }}</div>
-                </div>
+                <div class="d-none">{{ form.DELETE }}</div>
               </div>
 
             </div>
@@ -231,7 +225,7 @@
         </div>
 
         <div id="empty-variation-form" class="d-none">
-          <div class="border rounded p-3 mb-3 variation-form">
+          <div class="border rounded p-3 mb-3 position-relative variation-form">
             {{ variation_formset.empty_form.id }}
             <div class="d-none">{{ variation_formset.empty_form.DELETE }}</div>
 
@@ -264,14 +258,12 @@
               </div>
 
               <div class="col-md-2 d-flex flex-column align-items-center justify-content-center gap-2">
-                <div class="form-check">
+                <div class="form-check d-flex flex-column align-items-center justify-content-center">
                   {{ variation_formset.empty_form.is_active }}
                   <label class="form-check-label">Ativo</label>
                 </div>
 
-                <div>
-                  <button type="button" class="botao-vermelho p-2 remove-form-btn" title="Remover">Remover</button>
-                </div>
+                <!-- botão de remover substituído por um 'x' posicionado no topo (consistente com fornecedores) -->
               </div>
 
             </div>
@@ -289,8 +281,7 @@
     <div class="mt-4 d-flex gap-3">
       <button type="submit" class="botao-rosa p-3 fw-bold">{{ button_text|upper }}</button>
 
-      <a href="{% url 'product:product-list' %}"
-        class="botao-vermelho p-3 fw-bold">CANCELAR</a>
+      <a href="{% url 'product:product-list' %}" class="botao-vermelho p-3 fw-bold">CANCELAR</a>
     </div>
   </form>
 
@@ -298,7 +289,7 @@
   <div id="category-modal" class="modal fade" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content p-4">
-        <h3 class="fs-5 fw-bold mb-3">Nova Categoria</h3>
+        <h3 class="fs-subtitulo fw-bold mb-3">Nova Categoria</h3>
         <form id="category-modal-form">
           <div class="mb-3">
             <label for="id_new_category_name" class="form-label">Nome</label>
@@ -318,7 +309,7 @@
   <div id="supplier-modal" class="modal fade" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content p-4">
-        <h3 class="fs-5 fw-bold mb-3">Novo Fornecedor</h3>
+        <h3 class="fs-subtitulo fw-bold mb-3">Novo Fornecedor</h3>
         <form id="supplier-modal-form">
           <div class="mb-3">
             <label for="id_new_supplier_name" class="form-label">Nome</label>
@@ -338,7 +329,7 @@
   <div id="color-modal" class="modal fade" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content p-4">
-        <h3 class="fs-5 fw-bold mb-3">Nova Cor</h3>
+        <h3 class="fs-subtitulo fw-bold mb-3">Nova Cor</h3>
         <form id="color-modal-form">
           <div class="mb-3">
             <label for="id_new_color_name" class="form-label">Nome</label>
@@ -358,7 +349,7 @@
   <div id="size-modal" class="modal fade" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content p-4">
-        <h3 class="fs-5 fw-bold mb-3">Novo Tamanho</h3>
+        <h3 class="fs-subtitulo fw-bold mb-3">Novo Tamanho</h3>
         <form id="size-modal-form">
           <div class="mb-3">
             <label for="id_new_size_name" class="form-label">Nome</label>
@@ -434,13 +425,12 @@
       })
     }
 
-  // Inicializa a funcionalidade para ambos os formsets
-  setupAddFormButton('add-supplier-btn', 'supplier-form-list', 'empty-supplier-form', 'suppliers')
-  setupAddFormButton('add-variation-form', 'variation-form-list', 'empty-variation-form', 'variations')
+    // Inicializa a funcionalidade para os formsets (fluxo de adicionar fornecedor removido)
+    setupAddFormButton('add-variation-form', 'variation-form-list', 'empty-variation-form', 'variations')
 
-  // Inicializa os botões de remover para ambos os formsets
-  setupRemoveFormButtons('supplier-form-list', 'supplier-form-item')
-  setupRemoveFormButtons('variation-form-list', 'variation-form')
+    // Inicializa os botões de remover para ambos os formsets
+    setupRemoveFormButtons('supplier-form-list', 'supplier-form-item')
+    setupRemoveFormButtons('variation-form-list', 'variation-form')
 
     // ----------------------------------------
     // [ORIGINAL] Lógica do Modal de Categoria
@@ -518,30 +508,36 @@
       })
     }
 
+    // garante referência ao formulário principal para delegação de eventos
+    const mainForm = document.getElementById('product-form')
+
     // ----------------------------------------
-    // [ORIGINAL] Lógica do Modal de Fornecedor
+    // Lógica do Modal de Fornecedor (reativada)
     // ----------------------------------------
     const supplierModal = document.getElementById('supplier-modal')
     const cancelSupplierBtn = document.getElementById('cancel-supplier-btn')
     const supplierModalForm = document.getElementById('supplier-modal-form')
     const supplierNameInput = document.getElementById('id_new_supplier_name')
     const supplierModalError = document.getElementById('supplier-modal-error')
-    const mainForm = document.getElementById('product-form') // Já definido, mas bom para clareza
 
     // Guarda qual <select> de fornecedor ativou o modal
     let activeSupplierSelect = null
 
-    // Usamos delegação de evento, pois os botões '+' do formset são criados dinamicamente
+    // Inicializa o modal via API do Bootstrap
+    let bsSupplierModal = null
+    if (supplierModal && typeof bootstrap !== 'undefined') {
+      bsSupplierModal = new bootstrap.Modal(supplierModal)
+    }
+
+    // Delegação de evento: botões '.add-supplier-btn' (podem ser criados dinamicamente)
     if (mainForm) {
       mainForm.addEventListener('click', function (event) {
-        // Verifica se o clique foi em um botão de adicionar fornecedor
         const addSupplierBtn = event.target.closest && event.target.closest('.add-supplier-btn')
         if (addSupplierBtn) {
-          // Encontra o <select> mais próximo desse botão (procura por container com select)
+          // Encontrar o <select> mais próximo do botão
           let container = addSupplierBtn.closest('.d-flex') || addSupplierBtn.parentElement
           let sel = null
           if (container) sel = container.querySelector('select')
-          // fallback: procurar para cima até encontrar um select
           let up = addSupplierBtn.parentElement
           while (!sel && up) {
             sel = up.querySelector ? up.querySelector('select') : null
@@ -549,10 +545,7 @@
           }
           activeSupplierSelect = sel
 
-          // Abre o modal (Bootstrap)
-          if (bsSupplierModal) {
-            bsSupplierModal.show()
-          }
+          if (bsSupplierModal) bsSupplierModal.show()
           supplierNameInput.value = ''
           supplierModalError.classList.add('d-none')
           supplierNameInput.focus()
@@ -560,15 +553,10 @@
       })
     }
 
-    let bsSupplierModal = null
-    if (supplierModal && typeof bootstrap !== 'undefined') {
-      bsSupplierModal = new bootstrap.Modal(supplierModal)
-    }
-
     if (cancelSupplierBtn) {
       cancelSupplierBtn.addEventListener('click', () => {
         if (bsSupplierModal) bsSupplierModal.hide()
-        activeSupplierSelect = null // Limpa a referência
+        activeSupplierSelect = null
       })
     }
 
@@ -588,22 +576,18 @@
           .then((response) => response.json())
           .then((data) => {
             if (data.status === 'success') {
-              // 1. Encontra TODOS os selects de fornecedor no documento
-              // (incluindo o template do formset)
+              // encontra todos os selects de fornecedor e adiciona a nova option
               const allSupplierSelects = document.querySelectorAll('select[name*="-supplier"]')
-
-              // 2. Adiciona a nova opção a cada um deles
               allSupplierSelects.forEach((select) => {
                 const newOption = new Option(data.name, data.id)
                 select.appendChild(newOption)
               })
 
-              // 3. Seleciona o novo valor APENAS no <select> que abriu o modal
+              // seleciona apenas o select que abriu o modal
               if (activeSupplierSelect) {
                 activeSupplierSelect.value = data.id
               }
 
-              // 4. Fecha o modal
               if (bsSupplierModal) bsSupplierModal.hide()
             } else {
               supplierModalError.textContent = data.message

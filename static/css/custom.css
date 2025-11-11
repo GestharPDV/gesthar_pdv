@@ -37,12 +37,10 @@
   --fonte-login: 1.2rem; 
   
   /* Tamanhos da fonte da Home */
-  --fonte-titulo-home: 1.5rem; 
-  
-  /* Tamanhos da fonte da Main */
-  --fonte-titulo-main: 1.5rem;
-  --fonte-subtitulo-main: 1.2rem;
-  --fonte-texto-main: 1rem; 
+  --fonte-titulo: 1.8rem; 
+  --fonte-subtitulo: 1.2rem;
+  --fonte-cabecalho: 0.9rem;
+  --fonte-texto: 0.9rem; 
   
   /* Tamanhos da fonte do Sidebar */
   --tamanho-fonte-sidebar: 1.1rem; 
@@ -68,14 +66,36 @@ body {
   font-family: "Montserrat", sans-serif;
   background-color: var(--cor-fundo-site);
   color: var(--cor-fonte-preta);
+  /* base font-size for general site text (except sidebar) */
+  font-size: var(--fonte-texto);
 }
 
 .titulo {
-  font-size: var(--fonte-titulo-home);
+  font-size: var(--fonte-titulo);
   font-weight: bold;
   color: var(--cor-fonte-rosa) !important;
   margin-top: 1.5rem;
   margin-bottom: 1.5rem;
+}
+.subtitulo {
+  /* renamed from cabecalho-formulario */
+  font-size: var(--fonte-subtitulo);
+  color: var(--cor-fonte-rosa) !important;
+  background-color: var(--cor-cabecalho-formulario) !important;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 2%;
+}
+.table thead tr.cabecalho th,
+.table thead.cabecalho th,
+.cabecalho,
+th.cabecalho{
+  /* renamed from titulo-formulario -> subtitulo */
+  font-size: var(--fonte-cabecalho);
+  font-weight: bold;
+  color: var(--cor-fonte-rosa) !important;
+  background-color: var(--cor-fundo-cabecalho) !important;
+
 }
 
 .botao-rosa{
@@ -121,6 +141,22 @@ body {
 /* ------------------------------------ */ 
 /* Sidebar */ 
 /* ------------------------------------ */ 
+
+/* Força a cor padrão do texto em tabelas e cards, sem sobrescrever classes de cor
+   específicas (text-success, text-danger, text-lucro). Removido o !important para
+   permitir que utilitários de cor do Bootstrap e classes semânticas prevaleçam. */
+.table.product-list tbody td:not(.text-success):not(.text-danger):not(.text-lucro),
+.table.product-list tbody td a:not(.text-success):not(.text-danger):not(.text-lucro),
+.table.table-bordered.align-middle.mb-0 td:not(.text-success):not(.text-danger):not(.text-lucro),
+.card p:not(.text-success):not(.text-danger):not(.text-lucro),
+.card .fs-5:not(.text-success):not(.text-danger):not(.text-lucro) {
+  color: var(--cor-fonte-preta);
+}
+
+/* Texto específico para lucro/pct: rosa para lucro absoluto */
+.text-lucro {
+  color: var(--cor-fonte-rosa);
+}
 
 .link-sidebar:hover {
   background-color: var(--cor-botao-secundario-rosa);
@@ -168,11 +204,4 @@ a[aria-expanded="false"] .chev {
 /* Formularios */ 
 /* ------------------------------------ */
 
-.cabecalho-formulario {
-  background-color: var(--cor-cabecalho-formulario);
-  color: var(--cor-fonte-rosa);
-  font-size: 1.4rem;
-  font-weight: bold;
-  padding: 2%;
-}
 

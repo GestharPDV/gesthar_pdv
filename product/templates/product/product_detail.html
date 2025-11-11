@@ -3,126 +3,121 @@
 {% load i18n %}
 
 {% block content %}
-  <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold text-[#FF7690]">{{ page_title|upper }}</h1>
-    
-    <a href="{% url 'product:product-list' %}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-2 rounded-lg font-medium transition-colors cursor-pointer">
+<div class="pr-15 pl-15">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="titulo">{{ page_title|upper }}</h1>
+
+    <a href="{% url 'product:product-list' %}" class="botao-rosa p-2">
       &larr; Voltar para a Lista
     </a>
   </div>
 
-  <div class="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-300 mb-6">
-    <h2 class="text-lg font-semibold text-gray-800 p-4 bg-gray-50 border-b border-gray-300">Informações Gerais e Financeiras</h2>
-    <div class="p-6 space-y-4">
-      
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div>
-          <span class="block text-sm font-medium text-gray-500 mb-1">PRODUTO</span>
-          <p class="text-lg font-semibold text-gray-900">{{ product.name }}</p>
+  <!-- Informações Gerais e Financeiras -->
+  <div class="card border-light mb-4">
+    <h2 class="subtitulo">Informações Gerais e Financeiras</h2>
+    <div class="card-body">
+
+      <div class="row mb-3">
+        <div class="col-md-4 mb-3">
+          <small class="d-block">PRODUTO</small>
+          <p class="fs-5 fw-semibold">{{ product.name }}</p>
         </div>
-        <div>
-          <span class="block text-sm font-medium text-gray-500 mb-1">CATEGORIA</span>
-          <p class="text-lg text-gray-900">{{ product.category.name }}</p>
+        <div class="col-md-4 mb-3">
+          <small class="d-block">CATEGORIA</small>
+          <p class="fs-5 fw-semibold">{{ product.category.name }}</p>
         </div>
-        <div>
-          <span class="block text-sm font-medium text-gray-500 mb-1">STATUS DO PRODUTO</span>
+        <div class="col-md-4 mb-3">
+          <small class="d-block">STATUS DO PRODUTO</small>
           {% if product.is_active %}
-            <span class="text-lg text-green-600 font-semibold">Ativo</span>
+          <span class="fs-5 fw-semibold text-success">Ativo</span>
           {% else %}
-            <span class="text-lg text-red-600 font-semibold">Inativo</span>
+          <span class="fs-5 fw-semibold text-danger">Inativo</span>
           {% endif %}
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 pt-4 border-t border-gray-200">
-        <div>
-          <span class="block text-sm font-medium text-gray-500 mb-1">PREÇO DE VENDA</span>
-          <p class="text-lg font-bold text-rose-600">R$ {{ product.selling_price|floatformat:2 }}</p>
+      <hr>
+
+      <div class="row">
+        <div class="col-md-3 mb-3">
+          <small class="d-block">PREÇO DE VENDA</small>
+          <p class="fs-5 fw-bold">R$ {{ product.selling_price|floatformat:2 }}</p>
         </div>
-        <div>
-          <span class="block text-sm font-medium text-gray-500 mb-1">CUSTO MÉDIO</span>
-          <p class="text-lg font-semibold text-gray-900">R$ {{ product.average_cost_price|floatformat:2 }}</p>
+        <div class="col-md-3 mb-3">
+          <small class="d-block">CUSTO MÉDIO</small>
+          <p class="fs-5 fw-semibold">R$ {{ product.average_cost_price|floatformat:2 }}</p>
         </div>
-        <div>
-          <span class="block text-sm font-medium text-gray-500 mb-1">LUCRO (R$)</span>
-          <p class="text-lg font-semibold text-green-700">R$ {{ profit_value|floatformat:2 }}</p>
+        <div class="col-md-3 mb-3">
+          <small class="d-block">LUCRO (R$)</small>
+          <p class="fs-5 fw-semibold text-lucro">R$ {{ profit_value|floatformat:2 }}</p>
         </div>
-        <div>
-          <span class="block text-sm font-medium text-gray-500 mb-1">MARGEM DE LUCRO (%)</span>
-          <p class="text-lg font-semibold text-green-700">{{ product.profit_margin|floatformat:2 }}%</p>
+        <div class="col-md-3 mb-3">
+          <small class="d-block">MARGEM DE LUCRO (%)</small>
+          <p class="fs-5 fw-semibold text-success">{{ product.profit_margin|floatformat:2 }}%</p>
         </div>
       </div>
 
       {% if product.description %}
-      <div class="pt-4 border-t border-gray-200">
-        <span class="block text-sm font-medium text-gray-500 mb-1">DESCRIÇÃO</span>
-        <p class="text-gray-800">{{ product.description|linebreaks }}</p>
+      <hr>
+      <div>
+        <small class="d-block">DESCRIÇÃO</small>
+        <p class="fw-semibold">{{ product.description|linebreaks }}</p>
       </div>
       {% endif %}
     </div>
   </div>
 
-  <div class="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-300 mb-6">
-    <h2 class="text-lg font-semibold text-gray-800 p-4 bg-gray-50 border-b border-gray-300">Fornecedores (Custos Individuais)</h2>
-    <div class="p-6">
-      <ul class="list-disc ml-5 space-y-2">
-        {% for ps in suppliers %}
-          <li>
-            <span class="text-gray-900">{{ ps.supplier.name }}:</span>
-            <span class="font-medium text-gray-700">R$ {{ ps.cost_price|floatformat:2 }}</span>
-            <span class="text-xs text-gray-500">(Atualizado em: {{ ps.updated_at|date:"d/m/Y" }})</span>
-          </li>
-        {% empty %}
-          <li>Nenhum fornecedor cadastrado.</li>
-        {% endfor %}
-      </ul>
-    </div>
-  </div>
+  {# Fornecedores removidos daqui: iremos exibir o fornecedor nas variações #}
 
-  <div class="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-300">
-    <h2 class="text-lg font-semibold text-gray-800 p-4 bg-gray-50 border-b border-gray-300">Variações do Produto</h2>
-    
-    <table class="w-full">
-      <thead class="bg-[#F7E8EB]">
-        <tr>
-          <th class="px-6 py-3 text-left text-xs font-medium text-[#555555] uppercase border border-gray-300">SKU</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-[#555555] uppercase border border-gray-300">Cor</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-[#555555] uppercase border border-gray-300">Tamanho</th>
-          <th class="px-6 py-3 text-center text-xs font-medium text-[#555555] uppercase border border-gray-300">Estoque Atual</th>
-          <th class="px-6 py-3 text-center text-xs font-medium text-[#555555] uppercase border border-gray-300">Estoque Mínimo</th>
-          <th class="px-6 py-3 text-center text-xs font-medium text-[#555555] uppercase border border-gray-300">Status da Variação</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-gray-200">
-        {% for var in variations %}
-          <tr class="hover:bg-rose-50">
-            <td class="px-6 py-4 text-sm text-gray-900 font-mono border border-gray-300">{{ var.sku }}</td>
-            <td class="px-6 py-4 text-sm text-gray-900 border border-gray-300">{{ var.color.name }}</td>
-            <td class="px-6 py-4 text-sm text-gray-900 border border-gray-300">{{ var.size.name }}</td>
-            
-            <td class="px-6 py-4 text-center text-sm text-gray-900 border border-gray-300 
-                       {% if var.stock <= var.minimum_stock and var.is_active and var.stock > 0 %} bg-yellow-100 text-yellow-800 font-bold {% endif %}
-                       {% if var.stock == 0 and var.is_active %} bg-red-100 text-red-800 font-bold {% endif %}">
-              {{ var.stock }}
-            </td>
+  <!-- Variações do Produto -->
+  <div class="card border-light mb-4">
+    <h2 class="subtitulo">Variações do Produto</h2>
 
-            <td class="px-6 py-4 text-center text-sm text-gray-900 border border-gray-300">{{ var.minimum_stock }}</td>
-
-            <td class="px-6 py-4 text-center text-sm border border-gray-300">
-              {% if var.is_active %}
-                <span class="text-green-600 font-semibold">Ativo</span>
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle text-center mb-0">
+        <thead class="cabecalho text-uppercase">
+          <tr>
+            <th scope="col">SKU</th>
+            <th scope="col">Cor</th>
+            <th scope="col">Tamanho</th>
+            <th scope="col">Fornecedor</th>
+            <th scope="col">Estoque Atual</th>
+            <th scope="col">Estoque Mínimo</th>
+            <th scope="col">Status da Variação</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for var in variations %}
+          <tr class="{% if var.stock <= var.minimum_stock and var.is_active and var.stock > 0 %}table-warning fw-bold{% endif %}
+                     {% if var.stock == 0 and var.is_active %}table-danger fw-bold{% endif %}">
+            <td class="text-monospace">{{ var.sku }}</td>
+            <td>{{ var.color.name }}</td>
+            <td>{{ var.size.name }}</td>
+            <td>
+              {% if primary_supplier %}
+              {{ primary_supplier.supplier.name }}
               {% else %}
-                <span class="text-red-600 font-semibold">Inativo</span>
+              -
+              {% endif %}
+            </td>
+            <td>{{ var.stock }}</td>
+            <td>{{ var.minimum_stock }}</td>
+            <td>
+              {% if var.is_active %}
+              <span class="text-success fw-semibold">Ativo</span>
+              {% else %}
+              <span class="text-danger fw-semibold">Inativo</span>
               {% endif %}
             </td>
           </tr>
-        {% empty %}
+          {% empty %}
           <tr>
-            <td colspan="6" class="px-6 py-4 text-center text-[#555555] border border-gray-300">Nenhuma variação encontrada para este produto.</td>
+            <td colspan="7" class="text-muted">Nenhuma variação encontrada para este produto.</td>
           </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
-
+</div>
 {% endblock %}
