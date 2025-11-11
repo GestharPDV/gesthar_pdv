@@ -1,0 +1,12 @@
+{% extends 'global/sidebar.html' %}
+{% block content %}
+  <h2>Meu Perfil</h2>
+
+  <p><strong>Nome:</strong> {{ user_obj.first_name }} {{ user_obj.last_name }}</p>
+  <p><strong>Email:</strong> {{ user_obj.email }}</p>
+  <p><strong>CPF:</strong> {{ user_obj.cpf }}</p>
+  <p><strong>Telefone:</strong> {{ user_obj.phone_number }}</p>
+  <p><strong>Data de Admissão:</strong> {{ user_obj.hire_date }}</p>
+
+  <a href="{% url 'user:user-edit' %}">Editar Perfil</a>
+{% endblock %}

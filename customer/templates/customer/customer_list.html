@@ -1,0 +1,110 @@
+{% extends 'global/sidebar.html' %}
+{% load static %}
+
+{% block content %}
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-[#FF7690]">LISTA DE CLIENTES</h1>
+
+    <a href="{% url 'customer:customer_create' %}" class="bg-[#F1F0BE] hover:bg-[#E0DFAB] text-[#555555] px-6 py-2 rounded-lg font-medium transition-colors cursor-pointer">Adicionar Cliente</a>
+  </div>
+
+  <form method="GET" action="{% url 'customer:customer_list' %}" class="mb-6 flex justify-end items-center">
+    <div class="relative w-full max-w-md">
+      <input type="text" name="search" value="{{ search }}" placeholder="Pesquisar por Nome, CPF/CNPJ, E-mail ou Telefone" class="w-full border border-gray-300 rounded-lg py-2 pl-4 pr-10 bg-white focus:outline-none focus:ring-2 focus:ring-rose-400" />
+
+      <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+        <button type="submit" class="text-gray-400 hover:text-gray-600">
+          <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </form>
+
+  {% if messages %}
+    <div class="mb-4">
+      {% for message in messages %}
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+          <span class="block sm:inline">{{ message }}</span>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-300">
+    <table class="w-full">
+      <thead class="bg-[#F7E8EB]">
+        <tr>
+          <th class="px-6 py-3 text-center text-xs font-medium text-[#555555] uppercase border border-gray-300">Visualizar</th>
+          <th class="px-6 py-3 text-center text-xs font-medium text-[#555555] uppercase border border-gray-300">Editar</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-[#555555] uppercase border border-gray-300">Nome</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-[#555555] uppercase border border-gray-300">CPF/CNPJ</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-[#555555] uppercase border border-gray-300">E-mail</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-[#555555] uppercase border border-gray-300">Telefone</th>
+          <th class="px-6 py-3 text-center text-xs font-medium text-[#555555] uppercase border border-gray-300">Data Prevista do Parto</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        {% for customer in customers %}
+          <tr class="hover:bg-rose-50">
+            <td class="px-6 py-4 text-center border border-gray-300">
+              <a href="{% url 'customer:customer_detail' customer.pk %}" class="text-gray-600" title="Visualizar Detalhes">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 inline" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                  <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.523 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                </svg>
+              </a>
+            </td>
+
+            <td class="px-6 py-4 text-center border border-gray-300">
+              <a href="{% url 'customer:customer_update' customer.pk %}" class="text-blue-600 hover:text-blue-800" title="Editar Cliente">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 inline" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
+                  <path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" />
+                </svg>
+              </a>
+            </td>
+
+            <td class="px-6 py-4 text-sm text-gray-900 border border-gray-300">{{ customer.name }}</td>
+            <td class="px-6 py-4 text-sm text-gray-900 border border-gray-300">{{ customer.cpf_cnpj }}</td>
+            <td class="px-6 py-4 text-sm text-gray-900 border border-gray-300">{{ customer.email }}</td>
+            <td class="px-6 py-4 text-sm text-gray-900 border border-gray-300">{{ customer.phone|default:"-" }}</td>
+            <td class="px-6 py-4 text-center text-sm text-gray-900 border border-gray-300">
+              {% if customer.baby_due_date %}
+                {{ customer.baby_due_date|date:"d/m/Y" }}
+              {% else %}
+                -
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="7" class="px-6 py-4 text-center text-[#555555] border border-gray-300">Nenhum cliente encontrado.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if is_paginated %}
+    <div class="mt-6 flex justify-center">
+      <nav class="inline-flex rounded-md shadow">
+        {% if page_obj.has_previous %}
+          <a href="?page=1{% if search %}&search={{ search }}{% endif %}" class="px-3 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">Primeira</a>
+          <a href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}" class="px-3 py-2 border-t border-b border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">Anterior</a>
+        {% endif %}
+
+        <span class="px-3 py-2 border-t border-b border-gray-300 bg-white text-sm font-medium text-gray-700">
+          Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}" class="px-3 py-2 border-t border-b border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">Próxima</a>
+          <a href="?page={{ page_obj.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}" class="px-3 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">Última</a>
+        {% endif %}
+      </nav>
+    </div>
+  {% endif %}
+{% endblock %}
+

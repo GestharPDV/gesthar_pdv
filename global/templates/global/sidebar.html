@@ -50,6 +50,11 @@
                 </svg>
             </a>
 
+            <div id="clientes-menu" class="hidden ml-4 mt-2 space-y-1 text-sm">
+              <a href="{% url 'customer:customer_create' %}" class="block p-2 rounded hover:bg-pink-50">CADASTRAR CLIENTE</a>
+              <a href="{% url 'customer:customer_list' %}" class="block p-2 rounded hover:bg-pink-50">CONSULTAR CLIENTES</a>
+            </div>
+          </div>
             <div class="collapse ms-4 mt-2" id="clientes-menu">
                 <a href="#" class="d-block p-2 link-sidebar">CADASTRAR CLIENTE</a>
                 <a href="#" class="d-block p-2 link-sidebar">CONSULTAR CLIENTES</a>
@@ -85,6 +90,12 @@
                 </svg>
             </a>
 
+            <div id="usuarios" class="hidden ml-4 mt-2 space-y-1 text-sm">
+              <a href="{% url 'accounts:register' %}" class="block p-2 rounded hover:bg-pink-50">CADASTRAR USUÁRIO</a>
+              <a href="{% url 'user:user-profile' %}" class="block p-2 rounded hover:bg-pink-50">VISUALIZAR USUÁRIO</a>
+            </div>
+          </div>
+        </nav>
             <div class="collapse ms-4 mt-2" id="usuarios">
                 <a href="#" class="d-block p-2 link-sidebar">CADASTRAR USUÁRIO</a>
                 <a href="#" class="d-block p-2 link-sidebar">VISUALIZAR USUÁRIO</a>
@@ -95,6 +106,40 @@
         <img src="{% static 'images/logo_gesthar.svg' %}" alt="Logo Gesthar" class="d-block mx-auto mb-3"
             style="height: 160px;" />
 
+        <div class="p-6 mt-auto">
+          <img src="{% static 'images/logo_gesthar.svg' %}" alt="Logo Gesthar" class="mx-auto h-40" />
+          <form action="{% url 'accounts:logout' %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="w-full flex items-center justify-center p-2 rounded-lg text-white bg-[#FF7690] hover:bg-pink-600 transition-colors font-semibold">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+              </svg>
+              <span>Sair</span>
+            </button>
+          </form>
+        </div>
+      </aside>
+
+      <main class="flex-1 p-8 bg-no-repeat bg-right-bottom bg-[length:50%] bg-[url('{% static 'images/Vector.svg' %}')]">
+        {% block content %}
+        {% endblock %}
+      </main>
+    </div>
+    <script>
+      document.querySelectorAll('[data-toggle="submenu"]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const id = btn.getAttribute('data-target')
+          const menu = document.getElementById(id)
+          const expanded = btn.getAttribute('aria-expanded') === 'true'
+          btn.setAttribute('aria-expanded', String(!expanded))
+          menu.classList.toggle('hidden')
+          const icon = btn.querySelector('.chev')
+          if (icon) icon.classList.toggle('rotate-90')
+        })
+      })
+    </script>
+  </body>
+</html>
         <form action="{% url 'user:logout' %}" method="post">
             {% csrf_token %}
             <button type="submit"

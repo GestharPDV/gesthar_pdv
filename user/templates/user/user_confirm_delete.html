@@ -1,0 +1,16 @@
+{% extends 'global/sidebar.html' %}
+{% block content %}
+  <h2>Confirmar Exclusão</h2>
+
+  {% if error_message %}
+    <p style="color: red;">{{ error_message }}</p>
+  {% endif %}
+
+  <p>Tem certeza que deseja excluir o usuário <strong>{{ user_to_delete.email }}</strong>?</p>
+
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit">Confirmar Exclusão</button>
+    <a href="{% url 'user:user-list' %}">Cancelar</a>
+  </form>
+{% endblock %}
