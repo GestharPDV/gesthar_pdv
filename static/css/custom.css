@@ -1,0 +1,237 @@
+:root {
+  /* ------------------------------------ */ 
+  /* Cores */ 
+  /* ------------------------------------ */ 
+  
+  /* Cores de botão */
+  --cor-botao-principal-rosa: #ff7690;
+  --cor-botao-secundario-rosa: #f7e8eb;
+  --cor-botao-verde: #89d46f;
+  --cor-botao-amarelo: #f1f0be;
+  --cor-botao-vermelho: #ea8484; 
+  
+  /* Cores da fonte */
+  --cor-fonte-preta: #555555;
+  --cor-fonte-cinza: #a59e9f;
+  --cor-fonte-rosa: #ff7690;
+  --cor-fonte-branca: #ffffff; 
+  
+  /* Cores de fundo */
+  --cor-fundo-site: #f9fafb;
+  --cor-fundo-cabecalho: #f7e8eb;
+  --cor-fundo-linha: #ededed; 
+  
+  /* Cores da sidebar */
+  --cor-fundo-categoria: #f7e8eb;
+  --cor-fundo-categoria-ativa: #ff7690; 
+  
+  /* Cores de formulario */
+  --cor-cabecalho-formulario: #f7e8eb;
+  
+  /* ------------------------------------ */ 
+  /* Tamanhos */ 
+  /* ------------------------------------ */ 
+  
+  /* Tamanhos da fonte do Login*/
+  --fonte-titulo-login: 1.5rem;
+  --fonte-login: 1.2rem; 
+  
+  /* Tamanhos da fonte da Home */
+  --fonte-titulo: 1.8rem; 
+  --fonte-subtitulo: 1.2rem;
+  --fonte-cabecalho: 0.9rem;
+  --fonte-texto: 0.9rem; 
+  
+  /* Tamanhos da fonte do Sidebar */
+  --tamanho-fonte-sidebar: 1.1rem; 
+  --fonte-sidebar: var(--tamanho-fonte-sidebar);
+  
+  /* ------------------------------------ */ 
+  /* Botões */ 
+  /* ------------------------------------ */
+
+  /* Raio padrão dos botões*/
+  --radius-botao: 0.375rem;
+} 
+
+
+/* ------------------------------------ */
+/* Configurações gerais */ 
+/* ------------------------------------ */
+
+/* Configurações de todas as páginas */ 
+body {
+  font-family: "Montserrat", sans-serif;
+  background-color: var(--cor-fundo-site);
+  color: var(--cor-fonte-preta);
+  font-size: var(--fonte-texto);
+}
+
+/* Títulos das páginas */ 
+.titulo {
+  font-size: var(--fonte-titulo);
+  font-weight: bold;
+  color: var(--cor-fonte-rosa) !important;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Títulos das seções de formulários */ 
+.subtitulo {
+  font-size: var(--fonte-subtitulo);
+  color: var(--cor-fonte-rosa) !important;
+  background-color: var(--cor-cabecalho-formulario) !important;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 2%;
+}
+
+/* Cabeçalhos das tabelas */ 
+.table thead tr.cabecalho th,
+.table thead.cabecalho th,
+.cabecalho,
+th.cabecalho{
+  font-size: var(--fonte-cabecalho);
+  font-weight: bold;
+  color: var(--cor-fonte-rosa) !important;
+  background-color: var(--cor-fundo-cabecalho) !important;
+
+}
+
+
+/* ------------------------------------ */
+/* Botões */ 
+/* ------------------------------------ */
+
+.botao-rosa{
+  background-color: var(--cor-botao-principal-rosa);
+  color: var(--cor-fonte-branca);
+  border-radius: var(--radius-botao);
+  border: none;
+  text-decoration: none;
+}
+
+.botao-rosa:hover {
+  background-color: #ff5c76;
+
+}
+
+.botao-vermelho{
+  background-color: var(--cor-botao-vermelho);
+  color: var(--cor-fonte-branca);
+  border-radius: var(--radius-botao);
+  border: none;
+  text-decoration: none;
+}
+
+.botao-verde{
+  background-color: var(--cor-botao-verde);
+  color: var(--cor-fonte-branca);
+  border-radius: var(--radius-botao);
+  border: none;
+  text-decoration: none;
+}
+
+.botao-amarelo{
+  background-color: var(--cor-botao-amarelo);
+  color: var(--cor-fonte-branca);
+  border-radius: var(--radius-botao);
+  border: none;
+  text-decoration: none;
+}
+
+
+/* ------------------------------------ */
+/* Formularios e Tabelas */ 
+/* ------------------------------------ */
+
+/* Forçando textos de tabelas e cards para ficarem na cor preta padrão */ 
+.table.product-list tbody td:not(.text-success):not(.text-danger):not(.text-lucro),
+.table.product-list tbody td a:not(.text-success):not(.text-danger):not(.text-lucro),
+.table.table-bordered.align-middle.mb-0 td:not(.text-success):not(.text-danger):not(.text-lucro),
+.card p:not(.text-success):not(.text-danger):not(.text-lucro),
+.card .fs-5:not(.text-success):not(.text-danger):not(.text-lucro) {
+  color: var(--cor-fonte-preta);
+}
+
+/* Força os subtítulos dentro dos cards a ocuparem toda a largura (não está funcionando perfeitamente, ajustarei depois) */
+.card .subtitulo {
+  display: block;
+  margin: 0 -1rem 0  -1rem;
+  padding: 0.75rem 1rem;
+  background-color: var(--cor-cabecalho-formulario) !important;
+  color: var(--cor-fonte-rosa) !important;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Remove dor de fundo e bordas dos cards */
+.address-card {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+/* Deixar o valor do lucro na cor rosa */
+.text-lucro {
+  color: var(--cor-fonte-rosa);
+}
+
+
+/* ------------------------------------ */
+/* Menu Lateral (Sidebar) */
+/* ------------------------------------ */
+
+.link-sidebar:hover {
+  background-color: var(--cor-botao-secundario-rosa);
+  text-decoration: none;
+}
+
+.link-sidebar {
+  color: var(--cor-fonte-preta);
+  font-size: var(--tamanho-fonte-sidebar);
+  text-decoration: none;
+}
+
+/* Configurações do ícone de seta para sidebar colapsavel */
+.chev {
+  width: 20px;
+  height: 20px;
+  transition: transform 0.2s;
+}
+
+a[aria-expanded="true"] .chev {
+  transform: rotate(90deg);
+}
+
+a[aria-expanded="false"] .chev {
+  transform: rotate(0deg);
+}
+
+
+/* ------------------------------------ */
+/* Home Page */ 
+/* ------------------------------------ */
+
+/* Configuração dos links referentes à home_page */
+.offcanvas .nav-link {
+  color: var(--cor-fonte-rosa);
+  font-size: 14px;
+  letter-spacing: 0.7px;
+  text-decoration: none;
+}
+
+.offcanvas .collapse a {
+  color: var(--cor-texto-menu);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.offcanvas .collapse a:hover {
+  text-decoration: underline;
+}
+
+.nav-item {
+  padding-bottom: 6px;
+  border-bottom: 1px solid #eee;
+}
