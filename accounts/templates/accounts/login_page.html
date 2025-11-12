@@ -1,74 +1,67 @@
+{% extends 'global/base.html' %}
 {% load widget_tweaks %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <title>Gesthar - login</title>
-</head>
-<body class="flex flex-col p-0 items-center justify-center min-h-screen bg-gray-50 [font-family:'Montserrat',sans-serif]">
 
-    <!-- Icone de fundo do Gesthar -->
-    <div class="absolute top-0 left-0 -z-10">
-        <img src="{% static 'images/ICONE-GESTHAR.svg' %}" alt="icone gesthar" class="w-[550px]">
+{% block content %}
+<div class="position-relative d-flex justify-content-center align-items-center" style="min-height:75vh;">
+    <!-- ícone de fundo parecido com versão anterior -->
+    <div class="position-absolute bottom-0 start-0" style="z-index:-1;">
+        <img src="{% static 'images/ICONE-GESTHAR.svg' %}" alt="icone gesthar" style="width:550px; opacity:0.9;">
     </div>
 
-    <!-- Logo do Gesthar -->
-    <div class="mb-4">
-        <img src="{% static 'images/logo_gesthar.svg' %}" alt="logo gesthar" class="w-64">
-    </div>
-
-    <!-- Card largo -->
-    <div class="bg-gray-50/70 p-10 rounded-3xl shadow-[0_5px_20px_rgba(0,0,0,0.15),0_0_30px_rgba(0,0,0,0.10)] w-full max-w-5xl">
-        
-        <!-- Conteúdo centralizado -->
-        <div class="max-w-sm mx-auto">
-            <img src="{% static 'images/logo_lg.png' %}" alt="logo linda gestante" class="mx-auto mb-4">
-            <h2 class="text-center text-[#FF7690] text-xl font-bold">
-                BEM-VINDO(A) AO <span class="font-bold text-xl">GESTHAR</span>
-            </h2>
-            <h2 class="text-center text-[#FF7690] text-xl font-bold mb-6">SISTEMA DE GESTÃO!</h2>
-
-            <!-- Erros gerais do formulário -->
-            {% if form.non_field_errors %}
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                    {% for error in form.non_field_errors %}
-                        <p class="text-sm">{{ error }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
-
-            <!-- Formulário Django -->
-            <form method="post" class="flex flex-col gap-4 px-12">
-                {% csrf_token %}
-                
-                <!-- Campo email/username -->
-                <div>
-                    {{ form.username.label_tag}}
-                    {{ form.username|add_class:"w-full px-3 py-1 border-2 border-gray-400 rounded-xl focus:border-pink-200 focus:ring-1 focus:ring-pink-200 transition-all duration-300 transform focus:scale-105 outline-none" }}
+    <div class="w-100" style="max-width:900px;">
+        <div class="text-center mb-0">
+            <img src="{% static 'images/logo_gesthar.svg' %}" alt="logo gesthar" style="max-width:260px;" class="img-fluid mx-auto mb-3">
+        </div>
+        <div class="card shadow-lg rounded-4 border-0" style="background: rgba(249,250,251,0.85); border-radius:1.5rem; margin-top:-18px;">
+            <div class="card-body p-4">
+                <div class="text-center mb-3">
+                    <img src="{% static 'images/logo_lg.png' %}" alt="logo linda gestante" style="max-width:180px;" class="img-fluid d-block mx-auto mb-3">
+                    <h2 class="text-center" style="color:var(--cor-fonte-rosa); font-weight:700; font-size:var(--fonte-titulo-login);">
+                        BEM-VINDO(A) AO <span style="font-weight:700">GESTHAR</span>
+                    </h2>
+                    <h3 class="text-center" style="color:var(--cor-fonte-rosa); font-weight:600; margin-bottom:1rem; font-size:var(--fonte-login);">SISTEMA DE GESTÃO!</h3>
                 </div>
 
-                <!-- Campo senha -->
-                <div>
-                    {{ form.password.label_tag }}
-                    {{ form.password|add_class:"w-full px-3 py-1 border-2 border-gray-400 rounded-xl focus:border-pink-200 focus:ring-1 focus:ring-pink-200 transition-all duration-300 transform focus:scale-105 outline-none" }}
-                </div>
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger" role="alert">
+                        {% for error in form.non_field_errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
 
-                <!-- Campo de esquecer a senha -->
-                <div class="flex justify-between items-center text-sm text-gray-600 hover:text-pink-600">
-                    <a href="#">Esqueceu sua senha? Clique aqui.</a>
-                </div>
+                        <form method="post" class="mx-auto" style="max-width:520px; padding-left:2rem; padding-right:2rem;">
+                    {% csrf_token %}
 
-                <button type="submit" class="bg-[#FF7690] text-white py-2 rounded mt-2 hover:bg-pink-600 w-44 mx-auto block font-semibold">
-                    ENTRAR
-                </button>
-            </form>
+                            <div class="mb-3">
+                                {{ form.username.label_tag }}
+                                {{ form.username|add_class:'form-control rounded-3 py-2' }}
+                                {% if form.username.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.username.errors|join:", " }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form.password.label_tag }}
+                                {{ form.password|add_class:'form-control rounded-3 py-2' }}
+                                {% if form.password.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.password.errors|join:", " }}</div>
+                                {% endif %}
+                            </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <a href="#" class="text-decoration-none text-muted">Esqueceu sua senha? Clique aqui.</a>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn botao-rosa py-2 fw-semibold">ENTRAR</button>
+                    </div>
+        </form>
+
+        <div class="text-center mt-3 text-muted small">&copy;Gesthar - 2025</div>
+            </div>
         </div>
     </div>
-
-    <footer class="mt-8 text-sm text-gray-500">&copy;Gesthar - 2025</footer>
-</body>
-</html>
+</div>
+{% endblock %}

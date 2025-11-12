@@ -46,30 +46,28 @@
   --tamanho-fonte-sidebar: 1.1rem; 
   --fonte-sidebar: var(--tamanho-fonte-sidebar);
   
-  /* Raio padrão dos botões rosa */
-  --radius-botao: 0.375rem;
-  
-  /* ------------------------------------ */ 
-  /* Texto (demais formatações) */ 
-  /* ------------------------------------ */ 
-  
-  
   /* ------------------------------------ */ 
   /* Botões */ 
   /* ------------------------------------ */
 
-
-
+  /* Raio padrão dos botões*/
+  --radius-botao: 0.375rem;
 } 
-/* Tipografia/global */
+
+
+/* ------------------------------------ */
+/* Configurações gerais */ 
+/* ------------------------------------ */
+
+/* Configurações de todas as páginas */ 
 body {
   font-family: "Montserrat", sans-serif;
   background-color: var(--cor-fundo-site);
   color: var(--cor-fonte-preta);
-  /* base font-size for general site text (except sidebar) */
   font-size: var(--fonte-texto);
 }
 
+/* Títulos das páginas */ 
 .titulo {
   font-size: var(--fonte-titulo);
   font-weight: bold;
@@ -77,8 +75,9 @@ body {
   margin-top: 1.5rem;
   margin-bottom: 1.5rem;
 }
+
+/* Títulos das seções de formulários */ 
 .subtitulo {
-  /* renamed from cabecalho-formulario */
   font-size: var(--fonte-subtitulo);
   color: var(--cor-fonte-rosa) !important;
   background-color: var(--cor-cabecalho-formulario) !important;
@@ -86,17 +85,23 @@ body {
   text-transform: uppercase;
   padding: 2%;
 }
+
+/* Cabeçalhos das tabelas */ 
 .table thead tr.cabecalho th,
 .table thead.cabecalho th,
 .cabecalho,
 th.cabecalho{
-  /* renamed from titulo-formulario -> subtitulo */
   font-size: var(--fonte-cabecalho);
   font-weight: bold;
   color: var(--cor-fonte-rosa) !important;
   background-color: var(--cor-fundo-cabecalho) !important;
 
 }
+
+
+/* ------------------------------------ */
+/* Botões */ 
+/* ------------------------------------ */
 
 .botao-rosa{
   background-color: var(--cor-botao-principal-rosa);
@@ -105,6 +110,7 @@ th.cabecalho{
   border: none;
   text-decoration: none;
 }
+
 .botao-rosa:hover {
   background-color: #ff5c76;
 
@@ -125,6 +131,7 @@ th.cabecalho{
   border: none;
   text-decoration: none;
 }
+
 .botao-amarelo{
   background-color: var(--cor-botao-amarelo);
   color: var(--cor-fonte-branca);
@@ -134,17 +141,11 @@ th.cabecalho{
 }
 
 
-/* ------------------------------------ */ 
-/* Configurações Variáveis */ 
-/* ------------------------------------ */ 
+/* ------------------------------------ */
+/* Formularios e Tabelas */ 
+/* ------------------------------------ */
 
-/* ------------------------------------ */ 
-/* Sidebar */ 
-/* ------------------------------------ */ 
-
-/* Força a cor padrão do texto em tabelas e cards, sem sobrescrever classes de cor
-   específicas (text-success, text-danger, text-lucro). Removido o !important para
-   permitir que utilitários de cor do Bootstrap e classes semânticas prevaleçam. */
+/* Forçando textos de tabelas e cards para ficarem na cor preta padrão */ 
 .table.product-list tbody td:not(.text-success):not(.text-danger):not(.text-lucro),
 .table.product-list tbody td a:not(.text-success):not(.text-danger):not(.text-lucro),
 .table.table-bordered.align-middle.mb-0 td:not(.text-success):not(.text-danger):not(.text-lucro),
@@ -153,55 +154,84 @@ th.cabecalho{
   color: var(--cor-fonte-preta);
 }
 
-/* Texto específico para lucro/pct: rosa para lucro absoluto */
+/* Força os subtítulos dentro dos cards a ocuparem toda a largura (não está funcionando perfeitamente, ajustarei depois) */
+.card .subtitulo {
+  display: block;
+  margin: 0 -1rem 0  -1rem;
+  padding: 0.75rem 1rem;
+  background-color: var(--cor-cabecalho-formulario) !important;
+  color: var(--cor-fonte-rosa) !important;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Remove dor de fundo e bordas dos cards */
+.address-card {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+/* Deixar o valor do lucro na cor rosa */
 .text-lucro {
   color: var(--cor-fonte-rosa);
 }
+
+
+/* ------------------------------------ */
+/* Menu Lateral (Sidebar) */
+/* ------------------------------------ */
 
 .link-sidebar:hover {
   background-color: var(--cor-botao-secundario-rosa);
   text-decoration: none;
 }
+
 .link-sidebar {
   color: var(--cor-fonte-preta);
   font-size: var(--tamanho-fonte-sidebar);
   text-decoration: none;
 }
+
+/* Configurações do ícone de seta para sidebar colapsavel */
 .chev {
   width: 20px;
   height: 20px;
   transition: transform 0.2s;
 }
+
 a[aria-expanded="true"] .chev {
   transform: rotate(90deg);
 }
+
 a[aria-expanded="false"] .chev {
   transform: rotate(0deg);
+}
 
 
+/* ------------------------------------ */
+/* Home Page */ 
+/* ------------------------------------ */
 
-} /* links principais do menu */
+/* Configuração dos links referentes à home_page */
 .offcanvas .nav-link {
   color: var(--cor-fonte-rosa);
   font-size: 14px;
   letter-spacing: 0.7px;
   text-decoration: none;
-} /* sub-itens */
+}
+
 .offcanvas .collapse a {
   color: var(--cor-texto-menu);
   font-size: 13px;
   text-decoration: none;
 }
+
 .offcanvas .collapse a:hover {
   text-decoration: underline;
-} /* espaçamento entre grupos */
+}
+
 .nav-item {
   padding-bottom: 6px;
   border-bottom: 1px solid #eee;
 }
-
-/* ------------------------------------ */
-/* Formularios */ 
-/* ------------------------------------ */
-
-
