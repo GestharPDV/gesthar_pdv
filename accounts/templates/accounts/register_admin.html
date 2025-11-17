@@ -18,10 +18,19 @@
                 <div class="text-center mb-3">
                     <img src="{% static 'images/logo_lg.png' %}" alt="logo linda gestante" style="max-width:180px;" class="img-fluid d-block mx-auto mb-3">
                     <h2 class="text-center" style="color:var(--cor-fonte-rosa); font-weight:700; font-size:var(--fonte-titulo-login);">
-                        CADASTRO DE USUÁRIO
+                        CADASTRO DE ADMINISTRADOR
                     </h2>
-                    <h3 class="text-center" style="color:var(--cor-fonte-rosa); font-weight:600; margin-bottom:1rem; font-size:var(--fonte-login);">CRIE SUA CONTA!</h3>
+                    <h3 class="text-center" style="color:var(--cor-fonte-rosa); font-weight:600; margin-bottom:1rem; font-size:var(--fonte-login);">CRIE UM SUPERUSUÁRIO!</h3>
                 </div>
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
 
                 {% if form.non_field_errors %}
                     <div class="alert alert-danger" role="alert">
@@ -122,14 +131,59 @@
                         {% endif %}
                     </div>
 
+                    <!-- Separador para campos de permissões -->
+                    <hr class="my-4">
+                    <h5 class="mb-3" style="color:var(--cor-fonte-rosa);">Permissões do Usuário</h5>
+
+                    <!-- É Staff -->
+                    <div class="mb-3 form-check">
+                        {{ form.is_staff|add_class:'form-check-input' }}
+                        <label for="{{ form.is_staff.id_for_label }}" class="form-check-label">
+                            {{ form.is_staff.label }}
+                        </label>
+                        {% if form.is_staff.help_text %}
+                            <small class="form-text text-muted d-block">{{ form.is_staff.help_text }}</small>
+                        {% endif %}
+                        {% if form.is_staff.errors %}
+                            <div class="invalid-feedback d-block text-danger">{{ form.is_staff.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- É Superusuário -->
+                    <div class="mb-3 form-check">
+                        {{ form.is_superuser|add_class:'form-check-input' }}
+                        <label for="{{ form.is_superuser.id_for_label }}" class="form-check-label">
+                            {{ form.is_superuser.label }}
+                        </label>
+                        {% if form.is_superuser.help_text %}
+                            <small class="form-text text-muted d-block">{{ form.is_superuser.help_text }}</small>
+                        {% endif %}
+                        {% if form.is_superuser.errors %}
+                            <div class="invalid-feedback d-block text-danger">{{ form.is_superuser.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- É Ativo -->
+                    <div class="mb-3 form-check">
+                        {{ form.is_active|add_class:'form-check-input' }}
+                        <label for="{{ form.is_active.id_for_label }}" class="form-check-label">
+                            {{ form.is_active.label }}
+                        </label>
+                        {% if form.is_active.help_text %}
+                            <small class="form-text text-muted d-block">{{ form.is_active.help_text }}</small>
+                        {% endif %}
+                        {% if form.is_active.errors %}
+                            <div class="invalid-feedback d-block text-danger">{{ form.is_active.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+
                     <div class="d-grid mb-3">
-                        <button type="submit" class="btn botao-rosa py-2 fw-semibold">CADASTRAR</button>
+                        <button type="submit" class="btn botao-rosa py-2 fw-semibold">CADASTRAR ADMINISTRADOR</button>
                     </div>
 
                     <div class="text-center">
                         <p class="text-muted small mb-0">
-                            Já possui uma conta? 
-                            <a href="{% url 'accounts:login' %}" class="text-decoration-none" style="color:var(--cor-fonte-rosa);">Faça login aqui</a>
+                            <a href="{% url 'global:home' %}" class="text-decoration-none" style="color:var(--cor-fonte-rosa);">← Voltar para a página inicial</a>
                         </p>
                     </div>
                 </form>
@@ -140,3 +194,4 @@
     </div>
 </div>
 {% endblock %}
+
