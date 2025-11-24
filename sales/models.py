@@ -3,10 +3,69 @@ from django.db import models, transaction
 from django.core.exceptions import ValidationError
 from decimal import Decimal
 
-# Herança do SoftDelete apenas para o Venda (Cabeçalho)
-
+from pytz import timezone
 from base.models import SoftDeleteModel
 from product.models import ProductVariation
+
+
+class CashRegister(SoftDeleteModel):
+    """
+    Representa a abertura do caixa por um operador.
+    O operador não consegue vender sem uma sessão aberta.
+    """
+
+    class Status(models.TextChoices):
+        OPEN = "OPEN", "Aberto"
+        CLOSED = "CLOSED", "Fechado"
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="cash_sessions",
+        verbose_name="Operador",
+    )
+
+    # Valores Monetários
+    opening_balance = models.DecimalField(
+        max_digits=12, decimal_places=2, verbose_name="Fundo de Troco (Abertura)"
+    )
+    closing_balance = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        verbose_name="Valor de Fechamento",
+    )
+
+    # Metadados de Tempo
+    opened_at = models.DateTimeField(auto_now_add=True, verbose_name="Abertura")
+    closed_at = models.DateTimeField(null=True, blank=True, verbose_name="Fechamento")
+
+    status = models.CharField(
+        max_length=10,
+        choices=Status.choices,
+        default=Status.OPEN,
+        verbose_name="Status",
+    )
+
+    class Meta:
+        verbose_name = "Sessão de Caixa"
+        verbose_name_plural = "Sessões de Caixa"
+        ordering = ["-opened_at"]
+
+    def __str__(self):
+        return f"Caixa #{self.pk} - {self.user} ({self.get_status_display()})"
+
+    def close_session(self, final_value):
+        """Fecha o caixa e registra o valor final conferido."""
+        if self.status == self.Status.CLOSED:
+            raise ValidationError("Este caixa já está fechado.")
+
+        self.closing_balance = final_value
+        self.closed_at = timezone.now()
+        self.status = self.Status.CLOSED
+        self.save()
+
 
 class Sale(SoftDeleteModel):
     class Status(models.TextChoices):
@@ -15,11 +74,19 @@ class Sale(SoftDeleteModel):
         CANCELED = "CANCELED", "Cancelada"  # Estornada (Devolveu estoque)
 
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, 
-        on_delete=models.PROTECT, 
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
         related_name="sales",
-        verbose_name="Vendedor/Operador"
-    )   
+        verbose_name="Vendedor/Operador",
+    )
+    cash_register_session = models.ForeignKey(
+        CashRegister,
+        on_delete=models.PROTECT,
+        related_name="sales",
+        verbose_name="Sessão de Caixa",
+        null=True,
+        blank=True,
+    )
 
     # Metadados
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Criação")
@@ -75,6 +142,14 @@ class Sale(SoftDeleteModel):
 
         if not self.items.exists():
             raise ValidationError("Não é possível concluir uma venda sem itens.")
+
+        if (
+            not self.cash_register_session
+            or self.cash_register_session.status != CashRegister.Status.OPEN
+        ):
+            raise ValidationError(
+                "A venda deve estar vinculada a uma sessão de caixa aberta."
+            )
 
         # Itera sobre os itens para baixar estoque
         for item in self.items.select_related("variation"):
