@@ -1,7 +1,6 @@
 from django.forms import ValidationError
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.db import transaction
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 
@@ -13,12 +12,17 @@ from .forms import AddItemForm
 def pdv_view(request):
     """
     Tela Principal do PDV.
-    Padrão: Sempre existe um Rascunho. Se não houver, cria um.
+    Busca ou Cria um Rascunho vinculado ao usuário logado.
     """
     # Busca a última venda em aberto (RASCUNHO)
     # Em produção, filtraria por request.user ou caixa_id
     sale, created = Sale.objects.get_or_create(
-        status=Sale.Status.DRAFT, defaults={"status": Sale.Status.DRAFT}
+        status=Sale.Status.DRAFT,
+        user=request.user,  
+        defaults={
+            "status": Sale.Status.DRAFT,
+            "user": request.user,  
+        },
     )
 
     if created:
@@ -35,9 +39,10 @@ def pdv_view(request):
 
 
 @require_POST
+@login_required
 def add_item_view(request):
     """Processa a adição de item via código de barras/SKU"""
-    sale = Sale.objects.filter(status=Sale.Status.DRAFT).first()
+    sale = Sale.objects.filter(status=Sale.Status.DRAFT, user=request.user).first()
     if not sale:
         return redirect("sales:pdv")
 
@@ -68,17 +73,27 @@ def add_item_view(request):
 @require_POST
 def remove_item_view(request, item_id):
     """Remove item do carrinho"""
-    item = get_object_or_404(SaleItem, pk=item_id, sale__status=Sale.Status.DRAFT)
+    item = get_object_or_404(
+        SaleItem, 
+        pk=item_id, 
+        sale__status=Sale.Status.DRAFT,
+        sale__user=request.user # <--- SEGURANÇA EXTRA
+    )
     item.delete()
     messages.warning(request, "Item removido.")
     return redirect("sales:pdv")
 
 
 @require_POST
+@login_required
 def complete_sale_view(request, sale_id):
     """Finaliza a venda (Baixa estoque e fecha caixa)"""
-    sale = get_object_or_404(Sale, pk=sale_id, status=Sale.Status.DRAFT)
-
+    sale = get_object_or_404(
+        Sale, 
+        pk=sale_id, 
+        status=Sale.Status.DRAFT,
+        user=request.user 
+    )
     try:
         sale.complete_sale()
         messages.success(request, f"Venda #{sale.pk} finalizada com sucesso!")

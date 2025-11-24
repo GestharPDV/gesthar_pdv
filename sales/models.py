@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models, transaction
 from django.core.exceptions import ValidationError
 from decimal import Decimal
@@ -12,6 +13,13 @@ class Sale(SoftDeleteModel):
         DRAFT = "DRAFT", "Rascunho"  # Pode editar tudo
         COMPLETED = "COMPLETED", "Concluída"  # Bloqueada (Baixou estoque)
         CANCELED = "CANCELED", "Cancelada"  # Estornada (Devolveu estoque)
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.PROTECT, 
+        related_name="sales",
+        verbose_name="Vendedor/Operador"
+    )   
 
     # Metadados
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Criação")
@@ -38,7 +46,7 @@ class Sale(SoftDeleteModel):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"Venda #{self.pk} ({self.get_status_display()})"
+        return f"Venda #{self.pk} - {self.user} ({self.get_status_display()})"
 
     def calculate_totals(self):
         """Recalcula os totais baseados nos itens atuais."""
