@@ -10,7 +10,7 @@ from .forms import AddItemForm
 
 
 @login_required
-def pos_view(request):
+def pdv_view(request):
     """
     Tela Principal do PDV.
     Padrão: Sempre existe um Rascunho. Se não houver, cria um.
@@ -39,7 +39,7 @@ def add_item_view(request):
     """Processa a adição de item via código de barras/SKU"""
     sale = Sale.objects.filter(status=Sale.Status.DRAFT).first()
     if not sale:
-        return redirect("sales:pos")
+        return redirect("sales:pdv")
 
     form = AddItemForm(request.POST)
 
@@ -62,7 +62,7 @@ def add_item_view(request):
         for error in form.errors.values():
             messages.error(request, error)
 
-    return redirect("sales:pos")
+    return redirect("sales:pdv")
 
 
 @require_POST
@@ -71,7 +71,7 @@ def remove_item_view(request, item_id):
     item = get_object_or_404(SaleItem, pk=item_id, sale__status=Sale.Status.DRAFT)
     item.delete()
     messages.warning(request, "Item removido.")
-    return redirect("sales:pos")
+    return redirect("sales:pdv")
 
 
 @require_POST
@@ -91,4 +91,4 @@ def complete_sale_view(request, sale_id):
     except Exception as e:
         messages.error(request, "Erro inesperado ao processar venda.")
 
-    return redirect("sales:pos")
+    return redirect("sales:pdv")

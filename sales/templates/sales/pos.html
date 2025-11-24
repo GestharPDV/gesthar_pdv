@@ -1,0 +1,183 @@
+{% extends 'global/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid pr-15 pl-15">
+  
+  <!-- TÍTULO E STATUS -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="titulo">PDV - FRENTE DE CAIXA</h1>
+    <span class="badge bg-warning text-dark fs-6">
+      VENDA #{{ sale.pk }} - {{ sale.get_status_display|upper }}
+    </span>
+  </div>
+
+  <!-- MENSAGENS DO SISTEMA (Feedback de Estoque/Sucesso) -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="row">
+    
+    <!-- COLUNA DA ESQUERDA: LISTA DE ITENS (O Cupom) -->
+    <div class="col-lg-8">
+      <div class="card border-light h-100 shadow-sm">
+        <div class="card-header bg-white">
+          <h2 class="subtitulo mb-0">ITENS DA VENDA</h2>
+        </div>
+        <div class="card-body p-0 table-responsive" style="max-height: 600px; overflow-y: auto;">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light sticky-top">
+              <tr>
+                <th scope="col" class="ps-4">#</th>
+                <th scope="col">PRODUTO</th>
+                <th scope="col" class="text-center">QTD</th>
+                <th scope="col" class="text-end">UNITÁRIO</th>
+                <th scope="col" class="text-end">TOTAL</th>
+                <th scope="col" class="text-center">AÇÃO</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in items %}
+              <tr>
+                <td class="ps-4 fw-bold text-muted">{{ forloop.counter }}</td>
+                <td>
+                  <div class="fw-bold">{{ item.product_name_snapshot }}</div>
+                  <small class="text-muted">SKU: {{ item.product_sku_snapshot }}</small>
+                </td>
+                <td class="text-center">
+                  <span class="badge bg-light text-dark border">{{ item.quantity }}</span>
+                </td>
+                <td class="text-end">R$ {{ item.unit_price|floatformat:2 }}</td>
+                <td class="text-end fw-bold">R$ {{ item.total_price|floatformat:2 }}</td>
+                <td class="text-center">
+                  <!-- Formulário para remover item (POST seguro) -->
+                  <form action="{% url 'sales:remove-item' item.pk %}" method="POST" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-danger border-0" title="Remover Item">
+                      ✕
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="6" class="text-center py-5 text-muted">
+                  <i class="bi bi-cart-x fs-1 d-block mb-2"></i>
+                  Nenhum item adicionado à venda.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- COLUNA DA DIREITA: CONTROLES E TOTAIS -->
+    <div class="col-lg-4">
+      
+      <!-- 1. FORMULÁRIO DE ADIÇÃO (BIPAR PRODUTO) -->
+      <div class="card border-light shadow-sm mb-4">
+        <div class="card-body bg-light">
+          <form action="{% url 'sales:add-item' %}" method="POST" id="add-item-form">
+            {% csrf_token %}
+            
+            <div class="mb-3">
+              <label for="{{ form.sku_or_barcode.id_for_label }}" class="form-label fw-bold text-muted small">CÓDIGO DE BARRAS / SKU</label>
+              {{ form.sku_or_barcode }}
+              <!-- Exibir erros específicos deste campo -->
+              {% if form.sku_or_barcode.errors %}
+                <div class="text-danger small mt-1">{{ form.sku_or_barcode.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="row g-2">
+              <div class="col-4">
+                <label for="{{ form.quantity.id_for_label }}" class="form-label fw-bold text-muted small">QTD</label>
+                {{ form.quantity }}
+              </div>
+              <div class="col-8 d-flex align-items-end">
+                <button type="submit" class="botao-verde w-100 py-2 fw-bold">
+                  ADICIONAR
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- 2. RESUMO FINANCEIRO -->
+      <div class="card border-light shadow-sm">
+        <div class="card-body">
+          <h3 class="subtitulo mb-4">RESUMO</h3>
+          
+          <div class="d-flex justify-content-between mb-2 text-muted">
+            <span>Subtotal ({{ items.count }} itens):</span>
+            <span>R$ {{ sale.gross_amount|floatformat:2 }}</span>
+          </div>
+          
+          <div class="d-flex justify-content-between mb-3 text-muted">
+            <span>Descontos:</span>
+            <span class="text-danger">- R$ {{ sale.discount_amount|floatformat:2 }}</span>
+          </div>
+
+          <hr>
+
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <span class="fs-4 fw-bold">TOTAL A PAGAR</span>
+            <span class="fs-2 fw-bold text-success">R$ {{ sale.net_amount|floatformat:2 }}</span>
+          </div>
+
+          <!-- BOTÃO DE FINALIZAR -->
+          <form action="{% url 'sales:complete-sale' sale.pk %}" method="POST" onsubmit="return confirm('Deseja realmente finalizar a venda? Esta ação baixará o estoque.');">
+            {% csrf_token %}
+            <button type="submit" class="botao-rosa w-100 py-3 fs-5 fw-bold shadow-sm" {% if not items %}disabled{% endif %}>
+              FINALIZAR VENDA (F2)
+            </button>
+          </form>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- SCRIPTS DE UX PARA O PDV -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    
+    // 1. Foco Automático no Código de Barras
+    // Sempre que a página carregar ou uma ação for feita, o foco volta para o input
+    const skuInput = document.querySelector('input[name="sku_or_barcode"]');
+    if (skuInput) {
+      skuInput.focus();
+      
+      // Se o usuário clicar fora, tenta devolver o foco após 5 segundos (comportamento de quiosque)
+      // Opcional: Remova se achar intrusivo
+      skuInput.addEventListener('blur', function() {
+        setTimeout(() => skuInput.focus(), 2000);
+      });
+    }
+
+    // 2. Atalhos de Teclado
+    document.addEventListener('keydown', function(event) {
+      // F2 para Finalizar Venda
+      if (event.key === 'F2') {
+        event.preventDefault();
+        const finishBtn = document.querySelector('.botao-rosa');
+        if (finishBtn && !finishBtn.disabled) {
+          finishBtn.click();
+        }
+      }
+    });
+
+  });
+</script>
+{% endblock %}
