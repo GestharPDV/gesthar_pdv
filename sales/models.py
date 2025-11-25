@@ -2,8 +2,7 @@ from django.conf import settings
 from django.db import models, transaction
 from django.core.exceptions import ValidationError
 from decimal import Decimal
-
-from pytz import timezone
+from django.utils import timezone
 from base.models import SoftDeleteModel
 from product.models import ProductVariation
 

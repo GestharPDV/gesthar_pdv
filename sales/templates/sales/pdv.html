@@ -7,6 +7,7 @@
   <!-- TÍTULO E STATUS -->
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="titulo">PDV - FRENTE DE CAIXA</h1>
+    <a href="{% url 'sales:close-register' %}" class="btn btn-outline-danger btn-sm">Fechar Caixa</a>
     <span class="badge bg-warning text-dark fs-6">
       VENDA #{{ sale.pk }} - {{ sale.get_status_display|upper }}
     </span>
@@ -137,7 +138,7 @@
           <!-- BOTÃO DE FINALIZAR -->
           <form action="{% url 'sales:complete-sale' sale.pk %}" method="POST" onsubmit="return confirm('Deseja realmente finalizar a venda? Esta ação baixará o estoque.');">
             {% csrf_token %}
-            <button type="submit" class="botao-rosa w-100 py-3 fs-5 fw-bold shadow-sm" {% if not items %}disabled{% endif %}>
+            <button type="submit" class="botao-rosa w-100 py-3 fs-5 fw-bold shadow-sm" {% if not items %} disabled {% endif %}>
               FINALIZAR VENDA (F2)
             </button>
           </form>

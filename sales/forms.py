@@ -1,6 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from product.models import ProductVariation
+from .models import CashRegister
 
 
 class AddItemForm(forms.Form):
@@ -42,3 +43,35 @@ class AddItemForm(forms.Form):
             raise ValidationError(f"O produto '{variation}' está sem estoque físico.")
 
         return variation
+
+
+class OpenRegisterForm(forms.ModelForm):
+    class Meta:
+        model = CashRegister
+        fields = ["opening_balance"]
+        widgets = {
+            "opening_balance": forms.NumberInput(
+                attrs={
+                    "class": "form-control form-control-lg",
+                    "placeholder": "0.00",
+                    "step": "0.01",
+                }
+            )
+        }
+        labels = {"opening_balance": "Fundo de Troco (R$)"}
+
+
+class CloseRegisterForm(forms.ModelForm):
+    class Meta:
+        model = CashRegister
+        fields = ["closing_balance"]
+        widgets = {
+            "closing_balance": forms.NumberInput(
+                attrs={
+                    "class": "form-control form-control-lg",
+                    "placeholder": "0.00",
+                    "step": "0.01",
+                }
+            )
+        }
+        labels = {"closing_balance": "Valor Conferido na Gaveta (R$)"}

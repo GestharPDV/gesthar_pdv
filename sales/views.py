@@ -3,10 +3,63 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
-
 from .models import Sale, SaleItem
-from .forms import AddItemForm
+from .forms import AddItemForm, CloseRegisterForm, OpenRegisterForm
+from .models import CashRegister
 
+
+@login_required
+def open_register_view(request):
+    """
+    Tela para informar o fundo de troco e abrir o caixa.
+    Bloqueia abertura se já existir um caixa aberto para este usuário.
+    """
+    if CashRegister.objects.filter(user=request.user, status=CashRegister.Status.OPEN).exists():
+        messages.info(request, "Você já possui um caixa aberto.")
+        return redirect('sales:pdv')
+
+    form = OpenRegisterForm(request.POST or None)
+    
+    if request.method == 'POST':
+        if form.is_valid():
+            session = form.save(commit=False)
+            session.user = request.user
+            session.status = CashRegister.Status.OPEN
+            session.save()
+            
+            messages.success(request, f"Caixa aberto com sucesso! Fundo de Troco: R$ {session.opening_balance}")
+            return redirect('sales:pdv')
+
+    return render(request, 'sales/open_register.html', {'form': form})
+
+
+@login_required
+def close_register_view(request):
+    """Tela para conferir valores e fechar o caixa."""
+    # Tenta buscar a sessão de forma segura
+    session = CashRegister.objects.filter(
+        user=request.user, 
+        status=CashRegister.Status.OPEN
+    ).first()
+
+    # Se não tiver caixa aberto, redireciona com aviso ao invés de dar erro 404
+    if not session:
+        messages.error(request, "Você não tem nenhum caixa aberto para fechar.")
+        return redirect('sales:pdv') # Ou redireciona para o Dashboard
+
+    form = CloseRegisterForm(request.POST or None)
+
+    if request.method == 'POST':
+        if form.is_valid():
+            final_value = form.cleaned_data['closing_balance']
+            try:
+                session.close_session(final_value)
+                messages.success(request, f"Caixa fechado. Valor final: R$ {final_value}")
+                return redirect('product:product-list') 
+            except ValidationError as e:
+                messages.error(request, e.message)
+
+    return render(request, 'sales/close_register.html', {'form': form, 'session': session})
 
 @login_required
 def pdv_view(request):
@@ -14,14 +67,23 @@ def pdv_view(request):
     Tela Principal do PDV.
     Busca ou Cria um Rascunho vinculado ao usuário logado.
     """
+    cash_register_session = CashRegister.objects.filter(
+        user=request.user, 
+        status=CashRegister.Status.OPEN
+    ).first()
+
+    if not cash_register_session:
+        messages.warning(request, "O caixa está fechado. Abra o caixa para começar a vender.")
+        return redirect('sales:open-register')
+
     # Busca a última venda em aberto (RASCUNHO)
     # Em produção, filtraria por request.user ou caixa_id
     sale, created = Sale.objects.get_or_create(
         status=Sale.Status.DRAFT,
-        user=request.user,  
+        user=request.user,
         defaults={
             "status": Sale.Status.DRAFT,
-            "user": request.user,  
+            "user": request.user,
         },
     )
 
@@ -35,7 +97,7 @@ def pdv_view(request):
         "items": items,
         "form": AddItemForm(),  # O formulário de bipar produto
     }
-    return render(request, "sales/pos.html", context)
+    return render(request, "sales/pdv.html", context)
 
 
 @require_POST
@@ -74,10 +136,10 @@ def add_item_view(request):
 def remove_item_view(request, item_id):
     """Remove item do carrinho"""
     item = get_object_or_404(
-        SaleItem, 
-        pk=item_id, 
+        SaleItem,
+        pk=item_id,
         sale__status=Sale.Status.DRAFT,
-        sale__user=request.user # <--- SEGURANÇA EXTRA
+        sale__user=request.user,  # <--- SEGURANÇA EXTRA
     )
     item.delete()
     messages.warning(request, "Item removido.")
@@ -89,10 +151,7 @@ def remove_item_view(request, item_id):
 def complete_sale_view(request, sale_id):
     """Finaliza a venda (Baixa estoque e fecha caixa)"""
     sale = get_object_or_404(
-        Sale, 
-        pk=sale_id, 
-        status=Sale.Status.DRAFT,
-        user=request.user 
+        Sale, pk=sale_id, status=Sale.Status.DRAFT, user=request.user
     )
     try:
         sale.complete_sale()
