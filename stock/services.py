@@ -1,7 +1,8 @@
 from django.db import transaction
 from decimal import Decimal
 from user.models import UserGesthar
-from product.models import ProductVariation, StockMovement
+from product.models import ProductVariation
+from .models import StockMovement
 
 @transaction.atomic
 def add_stock(
@@ -61,6 +62,7 @@ def remove_stock(
     Remove uma quantidade de estoque de uma variação de produto e registra o movimento de forma atômica. Garante que o estoque não fique negativo.
     """
     VALID_MOVEMENT_TYPES = {
+        StockMovement.MovementType.VENDA,
         StockMovement.MovementType.SAIDA,
         StockMovement.MovementType.AJUSTE_SAIDA,
     }
