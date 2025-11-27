@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import DetailView, ListView
 from django.db.models import Q
+import re  # Importação necessária para limpar a busca
 
 from .models import UserGesthar
 from .form import UserGestharChangeForm
@@ -26,13 +27,24 @@ class UserListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     def get_queryset(self):
         queryset = super().get_queryset()
         query = self.request.GET.get('query')
+        
         if query:
-            queryset = queryset.filter(
-                Q(first_name__icontains=query) |
-                Q(last_name__icontains=query) |
-                Q(email__icontains=query) |
-                Q(cpf__icontains=query)
-            )
+            # Cria uma versão da busca contendo apenas números para comparar com CPF/Telefone
+            query_numbers = re.sub(r'[^0-9]', '', query)
+
+            # Monta os filtros
+            q_filter = Q(first_name__icontains=query) | \
+                       Q(last_name__icontains=query) | \
+                       Q(email__icontains=query) | \
+                       Q(role__icontains=query)
+
+            # Se a busca tiver números, adiciona filtro por CPF e Telefone usando a versão limpa
+            if query_numbers:
+                q_filter |= Q(cpf__icontains=query_numbers)
+                q_filter |= Q(phone_number__icontains=query_numbers)
+
+            queryset = queryset.filter(q_filter)
+            
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -48,12 +60,9 @@ def profile_edit_view(request, pk):
     if request.method == "POST":
         form = UserGestharChangeForm(request.POST, instance=user)
         if form.is_valid():
-            # Verifica se o usuário está tentando inativar a si mesmo
             is_active = form.cleaned_data.get('is_active')
             
-            # Se for o próprio usuário e ele estiver tentando desmarcar o ativo (is_active=False)
             if user == request.user and is_active is False:
-                # Adiciona o erro aos "non_field_errors" (None) para aparecer no alerta do topo da página
                 form.add_error(None, "Ação bloqueada: Você não pode inativar seu próprio usuário, pois isso o desconectaria do sistema.")
             else:
                 form.save()
