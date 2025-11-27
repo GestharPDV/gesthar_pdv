@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from .models import Sale, SaleItem
-from .forms import AddItemForm, CloseRegisterForm, OpenRegisterForm
+from .forms import AddItemForm, CloseRegisterForm, OpenRegisterForm, IdentifyCustomerForm
 from .models import CashRegister
 
 
@@ -84,6 +84,7 @@ def pdv_view(request):
         defaults={
             "status": Sale.Status.DRAFT,
             "user": request.user,
+            "cash_register_session": cash_register_session,
         },
     )
 
@@ -95,7 +96,8 @@ def pdv_view(request):
     context = {
         "sale": sale,
         "items": items,
-        "form": AddItemForm(),  # O formulário de bipar produto
+        "form": AddItemForm(),
+        "customer_form": IdentifyCustomerForm(),
     }
     return render(request, "sales/pdv.html", context)
 
@@ -165,4 +167,25 @@ def complete_sale_view(request, sale_id):
     except Exception as e:
         messages.error(request, "Erro inesperado ao processar venda.")
 
+    return redirect("sales:pdv")
+
+# Identificar Cliente na Venda
+@require_POST
+@login_required
+def identify_customer_view(request):
+    """Vincula um cliente à venda atual (Rascunho)."""
+    sale = Sale.objects.filter(status=Sale.Status.DRAFT, user=request.user).first()
+    if not sale:
+        return redirect("sales:pdv")
+
+    form = IdentifyCustomerForm(request.POST)
+    if form.is_valid():
+        customer = form.cleaned_data['cpf_cnpj']
+        sale.customer = customer
+        sale.save(update_fields=['customer'])
+        messages.success(request, f"Cliente identificado: {customer.name}")
+    else:
+        for error in form.errors.values():
+            messages.error(request, error)
+    
     return redirect("sales:pdv")

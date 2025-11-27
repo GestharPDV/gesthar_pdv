@@ -10,7 +10,6 @@ from product.models import ProductVariation
 from stock.services import remove_stock, add_stock
 from stock.models import StockMovement
 
-
 class CashRegister(SoftDeleteModel):
     """
     Representa o 'Turno de Caixa' ou a 'Gaveta'.
@@ -81,6 +80,15 @@ class Sale(SoftDeleteModel):
         on_delete=models.PROTECT,
         related_name="sales",
         verbose_name="Vendedor/Operador",
+    )
+
+    customer = models.ForeignKey(
+        'customer.Customer', 
+        on_delete=models.SET_NULL,
+        related_name="purchases",
+        verbose_name="Cliente",
+        null=True,
+        blank=True
     )
 
     cash_register_session = models.ForeignKey(
