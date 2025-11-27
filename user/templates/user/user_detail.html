@@ -1,12 +1,144 @@
-<!-- {% extends 'global/base.html' %}
+{% extends 'global/base.html' %}
+{% load static %}
+
 {% block content %}
-  <h2>Meu Perfil</h2>
+<div class="pr-20 pl-20">
+  
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="titulo">DETALHES DO USUÁRIO</h1>
 
-  <p><strong>Nome:</strong> {{ user_obj.first_name }} {{ user_obj.last_name }}</p>
-  <p><strong>Email:</strong> {{ user_obj.email }}</p>
-  <p><strong>CPF:</strong> {{ user_obj.cpf }}</p>
-  <p><strong>Telefone:</strong> {{ user_obj.phone_number }}</p>
-  <p><strong>Data de Admissão:</strong> {{ user_obj.hire_date }}</p>
+    <!-- Botão Voltar -->
+    <a href="{% url 'user:user-list' %}" class="botao-rosa p-2 px-3 fw-bold text-uppercase text-decoration-none">
+      &larr; Voltar
+    </a>
+  </div>
 
-  <a href="{% url 'user:user-edit' %}">Editar Perfil</a>
-{% endblock %} -->
+  <!-- Informações Pessoais -->
+  <div class="card border-light mb-4 shadow-sm">
+    <h2 class="subtitulo">Informações Pessoais</h2>
+    <div class="card-body">
+
+      <!-- Linha 1: ID, Nome, Status -->
+      <div class="row mb-3">
+        <div class="col-md-2 mb-3">
+            <small class="d-block text-uppercase text-muted">ID</small>
+            <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{{ user_obj.id|stringformat:"03d" }}</p>
+        </div>
+        <div class="col-md-6 mb-3">
+          <small class="d-block text-uppercase text-muted">Nome Completo</small>
+          <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{{ user_obj.first_name }} {{ user_obj.last_name }}</p>
+        </div>
+        <div class="col-md-4 mb-3">
+          <small class="d-block text-uppercase text-muted">Status</small>
+          {% if user_obj.is_active %}
+          <span class="fs-5 fw-semibold text-success text-uppercase">Ativo</span>
+          {% else %}
+          <span class="fs-5 fw-semibold text-danger text-uppercase">Inativo</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Linha 2: Email, CPF, Telefone -->
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <small class="d-block text-uppercase text-muted">Email</small>
+          <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{{ user_obj.email }}</p>
+        </div>
+        <div class="col-md-4 mb-3">
+          <small class="d-block text-uppercase text-muted">CPF</small>
+          <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">
+            {% if user_obj.cpf and user_obj.cpf|length == 11 %}
+              <!-- Formata CPF: 123.456.789-00 -->
+              {{ user_obj.cpf|slice:":3" }}.{{ user_obj.cpf|slice:"3:6" }}.{{ user_obj.cpf|slice:"6:9" }}-{{ user_obj.cpf|slice:"9:" }}
+            {% else %}
+              {{ user_obj.cpf|default:"-" }}
+            {% endif %}
+          </p>
+        </div>
+        <div class="col-md-4 mb-3">
+          <small class="d-block text-uppercase text-muted">Telefone</small>
+          <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">
+            {% if user_obj.phone_number %}
+                {% if user_obj.phone_number|length == 11 %}
+                    <!-- Formata Celular: (11) 98765-4321 -->
+                    ({{ user_obj.phone_number|slice:":2" }}) {{ user_obj.phone_number|slice:"2:7" }}-{{ user_obj.phone_number|slice:"7:" }}
+                {% elif user_obj.phone_number|length == 10 %}
+                    <!-- Formata Fixo: (11) 3333-4444 -->
+                    ({{ user_obj.phone_number|slice:":2" }}) {{ user_obj.phone_number|slice:"2:6" }}-{{ user_obj.phone_number|slice:"6:" }}
+                {% else %}
+                    {{ user_obj.phone_number }}
+                {% endif %}
+            {% else %}
+                -
+            {% endif %}
+          </p>
+        </div>
+      </div>
+      
+      <!-- Linha 3: Data de Nascimento -->
+      <div class="row">
+         <div class="col-md-4 mb-3">
+          <small class="d-block text-uppercase text-muted">Data de Nascimento</small>
+          <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{{ user_obj.birth_date|date:"d/m/Y"|default:"-" }}</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Dados Profissionais -->
+  <div class="card border-light mb-4 shadow-sm">
+    <h2 class="subtitulo">Dados Profissionais</h2>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <small class="d-block text-uppercase text-muted">Cargo/Função</small>
+          <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{{ user_obj.role|default:"-" }}</p>
+        </div>
+        <div class="col-md-4 mb-3">
+          <small class="d-block text-uppercase text-muted">Data de Admissão</small>
+          <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">
+            {{ user_obj.hire_date|date:"d/m/Y"|default:"-" }}
+          </p>
+        </div>
+        <div class="col-md-4 mb-3">
+          <small class="d-block text-uppercase text-muted">Data de Saída</small>
+          <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">
+            {{ user_obj.exit_date|date:"d/m/Y"|default:"-" }}
+          </p>
+        </div>
+      </div>
+
+      <hr style="color: var(--cor-fundo-linha);">
+      
+      <!-- Observações -->
+      <div>
+        <small class="d-block text-uppercase text-muted">Observações</small>
+        <p class="fw-semibold" style="color: var(--cor-fonte-preta);">
+            {{ user_obj.notes|default:"Nenhuma observação registrada."|linebreaks }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Barra de Ações Inferior -->
+  <div class="mt-4 d-flex flex-wrap gap-3">
+      
+      <!-- Botão Alterar Senha -->
+      <a href="#" class="botao-verde p-3 px-4 fw-bold text-uppercase text-decoration-none shadow-sm">
+        Alterar Senha
+      </a>
+
+      <!-- Botão Editar (Amarelo) -->
+      <a href="{% url 'user:user-edit' pk=user_obj.pk %}" class="botao-amarelo p-3 px-4 fw-bold text-uppercase text-decoration-none shadow-sm" style="color: #555;">
+          Editar Usuário
+      </a>
+
+      <!-- Botão Excluir (Vermelho) -->
+      <a href="{% url 'user:user-delete' pk=user_obj.pk %}" class="botao-vermelho p-3 px-4 fw-bold text-uppercase text-decoration-none shadow-sm">
+          Excluir Usuário
+      </a>
+  </div>
+
+</div>
+{% endblock %}
