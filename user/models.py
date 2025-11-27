@@ -59,6 +59,18 @@ class UserGesthar(AbstractUser):
     hire_date = models.DateField(
         blank=True, verbose_name="Data de Contratação", null=True
     )
+    birth_date = models.DateField(
+        blank=True, verbose_name="Data de Nascimento", null=True
+    )
+    role = models.CharField(
+        max_length=100, verbose_name="Cargo/Função", blank=True, null=True
+    )
+    notes = models.TextField(
+        verbose_name="Observações", blank=True, null=True
+    )
+    exit_date = models.DateField(
+        blank=True, verbose_name="Data de Saída", null=True
+    )
 
     # Definindo o campo de autenticação para ser o email
     USERNAME_FIELD = "email"
