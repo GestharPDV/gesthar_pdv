@@ -3,6 +3,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
+
+from product.models import ProductVariation
 from .models import Sale, SaleItem, CashRegister, SalePayment
 from .forms import (
     AddItemForm,
@@ -118,6 +120,7 @@ def pdv_view(request):
     payments = sale.payments.all().order_by("created_at")
     # Cria o formulário de pagamento com o valor restante
     payment_form = PaymentForm(initial={"amount": sale.remaining_balance})
+    available_products = ProductVariation.active.select_related('product', 'color', 'size').order_by('product__name')
 
     context = {
         "sale": sale,
@@ -125,6 +128,7 @@ def pdv_view(request):
         "payments": payments,
         "form": AddItemForm(),
         "payment_form": payment_form,
+        "available_products": available_products, 
         "customer_form": IdentifyCustomerForm(),
     }
     return render(request, "sales/pdv.html", context)
