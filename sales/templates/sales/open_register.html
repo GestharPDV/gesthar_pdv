@@ -1,0 +1,38 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+<div class="container d-flex align-items-center justify-content-center" style="min-height: 80vh;">
+  <div class="card border-0 shadow-lg" style="max-width: 500px; width: 100%;">
+    <div class="card-header bg-primary text-white text-center py-4">
+      <h2 class="mb-0 fw-bold">ABERTURA DE CAIXA</h2>
+      <p class="mb-0 small opacity-75">Inicie seu turno de vendas</p>
+    </div>
+    
+    <div class="card-body p-5">
+      <form method="POST">
+        {% csrf_token %}
+        
+        <div class="mb-4 text-center">
+          <label for="{{ form.opening_balance.id_for_label }}" class="form-label text-muted fw-bold">
+            FUNDO DE TROCO (R$)
+          </label>
+          {{ form.opening_balance }}
+          {% if form.opening_balance.errors %}
+            <div class="text-danger small mt-1">{{ form.opening_balance.errors.0 }}</div>
+          {% endif %}
+          <div class="form-text">Informe o valor em dinheiro físico na gaveta.</div>
+        </div>
+
+        <div class="d-grid gap-2">
+          <button type="submit" class="btn btn-primary btn-lg fw-bold py-3">
+            ABRIR CAIXA
+          </button>
+          <a href="{% url 'product:product-list' %}" class="btn btn-link text-muted text-decoration-none">
+            Voltar para Dashboard
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

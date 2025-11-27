@@ -1,0 +1,44 @@
+{% extends 'global/base.html' %}
+
+{% block content %}
+<div class="container d-flex align-items-center justify-content-center" style="min-height: 80vh;">
+  <div class="card border-0 shadow-lg" style="max-width: 500px; width: 100%;">
+    <div class="card-header bg-danger text-white text-center py-4">
+      <h2 class="mb-0 fw-bold">FECHAMENTO DE CAIXA</h2>
+      <p class="mb-0 small opacity-75">Sessão #{{ session.pk }} iniciada em {{ session.opened_at|date:"H:i" }}</p>
+    </div>
+    
+    <div class="card-body p-5">
+      
+      <div class="alert alert-light border text-center mb-4">
+        <small class="text-muted d-block">Fundo de Troco Inicial</small>
+        <span class="fw-bold fs-5">R$ {{ session.opening_balance|floatformat:2 }}</span>
+      </div>
+
+      <form method="POST" onsubmit="return confirm('Tem certeza que deseja fechar o caixa? Esta ação é irreversível.');">
+        {% csrf_token %}
+        
+        <div class="mb-4 text-center">
+          <label for="{{ form.closing_balance.id_for_label }}" class="form-label text-muted fw-bold">
+            VALOR EM GAVETA (CONFERÊNCIA)
+          </label>
+          {{ form.closing_balance }}
+          {% if form.closing_balance.errors %}
+            <div class="text-danger small mt-1">{{ form.closing_balance.errors.0 }}</div>
+          {% endif %}
+          <div class="form-text">Conte o dinheiro e informe o valor total.</div>
+        </div>
+
+        <div class="d-grid gap-2">
+          <button type="submit" class="btn btn-danger btn-lg fw-bold py-3">
+            ENCERRAR TURNO
+          </button>
+          <a href="{% url 'sales:pdv' %}" class="btn btn-outline-secondary">
+            Voltar para Vendas
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

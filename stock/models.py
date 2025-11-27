@@ -8,6 +8,7 @@ class StockMovement(models.Model):
     class MovementType(models.TextChoices):
         ENTRADA = "ENTRADA", "Entrada"
         SAIDA = "SAIDA", "Saída"
+        VENDA = "VENDA", "Venda"
         AJUSTE_SAIDA = "AJUSTE_SAIDA", "Ajuste (Saída)"
         AJUSTE_ENTRADA = "AJUSTE_ENTRADA", "Ajuste (Entrada)"
         DEVOLUCAO = "DEVOLUCAO", "Devolução"
@@ -42,12 +43,11 @@ class StockMovement(models.Model):
     supplier = models.ForeignKey(
         Supplier,
         on_delete=models.SET_NULL,  # Se um fornecedor for deletado, não perdemos o histórico
-        null=True,                 
-        blank=True,                
+        null=True,
+        blank=True,
         related_name="stock_movements",
         verbose_name="Fornecedor",
     )
-
 
     class Meta:
         verbose_name = "Movimento de Estoque"
