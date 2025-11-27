@@ -1,279 +1,345 @@
 {% extends 'global/base.html' %}
 {% load static %}
-
+{% block main_class %}
+  p-0 overflow-hidden
+{% endblock %}
 {% block content %}
-<div class="container-fluid pr-15 pl-15">
-  
-  <!-- TÍTULO E STATUS -->
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="titulo">PDV - FRENTE DE CAIXA</h1>
-    <a href="{% url 'sales:close-register' %}" class="btn btn-outline-danger btn-sm">Fechar Caixa</a>
-    <span class="badge bg-warning text-dark fs-6">
-      VENDA #{{ sale.pk }} - {{ sale.get_status_display|upper }}
-    </span>
-  </div>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
 
-  <!-- MENSAGENS DO SISTEMA (Feedback de Estoque/Sucesso) -->
-  {% if messages %}
-    {% for message in messages %}
-      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-      </div>
-    {% endfor %}
-  {% endif %}
-
-  <div class="row">
+  <style>
+    :root {
+      --primary-color: #ff4678;
+      --primary-hover: #e03565;
+      --bg-light: #ffffff;
+      --bg-surface: #f8f8f8;
+      --text-primary: #555555;
+      --text-secondary: #806066;
+      --border-color: #e5e5e5;
+    }
     
-    <!-- COLUNA DA ESQUERDA: LISTA DE ITENS (O Cupom) -->
-    <div class="col-lg-8">
-      <div class="card border-light h-100 shadow-sm">
-        <div class="card-header bg-white">
-          <h2 class="subtitulo mb-0">ITENS DA VENDA</h2>
+    body {
+      font-family: 'Manrope', sans-serif;
+      background-color: var(--bg-light);
+      color: var(--text-primary);
+      height: 100vh;
+      overflow: hidden;
+    }
+    
+    .text-pink {
+      color: var(--primary-color) !important;
+    }
+    .bg-surface {
+      background-color: var(--bg-surface);
+    }
+    .border-custom {
+      border-color: var(--border-color) !important;
+    }
+    
+    .btn-pink {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      font-weight: 700;
+      transition: all 0.2s;
+    }
+    .btn-pink:hover {
+      background-color: var(--primary-hover);
+      color: white;
+    }
+    
+    .btn-category {
+      height: 100px;
+      background-color: var(--bg-surface);
+      border: 1px solid transparent;
+      color: var(--text-primary);
+      border-radius: 0.5rem;
+      transition: 0.2s;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+    .btn-category:hover {
+      background-color: #fff0f5;
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+      transform: translateY(-2px);
+    }
+    
+    .search-input {
+      border: none;
+      background-color: var(--bg-surface);
+      font-size: 1.1rem;
+      padding: 1rem;
+    }
+    .search-input:focus {
+      outline: none;
+      background-color: #fff;
+      box-shadow: inset 0 0 0 2px var(--primary-color);
+    }
+    
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background-color: #ccc;
+      border-radius: 20px;
+    }
+    
+    /* Ajuste para tabela não quebrar */
+    .table-fixed-layout {
+      table-layout: fixed;
+      width: 100%;
+    }
+  </style>
+
+  <header class="d-flex justify-content-between align-items-center px-4 py-2 border-bottom border-custom shadow-sm bg-white" style="height: 70px;">
+    <div class="d-flex align-items-center gap-2">
+      <span class="material-symbols-outlined text-pink fs-2">storefront</span>
+      <h1 class="h5 fw-bold m-0">PDV System</h1>
+    </div>
+    <div class="d-flex align-items-center gap-4">
+      <span class="badge bg-pink bg-opacity-10 text-pink px-3 py-2 rounded-3 fw-bold">CAIXA LIVRE</span>
+      <div class="d-flex align-items-center gap-2 text-end">
+        <div>
+          <p class="m-0 fw-bold small">Operador</p>
+          <p class="m-0 text-muted x-small" style="font-size: 0.8rem;">Caixa 01</p>
         </div>
-        <div class="card-body p-0 table-responsive" style="max-height: 600px; overflow-y: auto;">
-          <table class="table table-hover align-middle mb-0">
-            <thead class="table-light sticky-top">
-              <tr>
-                <th scope="col" class="ps-4">#</th>
-                <th scope="col">PRODUTO</th>
-                <th scope="col" class="text-center">QTD</th>
-                <th scope="col" class="text-end">UNITÁRIO</th>
-                <th scope="col" class="text-end">TOTAL</th>
-                <th scope="col" class="text-center">AÇÃO</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for item in items %}
-              <tr>
-                <td class="ps-4 fw-bold text-muted">{{ forloop.counter }}</td>
-                <td>
-                  <div class="fw-bold">{{ item.product_name_snapshot }}</div>
-                  <small class="text-muted">SKU: {{ item.product_sku_snapshot }}</small>
-                </td>
-                <td class="text-center">
-                  <span class="badge bg-light text-dark border">{{ item.quantity }}</span>
-                </td>
-                <td class="text-end">R$ {{ item.unit_price|floatformat:2 }}</td>
-                <td class="text-end fw-bold">R$ {{ item.total_price|floatformat:2 }}</td>
-                <td class="text-center">
-                  <!-- Formulário para remover item (POST seguro) -->
-                  <form action="{% url 'sales:remove-item' item.pk %}" method="POST" class="d-inline">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-outline-danger border-0" title="Remover Item">
-                      ✕
-                    </button>
-                  </form>
-                </td>
-              </tr>
-              {% empty %}
-              <tr>
-                <td colspan="6" class="text-center py-5 text-muted">
-                  <i class="bi bi-cart-x fs-1 d-block mb-2"></i>
-                  Nenhum item adicionado à venda.
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white" style="width: 40px; height: 40px;">
+          <span class="material-symbols-outlined">person</span>
         </div>
       </div>
     </div>
+  </header>
 
-    <!-- COLUNA DA DIREITA: CONTROLES E TOTAIS -->
-    <div class="col-lg-4">
-      
-      <!-- 1. FORMULÁRIO DE ADIÇÃO (BIPAR PRODUTO) -->
-      <div class="card border-light shadow-sm mb-4">
-        <div class="card-body bg-light">
+  <div class="container-fluid h-100">
+    <div class="row h-100 pb-5">
+      <div class="col-lg-5 col-xl-4 d-flex flex-column border-end border-custom bg-surface h-100 p-0">
+        <div class="p-4 pb-2">
+          <h2 class="h6 fw-bold text-uppercase text-secondary ls-1">Itens da Venda</h2>
+        </div>
+
+        <div class="flex-grow-1 overflow-auto custom-scroll px-3">
+          <div class="card border-custom shadow-sm h-100 border-0">
+            <div class="table-responsive h-100">
+              <table class="table table-borderless m-0 align-middle">
+                <thead class="bg-light border-bottom border-custom text-secondary small sticky-top">
+                  <tr>
+                    <th class="ps-3" style="width: 50%;">Item</th>
+                    <th class="text-center" style="width: 15%;">Qtd</th>
+                    <th class="text-end" style="width: 15%;">V.Unit</th>
+                    <th class="text-end" style="width: 15%;">Total</th>
+                    <th class="text-center pe-3" style="width: 5%;"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for item in items %}
+                    <tr class="border-bottom border-light hover:bg-gray-50">
+                      <td class="ps-3 py-3">
+                        <div class="fw-bold text-dark lh-sm text-break">
+                          {# AQUI ESTAVA O ERRO: O caminho é variation.product #}
+                          {{ item.variation.product.name|default:item.variation.product.name|default:'Produto sem nome' }}
+                        </div>
+                        <div class="d-flex align-items-center gap-2 mt-1">
+                          <small class="text-muted bg-light border px-1 rounded" style="font-size: 0.7rem;">{{ item.variation.sku}}</small>
+                          {# Se a variação tiver nome próprio (ex: Tamanho M), mostra aqui #}
+                          {% if item.variation.name and item.variation.name != 'Padrão' %}
+                            <small class="text-secondary" style="font-size: 0.7rem;">{{ item.variation.name }}</small>
+                          {% endif %}
+                        </div>
+                      </td>
+
+                      <td class="text-center fw-bold text-secondary fs-6">{{ item.quantity }}</td>
+
+                      <td class="text-end text-muted small">
+                        <div style="font-size: 0.85rem;">{{ item.unit_price|floatformat:2 }}</div>
+                      </td>
+
+                      <td class="text-end fw-bold text-dark fs-6">{{ item.total_price|floatformat:2 }}</td>
+
+                      <td class="text-center pe-2">
+                        <form action="{% url 'sales:remove-item' item.pk %}" method="POST" class="d-inline">
+                          {% csrf_token %}
+                          <button type="submit" class="btn btn-link text-decoration-none p-2 border-0 text-secondary opacity-50 hover-opacity-100" title="Remover item" onmouseover="this.style.color='#FF4678'; this.style.opacity='1';" onmouseout="this.style.color='#806066'; this.style.opacity='0.5';"><span class="material-symbols-outlined fs-5">delete</span></button>
+                        </form>
+                      </td>
+                    </tr>
+                  {% empty %}
+                    <tr>
+                      <td colspan="5" class="text-center py-5 text-muted">
+                        <div class="py-5 opacity-50">
+                          <span class="material-symbols-outlined" style="font-size: 4rem;">shopping_cart_off</span>
+                          <p class="mt-3 fw-medium">
+                            Caixa livre.<br />Bipe um produto para começar.
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-auto p-4 bg-white border-top border-custom shadow-lg" style="z-index: 10;">
+          <div class="d-flex justify-content-between mb-2 text-secondary">
+            <span>Subtotal</span>
+            <span>R$ {{ sale.net_amount|floatformat:2 }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-3 text-secondary">
+            <span>Descontos</span>
+            <span>R$ 0,00</span>
+          </div>
+          <hr class="border-custom" />
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="h4 fw-bold m-0 text-dark">Total</span>
+            <span class="h2 fw-bold m-0 text-pink">R$ {{ sale.net_amount|floatformat:2 }}</span>
+          </div>
+
+          <button class="btn btn-outline-danger w-100 mt-3 border-0 bg-danger bg-opacity-10 text-danger fw-bold py-2"><i class="bi bi-trash me-2"></i> Cancelar Venda</button>
+        </div>
+      </div>
+
+      <div class="col-lg-7 col-xl-8 d-flex flex-column h-100 p-4 bg-white">
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm border-0" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+
+        <div class="mb-4">
           <form action="{% url 'sales:add-item' %}" method="POST" id="add-item-form">
             {% csrf_token %}
-            
-            <div class="mb-3">
-              <label for="{{ form.sku_or_barcode.id_for_label }}" class="form-label fw-bold text-muted small">CÓDIGO DE BARRAS / SKU</label>
-              {{ form.sku_or_barcode }}
-              <!-- Exibir erros específicos deste campo -->
-              {% if form.sku_or_barcode.errors %}
-                <div class="text-danger small mt-1">{{ form.sku_or_barcode.errors.0 }}</div>
-              {% endif %}
-            </div>
-
-            <div class="row g-2">
-              <div class="col-4">
-                <label for="{{ form.quantity.id_for_label }}" class="form-label fw-bold text-muted small">QTD</label>
-                {{ form.quantity }}
-              </div>
-              <div class="col-8 d-flex align-items-end">
-                <button type="submit" class="botao-verde w-100 py-2 fw-bold">
-                  ADICIONAR
-                </button>
-              </div>
+            <div class="input-group input-group-lg border rounded-3 overflow-hidden shadow-sm">
+              <span class="input-group-text bg-surface border-0 ps-3"><span class="material-symbols-outlined text-secondary">search</span></span>
+              <input type="text" name="{{ form.sku_or_barcode.name }}" id="{{ form.sku_or_barcode.id_for_label }}" class="form-control search-input" placeholder="Buscar por nome, código ou escanear produto..." autofocus />
             </div>
           </form>
         </div>
-      </div>
 
-      <div class="card border-light shadow-sm">
-    <div class="card-header bg-white py-3">
-        <h5 class="mb-0 text-muted fw-bold"><i class="bi bi-credit-card me-2"></i>PAGAMENTO</h5>
-    </div>
-    <div class="card-body p-3">
-        
-        <!-- 1. LISTA DE PAGAMENTOS JÁ LANÇADOS -->
-        {% if payments %}
-        <div class="table-responsive mb-3">
-            <table class="table table-sm table-borderless mb-0 bg-light rounded">
-                <tbody>
-                    {% for payment in payments %}
-                    <tr class="border-bottom">
-                        <td class="ps-3 align-middle text-muted small">{{ payment.get_method_display }}</td>
-                        <td class="align-middle text-end fw-bold">R$ {{ payment.amount|floatformat:2 }}</td>
-                        <td class="pe-2 align-middle text-end" style="width: 30px;">
-                            <form action="{% url 'sales:remove-payment' payment.pk %}" method="POST">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-link text-danger p-0 text-decoration-none" title="Remover Pagamento">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% endif %}
-
-        <div class="card border-light shadow-sm">
-    <div class="card-header bg-white py-3">
-        <h5 class="mb-0 text-muted fw-bold"><i class="bi bi-credit-card me-2"></i>PAGAMENTO</h5>
-    </div>
-    <div class="card-body p-3">
-        
-        <!-- 1. LISTA DE PAGAMENTOS JÁ LANÇADOS -->
-        {% if payments %}
-        <div class="table-responsive mb-3">
-            <table class="table table-sm table-borderless mb-0 bg-light rounded">
-                <tbody>
-                    {% for payment in payments %}
-                    <tr class="border-bottom">
-                        <td class="ps-3 align-middle text-muted small">{{ payment.get_method_display }}</td>
-                        <td class="align-middle text-end fw-bold">R$ {{ payment.amount|floatformat:2 }}</td>
-                        <td class="pe-2 align-middle text-end" style="width: 30px;">
-                            <form action="{% url 'sales:remove-payment' payment.pk %}" method="POST">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-link text-danger p-0 text-decoration-none" title="Remover Pagamento">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% endif %}
-
-        <!-- 2. RESUMO DE TOTAIS -->
-        <div class="p-3 rounded mb-3 border border-dashed">
-            <div class="d-flex justify-content-between mb-1">
-                <span class="text-muted">Total da Venda:</span>
-                <span class="fw-bold">R$ {{ sale.net_amount|floatformat:2 }}</span>
-            </div>
-            <div class="d-flex justify-content-between mb-1 text-success">
-                <span class="text-muted">Valor Pago:</span>
-                <span class="fw-bold">R$ {{ sale.total_paid|floatformat:2 }}</span>
-            </div>
-            
-            <hr class="my-2">
-
-            {% if sale.remaining_balance > 0 %}
-                <!-- CENÁRIO A: FALTA PAGAR -->
-                <div class="d-flex justify-content-between align-items-center text-danger">
-                    <span class="fs-5 fw-bold">Falta Pagar:</span>
-                    <span class="fs-4 fw-bold">R$ {{ sale.remaining_balance|floatformat:2 }}</span>
-                </div>
-            {% else %}
-                <!-- CENÁRIO B: PAGO (COM OU SEM TROCO) -->
-                <div class="d-flex justify-content-between align-items-center text-primary">
-                    <span class="fs-5 fw-bold">Troco:</span>
-                    <span class="fs-4 fw-bold">R$ {{ sale.change_preview|floatformat:2 }}</span>
-                </div>
-            {% endif %}
+        <div class="row g-3 mb-4">
+          <div class="col-3">
+            <button class="btn-category w-100 d-flex flex-column align-items-center justify-content-center gap-2">
+              <span class="material-symbols-outlined fs-2 text-pink">coffee</span>
+              <span class="small fw-bold">Cafés</span>
+            </button>
+          </div>
+          <div class="col-3">
+            <button class="btn-category w-100 d-flex flex-column align-items-center justify-content-center gap-2">
+              <span class="material-symbols-outlined fs-2 text-pink">bakery_dining</span>
+              <span class="small fw-bold">Salgados</span>
+            </button>
+          </div>
+          <div class="col-3">
+            <button class="btn-category w-100 d-flex flex-column align-items-center justify-content-center gap-2">
+              <span class="material-symbols-outlined fs-2 text-pink">cake</span>
+              <span class="small fw-bold">Doces</span>
+            </button>
+          </div>
+          <div class="col-3">
+            <button class="btn-category w-100 d-flex flex-column align-items-center justify-content-center gap-2">
+              <span class="material-symbols-outlined fs-2 text-pink">local_bar</span>
+              <span class="small fw-bold">Bebidas</span>
+            </button>
+          </div>
         </div>
 
-        <!-- 3. FORMULÁRIO DE ADICIONAR PAGAMENTO (Só aparece se faltar saldo) -->
-        {% if sale.remaining_balance > 0 %}
-            <form action="{% url 'sales:add-payment' %}" method="POST" class="row g-2 align-items-end mb-3">
-                {% csrf_token %}
-                <div class="col-12">
-                    <label class="form-label small text-muted fw-bold mb-1">ADICIONAR PAGAMENTO</label>
-                </div>
-                <div class="col-5">
+        <div class="flex-grow-1"></div>
+
+        <div class="row g-4 mt-auto">
+          <div class="col-md-6">
+            <div class="bg-surface p-4 rounded-4 h-100 border border-custom">
+              <h3 class="h6 fw-bold mb-3 d-flex align-items-center gap-2">
+                <span class="material-symbols-outlined text-pink">payments</span>
+                Adicionar Pagamento
+              </h3>
+
+              {% if sale.remaining_balance > 0 %}
+                <form action="{% url 'sales:add-payment' %}" method="POST">
+                  {% csrf_token %}
+                  <div class="mb-3">
+                    <label class="small text-muted fw-bold mb-1">MÉTODO</label>
                     {{ payment_form.method }}
-                </div>
-                <div class="col-5">
+                  </div>
+                  <div class="mb-3">
+                    <label class="small text-muted fw-bold mb-1">VALOR (R$)</label>
                     <div class="input-group">
-                        <span class="input-group-text bg-white border-end-0 text-muted">R$</span>
-                        {{ payment_form.amount }}
+                      <span class="input-group-text bg-white">R$</span>
+                      {{ payment_form.amount }}
                     </div>
-                </div>
-                <div class="col-2">
-                    <button type="submit" class="btn btn-success w-100" title="Lançar Valor">
-                        <i class="bi bi-plus-lg"></i>
-                    </button>
-                </div>
-            </form>
-        {% endif %}
-
-        <!-- 4. BOTÃO FINALIZAR (Só habilita se estiver totalmente pago) -->
-        <div class="mt-2">
-            {% if sale.is_fully_paid %}
-                <form action="{% url 'sales:complete-sale' sale.pk %}" method="POST">
-                    {% csrf_token %}
-                    <button type="submit" class="botao-rosa w-100 py-3 fs-5 fw-bold shadow-sm" id="btn-finalizar">
-                        FINALIZAR VENDA (F2)
-                    </button>
+                  </div>
+                  <button type="submit" class="btn btn-outline-success w-100 fw-bold py-2"><i class="bi bi-plus-lg me-1"></i> LANÇAR VALOR</button>
                 </form>
-            {% else %}
-                <button class="btn btn-secondary w-100 py-3 fs-5 fw-bold opacity-50" disabled>
-                    AGUARDANDO PAGAMENTO...
-                </button>
-            {% endif %}
-        </div>
+              {% else %}
+                <div class="alert alert-success d-flex align-items-center mb-0">
+                  <span class="material-symbols-outlined me-2">check_circle</span>
+                  Pagamento Completo!
+                </div>
+              {% endif %}
+            </div>
+          </div>
 
+          <div class="col-md-6">
+            <div class="bg-surface p-4 rounded-4 h-100 border border-custom d-flex flex-column justify-content-between">
+              <div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="text-secondary fw-bold">Valor Pago</span>
+                  <span class="fs-5 fw-bold text-success">R$ {{ sale.total_paid|floatformat:2 }}</span>
+                </div>
+                {% if sale.remaining_balance > 0 %}
+                  <div class="d-flex justify-content-between align-items-center text-danger">
+                    <span class="text-secondary">Falta Pagar</span>
+                    <span class="fs-5 fw-bold">R$ {{ sale.remaining_balance|floatformat:2 }}</span>
+                  </div>
+                {% else %}
+                  <div class="d-flex justify-content-between align-items-center text-primary">
+                    <span class="text-secondary">Troco</span>
+                    <span class="fs-5 fw-bold">R$ {{ sale.change_preview|floatformat:2 }}</span>
+                  </div>
+                {% endif %}
+              </div>
+
+              <div class="mt-4">
+                {% if sale.is_fully_paid %}
+                  <form action="{% url 'sales:complete-sale' sale.pk %}" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-pink w-100 py-3 rounded-3 shadow-sm d-flex align-items-center justify-content-center gap-2" id="btn-finalizar">
+                      <span class="material-symbols-outlined">check_circle</span>
+                      <span class="fs-5">FINALIZAR VENDA (F2)</span>
+                    </button>
+                  </form>
+                {% else %}
+                  <button class="btn btn-secondary w-100 py-3 rounded-3 opacity-50" disabled>AGUARDANDO PAGAMENTO...</button>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- SCRIPTS DE UX PARA O PDV -->
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    
-    // 1. Foco Automático no Código de Barras
-    // Sempre que a página carregar ou uma ação for feita, o foco volta para o input
-    const skuInput = document.querySelector('input[name="sku_or_barcode"]');
-    if (skuInput) {
-      skuInput.focus();
-      
-      // Se o usuário clicar fora, tenta devolver o foco após 5 segundos (comportamento de quiosque)
-      // Opcional: Remova se achar intrusivo
-      skuInput.addEventListener('blur', function() {
-        setTimeout(() => skuInput.focus(), 2000);
-      });
-    }
-
-    // 2. Atalhos de Teclado
-    document.addEventListener('keydown', function(event) {
-      // F2 para Finalizar Venda
+  <script>
+    document.addEventListener('keydown', function (event) {
       if (event.key === 'F2') {
-        event.preventDefault();
-        const finishBtn = document.querySelector('.botao-rosa');
-        if (finishBtn && !finishBtn.disabled) {
-          finishBtn.click();
-        }
+        event.preventDefault()
+        const finishBtn = document.getElementById('btn-finalizar')
+        if (finishBtn && !finishBtn.disabled) finishBtn.click()
       }
-    });
-
-  });
-</script>
+      if (event.key === '/') {
+        event.preventDefault()
+        document.querySelector('.search-input').focus()
+      }
+    })
+    
+    window.onload = function () {
+      var input = document.querySelector('.search-input')
+      if (input) input.focus()
+    }
+  </script>
 {% endblock %}
