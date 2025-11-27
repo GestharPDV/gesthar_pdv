@@ -135,21 +135,32 @@ class Sale(SoftDeleteModel):
         total_items = self.items.aggregate(total=models.Sum("total_price"))[
             "total"
         ] or Decimal("0.00")
+
+        discount = self.discount_amount
+        if not isinstance(discount, Decimal):
+            discount = Decimal(str("0.00"))
+
         self.gross_amount = total_items
-        self.net_amount = total_items - self.discount_amount
+        self.net_amount = total_items - discount
+
+        if self.net_amount < Decimal("0.00"):
+            self.net_amount = Decimal("0.00")
+
         self.save(update_fields=["gross_amount", "net_amount"])
-    
+
     @property
     def total_paid(self):
         """Soma de todos os pagamentos registrados."""
-        return self.payments.aggregate(total=models.Sum('amount'))['total'] or Decimal('0.00')
+        return self.payments.aggregate(total=models.Sum("amount"))["total"] or Decimal(
+            "0.00"
+        )
 
     @property
     def remaining_balance(self):
         """Quanto falta pagar (Total Líquido - Total Pago)."""
         balance = self.net_amount - self.total_paid
-        return balance if balance > 0 else Decimal('0.00')
-    
+        return balance if balance > 0 else Decimal("0.00")
+
     @property
     def is_fully_paid(self):
         """Verifica se o valor pago cobre o total."""
@@ -159,7 +170,7 @@ class Sale(SoftDeleteModel):
     def change_preview(self):
         """Prévia do troco para exibição dinâmica."""
         diff = self.total_paid - self.net_amount
-        return diff if diff > 0 else Decimal('0.00')
+        return diff if diff > 0 else Decimal("0.00")
 
     @transaction.atomic
     def complete_sale(self):
@@ -169,11 +180,13 @@ class Sale(SoftDeleteModel):
         """
         if self.status != self.Status.DRAFT:
             raise ValidationError("Apenas vendas em Rascunho podem ser concluídas.")
-        
+
         self.calculate_totals()
 
         if not self.is_fully_paid:
-            raise ValidationError(f"Pagamento insuficiente. Faltam R$ {self.remaining_balance:,.2f}")
+            raise ValidationError(
+                f"Pagamento insuficiente. Faltam R$ {self.remaining_balance:,.2f}"
+            )
 
         # Grava o troco final no banco
         self.change_amount = self.change_preview
@@ -275,6 +288,12 @@ class SaleItem(models.Model):
             if self.unit_price is None:
                 self.unit_price = self.variation.product.selling_price
 
+        if not isinstance(self.unit_price, Decimal):
+            self.unit_price = Decimal(str(self.unit_price or 0))
+
+        if not isinstance(self.discount, Decimal):
+            self.discount = Decimal(str(self.discount or 0))
+
         bruto = self.unit_price * self.quantity
         self.total_price = max(bruto - self.discount, Decimal("0.00"))
 
@@ -292,28 +311,23 @@ class SaleItem(models.Model):
 
 class SalePayment(models.Model):
     class Method(models.TextChoices):
-        DINHEIRO = 'DINHEIRO', 'Dinheiro'
-        CARTAO_CREDITO = 'CREDITO', 'Cartão de Crédito'
-        CARTAO_DEBITO = 'DEBITO', 'Cartão de Débito'
-        PIX = 'PIX', 'PIX'
-        OUTROS = 'OUTROS', 'Outros'
+        DINHEIRO = "DINHEIRO", "Dinheiro"
+        CARTAO_CREDITO = "CREDITO", "Cartão de Crédito"
+        CARTAO_DEBITO = "DEBITO", "Cartão de Débito"
+        PIX = "PIX", "PIX"
+        OUTROS = "OUTROS", "Outros"
 
     sale = models.ForeignKey(
-        Sale, 
-        on_delete=models.CASCADE, 
-        related_name="payments",
-        verbose_name="Venda"
+        Sale, on_delete=models.CASCADE, related_name="payments", verbose_name="Venda"
     )
     method = models.CharField(
-        max_length=20, 
-        choices=Method.choices, 
+        max_length=20,
+        choices=Method.choices,
         default=Method.DINHEIRO,
-        verbose_name="Método de Pagamento"
+        verbose_name="Método de Pagamento",
     )
     amount = models.DecimalField(
-        max_digits=12, 
-        decimal_places=2, 
-        verbose_name="Valor Pago"
+        max_digits=12, decimal_places=2, verbose_name="Valor Pago"
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -323,9 +337,11 @@ class SalePayment(models.Model):
 
     def __str__(self):
         return f"{self.get_method_display()}: R$ {self.amount}"
-    
+
     def save(self, *args, **kwargs):
         # Segurança: Não permite pagar venda fechada
         if self.sale.status != Sale.Status.DRAFT:
-            raise ValidationError("Não é possível adicionar pagamentos a uma venda finalizada.")
+            raise ValidationError(
+                "Não é possível adicionar pagamentos a uma venda finalizada."
+            )
         super().save(*args, **kwargs)
