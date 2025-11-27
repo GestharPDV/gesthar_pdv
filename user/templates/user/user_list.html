@@ -17,9 +17,11 @@
         
         <div class="position-relative w-100" style="max-width:300px;">
             <input id="search_right" type="text" name="query" value="{{ query }}"
-                class="form-control rounded-pill bg-transparent pe-4"
-                style="color: var(--cor-fonte-preta); border-color: #ced4da;">
+                class="form-control rounded-pill bg-transparent pe-5" 
+                style="color: var(--cor-fonte-preta); border-color: #ced4da;"
+                placeholder="Nome, CPF ou Email...">
                 
+            <!-- Botão de Lupa (Submit) -->
             <button type="submit" aria-label="Pesquisar" style="color: var(--cor-fonte-cinza) !important;"
                 class="position-absolute end-0 top-50 translate-middle-y border-0 bg-transparent p-0 pe-3">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
@@ -29,6 +31,14 @@
                 </svg>
             </button>
         </div>
+
+        <!-- BOTÃO LIMPAR (Só aparece se houver busca) -->
+        {% if query %}
+        <a href="{% url 'user:user-list' %}" class="btn btn-outline-danger rounded-circle d-flex align-items-center justify-content-center shadow-sm" 
+           style="width: 30px; height: 30px; padding: 0;" title="Limpar Filtro">
+            <span style="font-size: 1.2rem; line-height: 1;">&times;</span>
+        </a>
+        {% endif %}
     </form>
 
     <!-- Tabela -->
@@ -94,14 +104,12 @@
                     <!-- Cargo -->
                     <td class="text-uppercase">{{ user.role|default:"-" }}</td>
 
-                    <!-- Telefone -->
+                    <!-- Telefone Formatado -->
                     <td>
                         {% if user.phone_number %}
                             {% if user.phone_number|length == 11 %}
-                                <!-- Formata Celular: (11) 98765-4321 -->
                                 ({{ user.phone_number|slice:":2" }}) {{ user.phone_number|slice:"2:7" }}-{{ user.phone_number|slice:"7:" }}
                             {% elif user.phone_number|length == 10 %}
-                                <!-- Formata Fixo: (11) 3333-4444 -->
                                 ({{ user.phone_number|slice:":2" }}) {{ user.phone_number|slice:"2:6" }}-{{ user.phone_number|slice:"6:" }}
                             {% else %}
                                 {{ user.phone_number }}
@@ -120,7 +128,12 @@
                 {% empty %}
                 <tr>
                     <td colspan="10" class="text-center py-4" style="color: var(--cor-fonte-cinza);">
-                        Nenhum usuário encontrado.
+                        {% if query %}
+                            Nenhum usuário encontrado para "{{ query }}".<br>
+                            <a href="{% url 'user:user-list' %}" class="text-decoration-none fw-bold mt-2 d-inline-block" style="color: var(--cor-fonte-rosa);">Limpar pesquisa</a>
+                        {% else %}
+                            Nenhum usuário cadastrado.
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -143,7 +156,6 @@
 
 <script>
     function selectRow(row, userId) {
-        // Seleciona o radio button da linha clicada
         const radio = document.getElementById('user_radio_' + userId);
         if(radio) radio.checked = true;
     }
@@ -159,10 +171,8 @@
         const userId = selected.value;
         
         if (action === 'edit') {
-            // O padrão definido no urls.py é "profile/edit/<int:pk>/"
             window.location.href = "/user/profile/edit/" + userId + "/";
         } else if (action === 'delete') {
-            // O padrão definido no urls.py é "<int:pk>/delete/"
             window.location.href = "/user/" + userId + "/delete/";
         }
     }
