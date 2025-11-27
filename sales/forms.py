@@ -2,7 +2,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from product.models import ProductVariation
 from customer.models import Customer
-from .models import CashRegister
+from .models import CashRegister, SalePayment
 
 
 class AddItemForm(forms.Form):
@@ -124,3 +124,20 @@ class CloseRegisterForm(forms.ModelForm):
             )
         }
         labels = {"closing_balance": "Valor Conferido na Gaveta (R$)"}
+
+
+class PaymentForm(forms.ModelForm):
+    class Meta:
+        model = SalePayment
+        fields = ["method", "amount"]
+        widgets = {
+            "method": forms.Select(attrs={"class": "form-select"}),
+            "amount": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "step": "0.01",
+                    "placeholder": "R$ 0,00",
+                }
+            ),
+        }
+        labels = {"method": "Forma de Pagamento", "amount": "Valor"}
