@@ -3,6 +3,7 @@ from django.contrib.auth.forms import UserChangeForm
 from django.core.exceptions import ValidationError
 from .models import UserGesthar
 import re
+from datetime import date
 
 def validar_cpf(cpf):
     """
@@ -67,28 +68,23 @@ class UserGestharChangeForm(UserChangeForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-        # Tornar Nome e Sobrenome obrigatórios
         self.fields['first_name'].required = True
         self.fields['last_name'].required = True
 
-        # Se o formulário tiver uma instância (estiver editando)
         if self.instance and self.instance.pk:
             
-            # 1. Formatar CPF para exibição inicial (XXX.XXX.XXX-XX)
             if self.initial.get('cpf'):
                 raw_cpf = str(self.initial['cpf'])
                 if len(raw_cpf) == 11:
                     self.initial['cpf'] = f"{raw_cpf[:3]}.{raw_cpf[3:6]}.{raw_cpf[6:9]}-{raw_cpf[9:]}"
 
-            # 2. Formatar Telefone para exibição inicial
             if self.initial.get('phone_number'):
                 raw_phone = str(self.initial['phone_number'])
-                if len(raw_phone) == 11: # Celular (XX) XXXXX-XXXX
+                if len(raw_phone) == 11:
                     self.initial['phone_number'] = f"({raw_phone[:2]}) {raw_phone[2:7]}-{raw_phone[7:]}"
-                elif len(raw_phone) == 10: # Fixo (XX) XXXX-XXXX
+                elif len(raw_phone) == 10:
                     self.initial['phone_number'] = f"({raw_phone[:2]}) {raw_phone[2:6]}-{raw_phone[6:]}"
 
-            # 3. Formatar Datas para YYYY-MM-DD (Necessário para input type="date")
             for date_field in ['birth_date', 'hire_date', 'exit_date']:
                 val = self.initial.get(date_field)
                 if val:
@@ -99,16 +95,32 @@ class UserGestharChangeForm(UserChangeForm):
         cleaned_data = super().clean()
         hire_date = cleaned_data.get('hire_date')
         exit_date = cleaned_data.get('exit_date')
+        birth_date = cleaned_data.get('birth_date')
 
-        # Validação: Data de Saída não pode ser anterior à Data de Admissão
+        # 1. Validação: Data de Saída não pode ser anterior à Data de Admissão
         if hire_date and exit_date:
             if exit_date < hire_date:
                 self.add_error('exit_date', "A data de saída não pode ser anterior à data de admissão.")
+
+        # 2. Validações relacionadas a Nascimento e Admissão
+        if birth_date and hire_date:
+            # Verifica cronologia básica primeiro
+            if hire_date < birth_date:
+                self.add_error('hire_date', "A data de admissão não pode ser anterior à data de nascimento.")
+            
+            # Só verifica a idade mínima se a cronologia estiver correta (else)
+            else:
+                # 3. Validação de Idade Mínima para contratação
+                # Calcula a idade na data da contratação
+                age_at_hire = hire_date.year - birth_date.year - ((hire_date.month, hire_date.day) < (birth_date.month, birth_date.day))
+                
+                if age_at_hire < 14:
+                    self.add_error('hire_date', f"Idade inválida para contratação. A idade mínima é 14 anos completos.")
         
         return cleaned_data
 
     def clean_cpf(self):
-        """Valida e limpa o campo CPF para salvar apenas números"""
+        """Valida e limpa o campo CPF"""
         cpf = self.cleaned_data.get('cpf', '')
         cpf_limpo = re.sub(r'[^0-9]', '', cpf)
 
@@ -124,7 +136,7 @@ class UserGestharChangeForm(UserChangeForm):
         return cpf_limpo
 
     def clean_phone_number(self):
-        """Valida e limpa o telefone para salvar apenas números"""
+        """Valida e limpa o telefone"""
         phone = self.cleaned_data.get('phone_number', '')
         if phone:
             phone_limpo = re.sub(r'[^0-9]', '', phone)
