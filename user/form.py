@@ -3,7 +3,7 @@ from django.contrib.auth.forms import UserChangeForm
 from django.core.exceptions import ValidationError
 from .models import UserGesthar
 import re
-from datetime import date
+from datetime import date, timedelta
 
 def validar_cpf(cpf):
     """
@@ -56,8 +56,8 @@ class UserGestharChangeForm(UserChangeForm):
             'birth_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'hire_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'exit_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-            'cpf': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '000.000.000-00', 'maxlength': '14'}),
-            'phone_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '(00) 00000-0000', 'maxlength': '15'}),
+            'cpf': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '000.000.000-00', 'maxlength': '14', 'pattern': r'\d{3}\.\d{3}\.\d{3}-\d{2}'}),
+            'phone_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '(00) 00000-0000', 'maxlength': '15', 'pattern': r'\(\d{2}\) \d{4,5}-\d{4}'}),
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
             'last_name': forms.TextInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
@@ -67,12 +67,25 @@ class UserGestharChangeForm(UserChangeForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
+
         self.fields['first_name'].required = True
         self.fields['last_name'].required = True
 
+        # Adicionar validações frontend
+        today = date.today()
+        min_birth_date = today.replace(year=today.year - 110)
+        self.fields['birth_date'].widget.attrs.update({
+            'min': min_birth_date.strftime('%Y-%m-%d'),
+            'max': today.strftime('%Y-%m-%d'),
+            'required': 'required'
+        })
+        self.fields['hire_date'].widget.attrs['required'] = 'required'
+        self.fields['email'].widget.attrs['required'] = 'required'
+        self.fields['cpf'].widget.attrs['required'] = 'required'
+        self.fields['role'].widget.attrs['required'] = 'required'
+
         if self.instance and self.instance.pk:
-            
+
             if self.initial.get('cpf'):
                 raw_cpf = str(self.initial['cpf'])
                 if len(raw_cpf) == 11:
@@ -135,15 +148,24 @@ class UserGestharChangeForm(UserChangeForm):
 
         return cpf_limpo
 
+    def clean_birth_date(self):
+        """Valida a data de nascimento para não ser anterior a 110 anos"""
+        birth_date = self.cleaned_data.get('birth_date')
+        if birth_date:
+            min_birth_date = date.today().replace(year=date.today().year - 110)
+            if birth_date < min_birth_date:
+                raise ValidationError("A data de nascimento não pode ser anterior a 110 anos da data atual.")
+        return birth_date
+
     def clean_phone_number(self):
         """Valida e limpa o telefone"""
         phone = self.cleaned_data.get('phone_number', '')
         if phone:
             phone_limpo = re.sub(r'[^0-9]', '', phone)
-            
+
             if len(phone_limpo) < 10 or len(phone_limpo) > 11:
                  raise ValidationError("O telefone deve ter 10 ou 11 dígitos (com DDD).")
-            
+
             return phone_limpo
-            
+
         return phone
