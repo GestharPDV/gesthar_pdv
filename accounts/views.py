@@ -15,7 +15,7 @@ def login_view(request):
             user = authenticate(request, username=email, password=password)
             if user is not None:
                 login(request, user)
-                return redirect("global:home")
+                return redirect("base:home")
     else:
         form = EmailAuthenticationForm()
     return render(request, "accounts/login_page.html", {"form": form})
@@ -32,7 +32,7 @@ def register_view(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            return redirect("global:home")
+            return redirect("base:home")
     else:
         form = UserGestharCreationForm()
     return render(request, "accounts/register.html", {"form": form})

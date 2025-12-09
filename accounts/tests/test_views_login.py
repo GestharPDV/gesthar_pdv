@@ -13,7 +13,7 @@ class LoginViewTests(TestCase):
         """Configuração inicial para os testes de login"""
         self.client = Client()
         self.login_url = reverse('accounts:login')
-        self.home_url = reverse('global:home')
+        self.home_url = reverse('base:home')
         self.user = User.objects.create_user(
             email='teste@exemplo.com',
             password='senha123',

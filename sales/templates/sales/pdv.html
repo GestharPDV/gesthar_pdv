@@ -1,394 +1,344 @@
-{% extends 'global/base.html' %}
+{% extends 'base/base.html' %}
 {% load static %}
 
-{# Remove padding padrão do base.html para permitir tela cheia #}
-{% block main_class %}p-0 overflow-hidden{% endblock %}
+{% block title %}PDV - Frente de Caixa{% endblock %}
+
+{# Remove padding padrão se necessário para tela cheia #}
+{% block main_class %}p-0 overflow-hidden bg-light{% endblock %}
 
 {% block content %}
-
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
 
 <style>
     :root {
         --primary-color: #FF4678;
         --primary-hover: #e03565;
-        --bg-light: #ffffff;
-        --bg-surface: #f8f8f8;
-        --text-primary: #555555;
+        --bg-body: #f8f8f8;
+        --bg-card: #ffffff;
+        --text-main: #555555;
         --text-secondary: #806066;
         --border-color: #e5e5e5;
     }
 
     body {
-        font-family: 'Manrope', sans-serif;
-        background-color: var(--bg-light);
-        color: var(--text-primary);
+        font-family: 'Inter', sans-serif;
+        background-color: var(--bg-body);
+        color: var(--text-main);
         height: 100vh;
-        overflow: hidden; /* Trava scroll da janela */
+        display: flex;
+        flex-direction: column;
+        overflow: hidden; /* Evita scroll na página inteira */
     }
 
-    /* Utilitários de Cores */
-    .text-pink { color: var(--primary-color) !important; }
-    .bg-surface { background-color: var(--bg-surface); }
-    .border-custom { border-color: var(--border-color) !important; }
+    /* Utilitários Visuais */
+    .bg-card { background: var(--bg-card); }
+    .border-separator { border-color: var(--border-color) !important; }
+    .text-secondary-custom { color: var(--text-secondary); }
+    .shadow-subtle { box-shadow: 0 2px 4px rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.04); }
     
-    /* Botões Personalizados */
-    .btn-pink {
-        background-color: var(--primary-color);
+    /* Botão Principal (Rosa) */
+    .btn-primary-custom {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
         color: white;
-        border: none;
-        font-weight: 700;
         transition: all 0.2s;
     }
-    .btn-pink:hover { background-color: var(--primary-hover); color: white; }
-
-    /* Barra de Pesquisa */
-    .search-input {
-        border: none;
-        background-color: var(--bg-surface);
-        font-size: 1.1rem;
-        padding: 1rem;
-    }
-    .search-input:focus {
-        outline: none;
-        background-color: #fff;
-        box-shadow: inset 0 0 0 2px var(--primary-color);
+    .btn-primary-custom:hover {
+        background: var(--primary-hover);
+        border-color: var(--primary-hover);
+        color: white;
     }
 
-    /* Scrollbar Fina e Elegante */
-    .custom-scroll::-webkit-scrollbar { width: 6px; }
-    .custom-scroll::-webkit-scrollbar-track { background: transparent; }
-    .custom-scroll::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 20px; }
-
-    /* Cards de Produto (Vitrine) */
-    .hover-shadow:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+    /* Inputs */
+    .input-focus:focus {
+        box-shadow: 0 0 0 2px rgba(255, 70, 120, 0.2) !important;
         border-color: var(--primary-color) !important;
+        outline: none;
     }
-    .transition-all {
-        transition: all 0.2s ease-in-out;
+
+    /* Tabela */
+    .table-hover-custom tbody tr:hover { background: #f1f1f1; }
+    .table-hover-custom td { vertical-align: middle; }
+
+    /* Ícones */
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     }
+
+    /* Scroll na área da tabela */
+    .scroll-area {
+        overflow-y: auto;
+        height: calc(100vh - 220px); /* Ajuste dinâmico */
+    }
+    
+    /* Scrollbar personalizada fina */
+    .scroll-area::-webkit-scrollbar { width: 6px; }
+    .scroll-area::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 10px; }
 </style>
 
-<header class="d-flex justify-content-between align-items-center px-4 py-2 border-bottom border-custom shadow-sm bg-white" style="height: 70px;">
-    <div class="d-flex align-items-center gap-2">
-        <span class="material-symbols-outlined text-pink fs-2">storefront</span>
-        <h1 class="h5 fw-bold m-0">PDV System</h1>
-    </div>
-    <div class="d-flex align-items-center gap-4">
-        <span class="badge bg-pink bg-opacity-10 text-pink px-3 py-2 rounded-3 fw-bold">CAIXA LIVRE</span>
-        <div class="d-flex align-items-center gap-2 text-end">
-            <div>
-                <p class="m-0 fw-bold small">Operador</p>
-                <p class="m-0 text-muted x-small" style="font-size: 0.8rem;">{{ request.user.get_full_name|default:request.user.username }}</p>
+<header class="px-4 py-3 d-flex justify-content-between align-items-center bg-white border-bottom border-separator">
+    <h1 class="h5 fw-bold m-0">PDV - Frente de Caixa</h1>
+
+    <div class="d-flex align-items-center gap-3">
+        <a href="#" class="btn btn-outline-secondary border-separator btn-sm px-3 py-2">
+            Fechar Caixa
+        </a>
+
+        <div class="d-flex align-items-center gap-2 border-start ps-3 border-separator">
+            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center border" style="width:40px;height:40px;">
+                <span class="material-symbols-outlined text-secondary-custom">person</span>
             </div>
-            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white" style="width: 40px; height: 40px;">
-                <span class="material-symbols-outlined">person</span>
+            <div class="small lh-1">
+                <div class="fw-semibold">{{ request.user.get_full_name|default:request.user.username }}</div>
+                <div class="text-secondary-custom" style="font-size: 0.75rem;">Operador</div>
             </div>
         </div>
     </div>
 </header>
 
-<div class="container-fluid h-100">
-    <div class="row h-100 pb-5"> 
-        
-        <div class="col-lg-5 col-xl-4 d-flex flex-column border-end border-custom bg-surface h-100 p-0">
-            
-            <div class="p-4 pb-2">
-                <h2 class="h6 fw-bold text-uppercase text-secondary ls-1">Itens da Venda</h2>
-            </div>
-
-            <div class="flex-grow-1 overflow-auto custom-scroll px-3">
-                <div class="card border-custom shadow-sm h-100 border-0">
-                    <div class="table-responsive h-100">
-                        <table class="table table-borderless m-0 align-middle">
-                            <thead class="bg-light border-bottom border-custom text-secondary small sticky-top">
-                                <tr>
-                                    <th class="ps-3" style="width: 50%;">Item</th>
-                                    <th class="text-center" style="width: 15%;">Qtd</th>
-                                    <th class="text-end" style="width: 15%;">V.Unit</th>
-                                    <th class="text-end" style="width: 15%;">Total</th>
-                                    <th class="text-center pe-3" style="width: 5%;"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for item in items %}
-                                <tr class="border-bottom border-light hover:bg-gray-50">
-                                    <td class="ps-3 py-3">
-                                        <div class="fw-bold text-dark lh-sm text-break">
-                                            {{ item.variation.product }}
-                                        </div>
-                                        <div class="d-flex align-items-center gap-2 mt-1">
-                                            {% if item.variation.sku %}
-                                                <small class="text-muted bg-light border px-1 rounded" style="font-size: 0.7rem;">
-                                                    {{ item.variation.sku }}
-                                                </small>
-                                            {% endif %}
-                                            {% if item.variation.name and item.variation.name != 'Padrão' and item.variation.name != 'Unique' and item.variation.name != 'Único' %}
-                                                <small class="text-secondary" style="font-size: 0.7rem;">{{ item.variation.name }}</small>
-                                            {% endif %}
-                                        </div>
-                                    </td>
-                                    
-                                    <td class="text-center fw-bold text-secondary fs-6">{{ item.quantity }}</td>
-                                    
-                                    <td class="text-end text-muted small">
-                                        <div style="font-size: 0.85rem;">{{ item.unit_price|floatformat:2 }}</div>
-                                    </td>
-                                    
-                                    <td class="text-end fw-bold text-dark fs-6">{{ item.total_price|floatformat:2 }}</td>
-                                    
-                                    <td class="text-center pe-2">
-                                        <form action="{% url 'sales:remove-item' item.pk %}" method="POST" class="d-inline">
-                                            {% csrf_token %}
-                                            <button type="submit" class="btn btn-link text-decoration-none p-2 border-0 text-secondary opacity-50 hover-opacity-100" 
-                                                    title="Remover item">
-                                                <span class="material-symbols-outlined fs-5">delete</span>
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="5" class="text-center py-5 text-muted">
-                                        <div class="py-5 opacity-50">
-                                            <span class="material-symbols-outlined" style="font-size: 4rem;">shopping_cart_off</span>
-                                            <p class="mt-3 fw-medium">Caixa livre.<br>Bipe um produto ou selecione ao lado.</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mt-auto p-4 bg-white border-top border-custom shadow-lg" style="z-index: 10;">
-                <div class="d-flex justify-content-between mb-2 text-secondary">
-                    <span>Subtotal</span>
-                    <span>R$ {{ sale.net_amount|floatformat:2 }}</span>
-                </div>
-                <div class="d-flex justify-content-between mb-3 text-secondary">
-                    <span>Descontos</span>
-                    <span>R$ 0,00</span>
-                </div>
-                <hr class="border-custom">
-                <div class="d-flex justify-content-between align-items-center">
-                    <span class="h4 fw-bold m-0 text-dark">Total</span>
-                    <span class="h2 fw-bold m-0 text-pink">R$ {{ sale.net_amount|floatformat:2 }}</span>
-                </div>
-                <button class="btn btn-outline-danger w-100 mt-3 border-0 bg-danger bg-opacity-10 text-danger fw-bold py-2">
-                    <i class="bi bi-trash me-2"></i> Cancelar Venda
-                </button>
-            </div>
+<main class="container-fluid py-3 h-100">
+    
+    {% if messages %}
+    <div class="position-absolute top-0 start-50 translate-middle-x mt-5" style="z-index: 1050; width: 50%;">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
-        <div class="col-lg-7 col-xl-8 d-flex flex-column h-100 p-4 bg-white">
-            
-            {% if messages %}
-                {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm border-0" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-                {% endfor %}
-            {% endif %}
+    <div class="row g-3 h-100 pb-5">
 
-            <div class="mb-4">
+        <section class="col-lg-8 h-100">
+            <div class="bg-card shadow-subtle rounded p-3 h-100 d-flex flex-column border border-separator">
+
                 <form action="{% url 'sales:add-item' %}" method="POST" id="add-item-form">
                     {% csrf_token %}
-                    <div class="input-group input-group-lg border rounded-3 overflow-hidden shadow-sm">
-                        <span class="input-group-text bg-surface border-0 ps-3">
-                            <span class="material-symbols-outlined text-secondary">search</span>
-                        </span>
-                        <input type="text" 
-                               name="{{ form.sku_or_barcode.name }}" 
-                               id="product-search-input" 
-                               class="form-control search-input" 
-                               placeholder="Buscar por nome, código ou escanear produto..." 
-                               autocomplete="off"
-                               autofocus>
+                    <label class="small text-secondary-custom fw-semibold mb-1">CÓDIGO DE BARRAS / SKU / NOME PRODUTO</label>
+
+                    <div class="d-flex align-items-end gap-2">
+                        <div class="position-relative flex-grow-1">
+                            <span class="material-symbols-outlined position-absolute" style="left:10px; top:50%; transform:translateY(-50%); color:#806066;">barcode_scanner</span>
+                            <input type="text" 
+                                   name="{{ form.sku_or_barcode.name }}" 
+                                   class="form-control ps-5 input-focus" 
+                                   placeholder="Pesquisar produto ou bipar código..." 
+                                   autofocus
+                                   autocomplete="off"
+                                   id="search-input">
+                        </div>
+
+                        <div class="text-center">
+                            <label class="small text-secondary-custom fw-semibold d-block">QTD</label>
+                            <input type="number" 
+                                   name="quantity" 
+                                   value="1" 
+                                   min="1"
+                                   class="form-control text-center input-focus" 
+                                   style="width:80px;">
+                        </div>
+
+                        <button type="submit" class="btn btn-success fw-bold px-4 d-flex align-items-center" style="height:38px; margin-bottom: 1px;">
+                            ADICIONAR
+                        </button>
                     </div>
                 </form>
-            </div>
 
-            <div class="flex-grow-1 overflow-auto custom-scroll mb-3 pe-2" style="max-height: 45vh;">
-                <div class="row g-3" id="product-grid">
-                    {% for variation in available_products %}
-                    <div class="col-md-4 col-xl-3 product-card-container" 
-                         data-name="{{ variation.product.name|lower }} {{ variation.sku|lower }} {{ variation.product.barcode|default:'' }}">
-                        
-                        <form action="{% url 'sales:add-item' %}" method="POST" class="h-100">
-                            {% csrf_token %}
-                            <input type="hidden" name="sku_or_barcode" value="{{ variation.sku }}">
-                            <input type="hidden" name="quantity" value="1">
+                <div class="scroll-area mt-3 border rounded border-separator">
+                    <table class="table table-hover-custom m-0">
+                        <thead class="bg-light position-sticky top-0 border-bottom border-separator" style="z-index: 1;">
+                            <tr class="text-uppercase small text-secondary-custom">
+                                <th class="ps-3 py-3">Produto</th>
+                                <th class="text-center">Qtd</th>
+                                <th class="text-end">Unitário</th>
+                                <th class="text-center">Desconto</th>
+                                <th class="text-end">Total</th>
+                                <th style="width:50px;"></th>
+                            </tr>
+                        </thead>
 
-                            <button type="submit" class="btn btn-light w-100 h-100 p-3 border border-light shadow-sm rounded-4 d-flex flex-column justify-content-between text-start hover-shadow transition-all" style="min-height: 120px;">
-                                <div class="w-100">
-                                    <span class="d-block fw-bold text-dark text-truncate mb-1" title="{{ variation.product.name }}">
-                                        {{ variation.product.name }}
-                                    </span>
-                                    {% if variation.name and variation.name != 'Padrão' and variation.name != 'Unique' and variation.name != 'Único' %}
-                                        <span class="badge bg-secondary bg-opacity-10 text-secondary mb-2">
-                                            {{ variation.name }}
-                                        </span>
+                        <tbody>
+                            {% for item in items %}
+                            <tr class="border-bottom border-separator">
+                                <td class="ps-3 py-2">
+                                    <div class="fw-semibold text-dark">{{ item.variation.product.name }}</div>
+                                    {% if item.variation.name and item.variation.name != 'Unique' %}
+                                        <small class="text-secondary">{{ item.variation.name }}</small>
                                     {% endif %}
-                                    <small class="d-block text-muted" style="font-size: 0.75rem;">
-                                        SKU: {{ variation.sku|default:"-" }}
-                                    </small>
-                                </div>
-                                <div class="mt-2 w-100 text-end">
-                                    <span class="fw-bold fs-5 text-pink">
-                                        R$ {{ variation.product.selling_price|floatformat:2 }}
-                                    </span>
-                                </div>
+                                    <div class="text-muted" style="font-size: 0.7rem;">SKU: {{ item.variation.sku }}</div>
+                                </td>
+                                
+                                <td class="text-center fw-bold">{{ item.quantity }}</td>
+                                
+                                <td class="text-end">R$ {{ item.unit_price|floatformat:2 }}</td>
+                                
+                                <td class="text-center">
+                                    <input class="form-control form-control-sm text-center input-focus d-inline-block" 
+                                           style="width:80px;" 
+                                           placeholder="R$ 0,00"
+                                           disabled title="Funcionalidade em desenvolvimento">
+                                </td>
+                                
+                                <td class="text-end fw-bold text-dark">R$ {{ item.total_price|floatformat:2 }}</td>
+                                
+                                <td class="text-end pe-2">
+                                    <form action="{% url 'sales:remove-item' item.pk %}" method="POST" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-link text-decoration-none text-secondary-custom p-1" title="Remover item">
+                                            <span class="material-symbols-outlined text-danger fs-5">delete</span>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-muted">
+                                    <span class="material-symbols-outlined fs-1 opacity-25">shopping_cart</span>
+                                    <p class="mt-2 small">Nenhum item adicionado à venda.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="col-lg-4 h-100">
+            <div class="bg-card shadow-subtle rounded p-3 h-100 d-flex flex-column border border-separator">
+
+                <h5 class="fw-bold pb-2 border-bottom border-separator d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">payments</span>
+                    PAGAMENTO
+                </h5>
+
+                <div class="d-flex flex-column gap-3 flex-grow-1 pt-2">
+
+                    <div class="small">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-secondary-custom">Subtotal:</span>
+                            <span class="fw-medium">R$ {{ sale.net_amount|floatformat:2 }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-secondary-custom">Descontos:</span>
+                            <span class="fw-medium text-success">- R$ 0,00</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-light p-2 rounded border border-separator">
+                        <label class="small text-secondary-custom fw-bold" style="font-size: 0.7rem;">APLICAR DESCONTO NO TOTAL</label>
+                        <div class="d-flex gap-2 mt-1 align-items-center">
+                            <div class="position-relative flex-grow-1">
+                                <span class="position-absolute" style="left:10px; top:50%; transform:translateY(-50%); color:#806066; font-size: 0.8rem;">R$</span>
+                                <input class="form-control form-control-sm ps-4 input-focus" placeholder="0,00">
+                            </div>
+                            <button class="btn btn-sm btn-white border shadow-sm text-success fw-bold">
+                                <span class="material-symbols-outlined fs-6">check</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded border border-separator">
+                        <span class="h6 m-0 fw-bold text-dark">Total da Venda:</span>
+                        <span class="h4 m-0 fw-bold text-primary">R$ {{ sale.net_amount|floatformat:2 }}</span>
+                    </div>
+
+                    <div class="border-top border-bottom border-separator py-3 small">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-secondary-custom">Valor Pago:</span>
+                            <span class="fw-medium text-success">R$ {{ sale.total_paid|floatformat:2 }}</span>
+                        </div>
+                        
+                        {% if sale.remaining_balance > 0 %}
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-secondary-custom fw-bold">Falta Pagar:</span>
+                            <span class="h5 m-0 fw-bold text-danger">R$ {{ sale.remaining_balance|floatformat:2 }}</span>
+                        </div>
+                        {% else %}
+                         <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-secondary-custom fw-bold">Troco:</span>
+                            <span class="h5 m-0 fw-bold text-primary">R$ {{ sale.change_preview|floatformat:2 }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {% if sale.remaining_balance > 0 %}
+                    <div>
+                        <label class="small text-secondary-custom fw-bold mb-1">ADICIONAR PAGAMENTO</label>
+                        <form action="{% url 'sales:add-payment' %}" method="POST">
+                            {% csrf_token %}
+                            <div class="d-flex gap-2">
+                                <div style="width: 40%;">
+                                    {{ payment_form.method }} 
+                                    </div>
+
+                                <div class="position-relative flex-grow-1">
+                                    <span class="position-absolute" style="left:10px; top:50%; transform:translateY(-50%); color:#806066; font-size: 0.8rem;">R$</span>
+                                    {{ payment_form.amount }}
+                                    </div>
+
+                                <button type="submit" class="btn btn-sm btn-light border text-success fw-bold hover-shadow">
+                                    <span class="material-symbols-outlined fs-5">add</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-success d-flex align-items-center p-2 small mb-0">
+                        <span class="material-symbols-outlined me-2">check_circle</span>
+                        Pagamento concluído!
+                    </div>
+                    {% endif %}
+
+                    <div class="mt-auto">
+                        <form action="{% url 'sales:complete-sale' sale.pk %}" method="POST" id="finish-sale-form">
+                            {% csrf_token %}
+                            <button type="submit" 
+                                    class="btn btn-primary-custom fw-bold py-3 w-100 shadow-sm d-flex align-items-center justify-content-center gap-2"
+                                    id="btn-finalizar"
+                                    {% if sale.remaining_balance > 0 %}disabled style="opacity: 0.6; cursor: not-allowed;"{% endif %}>
+                                <span>FINALIZAR VENDA (F2)</span>
+                                <span class="material-symbols-outlined">arrow_forward</span>
                             </button>
                         </form>
                     </div>
-                    {% empty %}
-                        <div class="col-12 text-center py-5 text-muted">
-                            <span class="material-symbols-outlined fs-2">inventory_2</span>
-                            <p class="mt-2">Nenhum produto cadastrado.</p>
-                        </div>
-                    {% endfor %}
-                    
-                    <div id="no-results-msg" class="col-12 text-center py-5 text-muted d-none">
-                        <p>Nenhum produto encontrado para essa busca.</p>
-                    </div>
+
                 </div>
             </div>
+        </section>
 
-            <div class="mt-auto">
-                <div class="row g-4">
-                    <div class="col-md-6">
-                        <div class="bg-surface p-4 rounded-4 h-100 border border-custom">
-                            <h3 class="h6 fw-bold mb-3 d-flex align-items-center gap-2">
-                                <span class="material-symbols-outlined text-pink">payments</span>
-                                Adicionar Pagamento
-                            </h3>
-                            
-                            {% if sale.remaining_balance > 0 %}
-                            <form action="{% url 'sales:add-payment' %}" method="POST">
-                                {% csrf_token %}
-                                <div class="mb-3">
-                                    <label class="small text-muted fw-bold mb-1">MÉTODO</label>
-                                    {{ payment_form.method }} 
-                                </div>
-                                <div class="mb-3">
-                                    <label class="small text-muted fw-bold mb-1">VALOR (R$)</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-white">R$</span>
-                                        {{ payment_form.amount }}
-                                    </div>
-                                </div>
-                                <button type="submit" class="btn btn-outline-success w-100 fw-bold py-2">
-                                    <i class="bi bi-plus-lg me-1"></i> LANÇAR VALOR
-                                </button>
-                            </form>
-                            {% else %}
-                                <div class="alert alert-success d-flex align-items-center mb-0">
-                                    <span class="material-symbols-outlined me-2">check_circle</span>
-                                    Pagamento Completo!
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="bg-surface p-4 rounded-4 h-100 border border-custom d-flex flex-column justify-content-between">
-                            <div>
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="text-secondary fw-bold">Valor Pago</span>
-                                    <span class="fs-5 fw-bold text-success">R$ {{ sale.total_paid|floatformat:2 }}</span>
-                                </div>
-                                {% if sale.remaining_balance > 0 %}
-                                <div class="d-flex justify-content-between align-items-center text-danger">
-                                    <span class="text-secondary">Falta Pagar</span>
-                                    <span class="fs-5 fw-bold">R$ {{ sale.remaining_balance|floatformat:2 }}</span>
-                                </div>
-                                {% else %}
-                                <div class="d-flex justify-content-between align-items-center text-primary">
-                                    <span class="text-secondary">Troco</span>
-                                    <span class="fs-5 fw-bold">R$ {{ sale.change_preview|floatformat:2 }}</span>
-                                </div>
-                                {% endif %}
-                            </div>
-
-                            <div class="mt-4">
-                                {% if sale.is_fully_paid %}
-                                    <form action="{% url 'sales:complete-sale' sale.pk %}" method="POST">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-pink w-100 py-3 rounded-3 shadow-sm d-flex align-items-center justify-content-center gap-2" id="btn-finalizar">
-                                            <span class="material-symbols-outlined">check_circle</span>
-                                            <span class="fs-5">FINALIZAR VENDA (F2)</span>
-                                        </button>
-                                    </form>
-                                {% else %}
-                                    <button class="btn btn-secondary w-100 py-3 rounded-3 opacity-50" disabled>
-                                        AGUARDANDO PAGAMENTO...
-                                    </button>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div> 
     </div>
-</div>
+</main>
 
 <script>
-    // 1. Lógica de Filtro da Vitrine
-    const searchInput = document.getElementById('product-search-input');
-    const productCards = document.querySelectorAll('.product-card-container');
-    const noResultsMsg = document.getElementById('no-results-msg');
-
-    if (searchInput) {
-        searchInput.addEventListener('keyup', function(e) {
-            // Se apertar Enter, não filtra visualmente, deixa o form enviar (scanner)
-            if (e.key === 'Enter') return;
-
-            const term = e.target.value.toLowerCase();
-            let hasVisible = false;
-
-            productCards.forEach(card => {
-                const name = card.getAttribute('data-name');
-                if (name.includes(term)) {
-                    card.classList.remove('d-none');
-                    hasVisible = true;
-                } else {
-                    card.classList.add('d-none');
-                }
-            });
-
-            if (!hasVisible && term.length > 0) {
-                noResultsMsg.classList.remove('d-none');
-            } else {
-                noResultsMsg.classList.add('d-none');
-            }
-        });
-    }
-
-    // 2. Atalhos de Teclado
-    document.addEventListener('keydown', function(event) {
-       if (event.key === 'F2') {
-         event.preventDefault();
-         const finishBtn = document.getElementById('btn-finalizar');
-         if (finishBtn && !finishBtn.disabled) finishBtn.click();
-       }
-       if (event.key === '/') {
-           event.preventDefault();
-           searchInput.focus();
-       }
+    // Foco automático no input de busca ao carregar
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('search-input');
+        if(searchInput) searchInput.focus();
     });
 
-    // Auto-focus no load
-    window.onload = function() {
-        if(searchInput) searchInput.focus();
-    };
+    // Atalhos de Teclado
+    document.addEventListener('keydown', function(event) {
+        // F2 para Finalizar
+        if (event.key === 'F2') {
+            event.preventDefault();
+            const btnFinalizar = document.getElementById('btn-finalizar');
+            if (btnFinalizar && !btnFinalizar.disabled) {
+                btnFinalizar.click();
+            }
+        }
+        // '/' para focar na busca
+        if (event.key === '/' || event.key === 'F1') {
+            event.preventDefault();
+            const searchInput = document.getElementById('search-input');
+            if(searchInput) searchInput.focus();
+        }
+    });
 </script>
 
 {% endblock %}
