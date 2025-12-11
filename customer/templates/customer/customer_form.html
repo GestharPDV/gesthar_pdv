@@ -231,6 +231,153 @@ document.addEventListener('DOMContentLoaded', function () {
       e.target.value = v.trim();
     });
   }
+
+  // Função para validar CPF
+  function validarCPF(cpf) {
+    cpf = cpf.replace(/\D/g, '');
+    if (cpf.length !== 11) return false;
+    // Verifica se todos os dígitos são iguais
+    if (/^(\d)\1{10}$/.test(cpf)) return false;
+    // Calcula primeiro dígito verificador
+    var soma = 0;
+    for (var i = 0; i < 9; i++) soma += parseInt(cpf[i]) * (10 - i);
+    var resto = soma % 11;
+    var digito1 = resto < 2 ? 0 : 11 - resto;
+    if (parseInt(cpf[9]) !== digito1) return false;
+    // Calcula segundo dígito verificador
+    soma = 0;
+    for (var i = 0; i < 10; i++) soma += parseInt(cpf[i]) * (11 - i);
+    resto = soma % 11;
+    var digito2 = resto < 2 ? 0 : 11 - resto;
+    return parseInt(cpf[10]) === digito2;
+  }
+
+  // Função para validar CNPJ
+  function validarCNPJ(cnpj) {
+    cnpj = cnpj.replace(/\D/g, '');
+    if (cnpj.length !== 14) return false;
+    if (/^(\d)\1{13}$/.test(cnpj)) return false;
+    var mult1 = [5,4,3,2,9,8,7,6,5,4,3,2];
+    var mult2 = [6,5,4,3,2,9,8,7,6,5,4,3,2];
+    var soma = 0;
+    for (var i = 0; i < 12; i++) soma += parseInt(cnpj[i]) * mult1[i];
+    var resto = soma % 11;
+    var digito1 = resto < 2 ? 0 : 11 - resto;
+    if (parseInt(cnpj[12]) !== digito1) return false;
+    soma = 0;
+    for (var i = 0; i < 13; i++) soma += parseInt(cnpj[i]) * mult2[i];
+    resto = soma % 11;
+    var digito2 = resto < 2 ? 0 : 11 - resto;
+    return parseInt(cnpj[13]) === digito2;
+  }
+
+  // Função auxiliar para exibir erro
+  function mostrarErro(input, mensagem) {
+    var container = input.closest('.mb-3') || input.parentElement;
+    var erroExistente = container.querySelector('.validation-error');
+    if (erroExistente) erroExistente.remove();
+    if (mensagem) {
+      var erroDiv = document.createElement('div');
+      erroDiv.className = 'text-danger small validation-error';
+      erroDiv.textContent = mensagem;
+      container.appendChild(erroDiv);
+    }
+    input.classList.toggle('is-invalid', !!mensagem);
+  }
+
+  // Validação de CPF/CNPJ ao sair do campo
+  if (cpfInput) {
+    cpfInput.addEventListener('blur', function (e) {
+      var valor = e.target.value.replace(/\D/g, '');
+      if (!valor) {
+        mostrarErro(e.target, '');
+        return;
+      }
+      if (valor.length === 11) {
+        if (!validarCPF(valor)) {
+          mostrarErro(e.target, 'CPF inválido. Verifique os dígitos.');
+        } else {
+          mostrarErro(e.target, '');
+        }
+      } else if (valor.length === 14) {
+        if (!validarCNPJ(valor)) {
+          mostrarErro(e.target, 'CNPJ inválido. Verifique os dígitos.');
+        } else {
+          mostrarErro(e.target, '');
+        }
+      } else {
+        mostrarErro(e.target, 'CPF deve ter 11 dígitos ou CNPJ deve ter 14 dígitos.');
+      }
+    });
+  }
+
+  // Validação de baby_due_date
+  var babyDueDateInput = document.getElementById("{{ form.baby_due_date.id_for_label }}");
+  if (babyDueDateInput) {
+    babyDueDateInput.addEventListener('change', function (e) {
+      var valor = e.target.value;
+      if (!valor) {
+        mostrarErro(e.target, '');
+        return;
+      }
+      var dataEscolhida = new Date(valor);
+      var hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+      var maxData = new Date(hoje);
+      maxData.setDate(maxData.getDate() + 350); // 50 semanas
+      if (dataEscolhida > maxData) {
+        mostrarErro(e.target, 'A data prevista do parto não pode ser superior a 50 semanas a partir de hoje.');
+      } else {
+        mostrarErro(e.target, '');
+      }
+    });
+  }
+
+  // Validação no submit do formulário
+  var form = document.querySelector('form');
+  if (form) {
+    form.addEventListener('submit', function (e) {
+      var valido = true;
+      
+      // Validar CPF/CNPJ
+      if (cpfInput && cpfInput.value) {
+        var cpfValor = cpfInput.value.replace(/\D/g, '');
+        if (cpfValor.length === 11 && !validarCPF(cpfValor)) {
+          mostrarErro(cpfInput, 'CPF inválido. Verifique os dígitos.');
+          valido = false;
+        } else if (cpfValor.length === 14 && !validarCNPJ(cpfValor)) {
+          mostrarErro(cpfInput, 'CNPJ inválido. Verifique os dígitos.');
+          valido = false;
+        } else if (cpfValor.length !== 11 && cpfValor.length !== 14) {
+          mostrarErro(cpfInput, 'CPF deve ter 11 dígitos ou CNPJ deve ter 14 dígitos.');
+          valido = false;
+        }
+      }
+      
+      // Validar baby_due_date
+      if (babyDueDateInput && babyDueDateInput.value) {
+        var dataEscolhida = new Date(babyDueDateInput.value);
+        var hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+        var maxData = new Date(hoje);
+        maxData.setDate(maxData.getDate() + 350);
+        if (dataEscolhida > maxData) {
+          mostrarErro(babyDueDateInput, 'A data prevista do parto não pode ser superior a 50 semanas a partir de hoje.');
+          valido = false;
+        }
+      }
+      
+      if (!valido) {
+        e.preventDefault();
+        // Scroll para o primeiro erro
+        var primeiroErro = document.querySelector('.is-invalid');
+        if (primeiroErro) {
+          primeiroErro.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          primeiroErro.focus();
+        }
+      }
+    });
+  }
 });
 </script>
 {% endblock %}
