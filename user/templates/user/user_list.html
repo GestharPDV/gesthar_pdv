@@ -1,4 +1,7 @@
-{% extends 'base/base.html' %} {% load static %} {% block content %}
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
 <div class="pr-20 pl-20">
   <!-- Título -->
   <div class="mb-4">
@@ -137,8 +140,11 @@
 
           <!-- Idade -->
           <td>
-            {% if user.birth_date %} {{ user.birth_date|timesince|slice:":2" }}
-            {% else %} - {% endif %}
+            {% if user.birth_date %}
+              {{ user.birth_date|timesince|slice:":2" }}
+            {% else %}
+              -
+            {% endif %}
           </td>
 
           <!-- Cargo -->
@@ -146,17 +152,18 @@
 
           <!-- Telefone Formatado -->
           <td>
-            {% if user.phone_number %} {% with
-            user.phone_number|stringformat:"s" as phone_str %} {% if
-            phone_str|length == 11 %} ({{ phone_str|slice:":2" }}) {{
-            phone_str|slice:"2:7" }}-{{ phone_str|slice:"7:" }} {% elif
-            phone_str|length == 10 %} ({{ phone_str|slice:":2" }}) {{
-            phone_str|slice:"2:6" }}-{{ phone_str|slice:"6:" }} {% else %} {{
-            user.phone_number }}
-            {% endif %}
-            {% endwith %}
+            {% if user.phone_number %}
+              {% with phone_str=user.phone_number|stringformat:"s" %}
+                {% if phone_str|length == 11 %}
+                  ({{ phone_str|slice:":2" }}) {{ phone_str|slice:"2:7" }}-{{ phone_str|slice:"7:" }}
+                {% elif phone_str|length == 10 %}
+                  ({{ phone_str|slice:":2" }}) {{ phone_str|slice:"2:6" }}-{{ phone_str|slice:"6:" }}
+                {% else %}
+                  {{ user.phone_number }}
+                {% endif %}
+              {% endwith %}
             {% else %}
-             - 
+              -
             {% endif %}
           </td>
 
@@ -173,14 +180,16 @@
             class="text-center py-4"
             style="color: var(--cor-fonte-cinza)"
           >
-            {% if query %} Nenhum usuário encontrado para "{{ query }}".<br />
-            <a
-              href="{% url 'user:user-list' %}"
-              class="text-decoration-none fw-bold mt-2 d-inline-block"
-              style="color: var(--cor-fonte-rosa)"
-              >Limpar pesquisa</a
-            >
-            {% else %} Nenhum usuário cadastrado. {% endif %}
+            {% if query %}
+              Nenhum usuário encontrado para "{{ query }}".<br />
+              <a
+                href="{% url 'user:user-list' %}"
+                class="text-decoration-none fw-bold mt-2 d-inline-block"
+                style="color: var(--cor-fonte-rosa)"
+              >Limpar pesquisa</a>
+            {% else %}
+              Nenhum usuário cadastrado.
+            {% endif %}
           </td>
         </tr>
         {% endfor %}
