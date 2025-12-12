@@ -83,7 +83,7 @@ body {
   background-color: var(--cor-cabecalho-formulario) !important;
   font-weight: 600;
   text-transform: uppercase;
-  padding: 2%;
+  padding: 1.3%;
 }
 
 /* Cabeçalhos das tabelas */ 

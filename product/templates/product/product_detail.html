@@ -6,10 +6,11 @@
 <div class="pr-15 pl-15">
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="titulo">{{ page_title|upper }}</h1>
-
-    <a href="{% url 'product:product-list' %}" class="botao-rosa p-2">
-      &larr; Voltar para a Lista
-    </a>
+    <div class="d-flex gap-2">
+      <button type="button" class="botao-amarelo p-2">Editar Produto</button>
+      <button type="button" class="botao-vermelho p-2">Excluir Produto</button>
+      <button type="button" class="botao-rosa p-2">Voltar</button>
+    </div>
   </div>
 
   <!-- Informações Gerais e Financeiras -->
