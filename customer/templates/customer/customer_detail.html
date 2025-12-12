@@ -28,42 +28,42 @@
         <div class="p-3">
           <div class="row">
             <div class="col-md-6 mb-3">
-              <p class="fs-texto text-secondary mb-1">Nome Completo</p>
-              <p class="mb-0 fw-bold">{{ customer.name }}</p>
+              <small class="d-block text-uppercase text-muted">Nome Completo</small>
+              <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{{ customer.name }}</p>
             </div>
             <div class="col-md-6 mb-3">
-              <p class="fs-texto text-secondary mb-1">CPF/CNPJ</p>
-              <p class="mb-0 fw-bold">{{ customer.cpf_cnpj }}</p>
-            </div>
-
-            <div class="col-md-6 mb-3">
-              <p class="fs-texto text-secondary mb-1">Data de Nascimento</p>
-              <p class="mb-0 fw-bold">{% if customer.birth_date %}{{ customer.birth_date|date:"d/m/Y" }}{% else %}-{% endif %}</p>
+              <small class="d-block text-uppercase text-muted">CPF/CNPJ</small>
+              <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{{ customer.cpf_cnpj }}</p>
             </div>
 
             <div class="col-md-6 mb-3">
-              <p class="fs-texto text-secondary mb-1">Data Prevista do Parto</p>
-              <p class="mb-0 fw-bold">{% if customer.baby_due_date %}{{ customer.baby_due_date|date:"d/m/Y" }}{% else %}-{% endif %}</p>
+              <small class="d-block text-uppercase text-muted">Data de Nascimento</small>
+              <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{% if customer.birth_date %}{{ customer.birth_date|date:"d/m/Y" }}{% else %}-{% endif %}</p>
             </div>
 
             <div class="col-md-6 mb-3">
-              <p class="fs-texto text-secondary mb-1">E-mail</p>
-              <p class="mb-0 fw-bold">{{ customer.email }}</p>
+              <small class="d-block text-uppercase text-muted">Data Prevista do Parto</small>
+              <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{% if customer.baby_due_date %}{{ customer.baby_due_date|date:"d/m/Y" }}{% else %}-{% endif %}</p>
             </div>
 
             <div class="col-md-6 mb-3">
-              <p class="fs-texto text-secondary mb-1">Telefone/WhatsApp</p>
-              <p class="mb-0 fw-bold">{{ customer.phone|default:"-" }}</p>
+              <small class="d-block text-uppercase text-muted">E-mail</small>
+              <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{{ customer.email }}</p>
             </div>
 
             <div class="col-md-6 mb-3">
-              <p class="fs-texto text-secondary mb-1">Preferências de Tamanho</p>
-              <p class="mb-0 fw-bold">{{ customer.size_preferences|default:"-" }}</p>
+              <small class="d-block text-uppercase text-muted">Telefone/WhatsApp</small>
+              <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{{ customer.phone|default:"-" }}</p>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <small class="d-block text-uppercase text-muted">Preferências de Tamanho</small>
+              <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{{ customer.size_preferences|default:"-" }}</p>
             </div>
 
             <div class="col-12">
-              <p class="fs-texto text-secondary mb-1">Observações</p>
-              <p class="mb-0 fw-bold">{{ customer.note|default:"-" }}</p>
+              <small class="d-block text-uppercase text-muted">Observações</small>
+              <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{{ customer.note|default:"-" }}</p>
             </div>
           </div>
         </div>
@@ -79,27 +79,27 @@
                   <div class="rounded-2 p-3 address-card">
                     <div class="row">
                       <div class="col-md-8 mb-2">
-                        <p class="fs-texto text-secondary mb-1">Endereço</p>
-                        <p class="mb-0 fw-bold">{{ address.street }}, {{ address.number }}</p>
+                        <small class="d-block text-uppercase text-muted">Endereço</small>
+                        <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{{ address.street }}, {{ address.number }}</p>
                       </div>
                       <div class="col-md-4 mb-2">
-                        <p class="fs-texto text-secondary mb-1">Bairro</p>
-                        <p class="mb-0 fw-bold">{{ address.neighborhood }}</p>
+                        <small class="d-block text-uppercase text-muted">Bairro</small>
+                        <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{{ address.neighborhood }}</p>
                       </div>
                     </div>
 
                     <div class="row mt-2">
                       <div class="col-md-3 mb-1">
-                        <p class="fs-texto text-secondary mb-1">CEP</p>
-                        <p class="mb-0 fw-bold">{{ address.cep }}</p>
+                        <small class="d-block text-uppercase text-muted">CEP</small>
+                        <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{{ address.cep }}</p>
                       </div>
                       <div class="col-md-5 mb-1">
-                        <p class="fs-texto text-secondary mb-1">Cidade / Estado</p>
-                        <p class="mb-0 fw-bold">{{ address.city }} / {{ address.state }}</p>
+                        <small class="d-block text-uppercase text-muted">Cidade / Estado</small>
+                        <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{{ address.city }} / {{ address.state }}</p>
                       </div>
                       <div class="col-md-4 mb-1">
-                        <p class="fs-texto text-secondary mb-1">Complemento</p>
-                        <p class="mb-0 fw-bold">{% if address.complement %}{{ address.complement }}{% else %}-{% endif %}</p>
+                        <small class="d-block text-uppercase text-muted">Complemento</small>
+                        <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{% if address.complement %}{{ address.complement }}{% else %}-{% endif %}</p>
                       </div>
                     </div>
                   </div>
@@ -135,10 +135,10 @@
       <div class="border border-separator rounded mb-4">
         <h2 class="subtitulo mb-0">Informações de Cadastro</h2>
         <div class="p-3">
-          <p class="mb-1">Cadastrado em</p>
-          <p class="mb-2 fw-bold">{{ customer.created_at|date:"d/m/Y H:i" }}</p>
-          <p class="mb-1">Última atualização</p>
-          <p class="fw-bold">{{ customer.updated_at|date:"d/m/Y H:i" }}</p>
+          <small class="d-block text-uppercase text-muted mb-1">Cadastrado em</small>
+          <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{{ customer.created_at|date:"d/m/Y H:i" }}</p>
+          <small class="d-block text-uppercase text-muted mb-1">Última atualização</small>
+          <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{{ customer.updated_at|date:"d/m/Y H:i" }}</p>
         </div>
       </div>
     </div>

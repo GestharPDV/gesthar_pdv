@@ -9,14 +9,14 @@
 
     <!-- Botão Voltar -->
     <a href="{% url 'user:user-list' %}" class="botao-rosa p-2 px-3 fw-bold text-uppercase text-decoration-none">
-      &larr; Voltar
+      Voltar
     </a>
   </div>
 
   <!-- Informações Pessoais -->
-  <div class="card border-light mb-4 shadow-sm">
-    <h2 class="subtitulo">Informações Pessoais</h2>
-    <div class="card-body">
+  <div class="border border-separator rounded mb-4">
+    <h2 class="subtitulo mb-0">Informações Pessoais</h2>
+    <div class="p-3">
 
       <!-- Linha 1: ID, Nome, Status -->
       <div class="row mb-3">
@@ -87,9 +87,9 @@
   </div>
 
   <!-- Dados Profissionais -->
-  <div class="card border-light mb-4 shadow-sm">
-    <h2 class="subtitulo">Dados Profissionais</h2>
-    <div class="card-body">
+  <div class="border border-separator rounded mb-4">
+    <h2 class="subtitulo mb-0">Dados Profissionais</h2>
+    <div class="p-3">
       <div class="row">
         <div class="col-md-4 mb-3">
           <small class="d-block text-uppercase text-muted">Cargo/Função</small>
@@ -109,8 +109,8 @@
         </div>
       </div>
 
-      <hr style="color: var(--cor-fundo-linha);">
-      
+      <hr>
+
       <!-- Observações -->
       <div>
         <small class="d-block text-uppercase text-muted">Observações</small>
@@ -129,10 +129,10 @@
         Alterar Senha
       </a>
 
-      <!-- Botão Editar (Amarelo) -->
-      <a href="{% url 'user:user-edit' pk=user_obj.pk %}" class="botao-amarelo p-3 px-4 fw-bold text-uppercase text-decoration-none shadow-sm" style="color: #555;">
+        <!-- Botão Editar (Amarelo) -->
+        <a href="{% url 'user:user-edit' pk=user_obj.pk %}" class="botao-amarelo p-3 px-4 fw-bold text-uppercase text-decoration-none shadow-sm">
           Editar Usuário
-      </a>
+        </a>
 
       <!-- Botão Excluir (Vermelho) -->
       <a href="{% url 'user:user-delete' pk=user_obj.pk %}" class="botao-vermelho p-3 px-4 fw-bold text-uppercase text-decoration-none shadow-sm">

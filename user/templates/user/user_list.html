@@ -14,14 +14,6 @@
     action="{% url 'user:user-list' %}"
     class="mb-3 d-flex justify-content-end align-items-center gap-2"
   >
-    <label
-      for="search_right"
-      class="fw-bold text-uppercase"
-      style="font-size: 0.8rem; color: var(--cor-fonte-cinza)"
-    >
-      PESQUISAR
-    </label>
-
     <div class="position-relative w-100" style="max-width: 300px">
       <input
         id="search_right"
@@ -30,7 +22,7 @@
         value="{{ query }}"
         class="form-control rounded-pill bg-transparent pe-5"
         style="color: var(--cor-fonte-preta); border-color: #ced4da"
-        placeholder="Nome, CPF ou Email..."
+        placeholder="Pesquisar"
       />
 
       <!-- Botão de Lupa (Submit) -->
@@ -125,16 +117,16 @@
           <td>{{ user.id|stringformat:"03d" }}</td>
 
           <!-- Status -->
-          <td class="fw-bold text-uppercase" style="font-size: 0.85rem">
+          <td class="text-uppercase text-center" style="font-size: 0.85rem">
             {% if user.is_active %}
-            <span>ATIVO</span>
+            <span class="text-success fw-semibold">ATIVO</span>
             {% else %}
-            <span>INATIVO</span>
+            <span class="text-danger">INATIVO</span>
             {% endif %}
           </td>
 
           <!-- Nome -->
-          <td class="text-start text-uppercase fw-bold">
+          <td class="text-center text-uppercase">
             {{ user.first_name }} {{ user.last_name }}
           </td>
 
