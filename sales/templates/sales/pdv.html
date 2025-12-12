@@ -58,6 +58,13 @@
         border-color: var(--primary-color) !important;
         outline: none;
     }
+    
+    /* Focus rosa para inputs de pesquisa e quantidade */
+    .form-control:focus {
+        box-shadow: 0 0 0 0.2rem rgba(255, 70, 120, 0.25) !important;
+        border-color: #ff7690 !important;
+        outline: none;
+    }
 
     /* Tabela */
     .table-hover-custom tbody tr:hover { background: #f1f1f1; }
@@ -71,31 +78,34 @@
     /* Scroll na área da tabela */
     .scroll-area {
         overflow-y: auto;
-        height: calc(100vh - 220px); /* Ajuste dinâmico */
+        max-height: calc(100vh - 280px);
+        flex: 1;
     }
     
     /* Scrollbar personalizada fina */
     .scroll-area::-webkit-scrollbar { width: 6px; }
     .scroll-area::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 10px; }
+    
+    /* Scrollbar para seção de pagamento */
+    .col-lg-4 > div::-webkit-scrollbar { width: 6px; }
+    .col-lg-4 > div::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 10px; }
+    
+    /* Forçar hover consistente nos botões rosa desta página */
+    .btn.botao-rosa:hover,
+    .botao-rosa:hover {
+        background-color: #ff5c76 !important;
+        color: white !important;
+        border-color: #ff5c76 !important;
+    }
 </style>
 
-<header class="px-4 py-3 d-flex justify-content-between align-items-center bg-white border-bottom border-separator">
-    <h1 class="h5 fw-bold m-0">PDV - Frente de Caixa</h1>
+<header class="px-4 py-3 d-flex justify-content-between align-items-center">
+    <h1 class="titulo">PDV - FRENTE DE CAIXA</h1>
 
     <div class="d-flex align-items-center gap-3">
-        <a href="#" class="btn btn-outline-secondary border-separator btn-sm px-3 py-2">
+        <a href="#" class="btn botao-rosa px-4 py-2">
             Fechar Caixa
         </a>
-
-        <div class="d-flex align-items-center gap-2 border-start ps-3 border-separator">
-            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center border" style="width:40px;height:40px;">
-                <span class="material-symbols-outlined text-secondary-custom">person</span>
-            </div>
-            <div class="small lh-1">
-                <div class="fw-semibold">{{ request.user.get_full_name|default:request.user.username }}</div>
-                <div class="text-secondary-custom" style="font-size: 0.75rem;">Operador</div>
-            </div>
-        </div>
     </div>
 </header>
 
@@ -112,61 +122,63 @@
     </div>
     {% endif %}
 
-    <div class="row g-3 h-100 pb-5">
+    <div class="row g-3" style="height: calc(100vh - 120px);">
 
-        <section class="col-lg-8 h-100">
-            <div class="bg-card shadow-subtle rounded p-3 h-100 d-flex flex-column border border-separator">
+        <section class="col-lg-8" style="height: 100%; overflow-y: auto;">
+            <div class="rounded p-3 h-100 d-flex flex-column border border-separator">
 
                 <form action="{% url 'sales:add-item' %}" method="POST" id="add-item-form">
                     {% csrf_token %}
-                    <label class="small text-secondary-custom fw-semibold mb-1">CÓDIGO DE BARRAS / SKU / NOME PRODUTO</label>
-
                     <div class="d-flex align-items-end gap-2">
-                        <div class="position-relative flex-grow-1">
-                            <span class="material-symbols-outlined position-absolute" style="left:10px; top:50%; transform:translateY(-50%); color:#806066;">barcode_scanner</span>
-                            <input type="text" 
-                                   name="{{ form.sku_or_barcode.name }}" 
-                                   class="form-control ps-5 input-focus" 
-                                   placeholder="Pesquisar produto ou bipar código..." 
-                                   autofocus
-                                   autocomplete="off"
-                                   id="search-input">
+                        <div class="flex-grow-1">
+                            <label class="fs-texto fw-semibold d-block mb-1" style="color: var(--cor-fonte-preta);">CÓDIGO DE BARRAS / SKU / NOME PRODUTO</label>
+                            <div class="position-relative">
+                                <span class="material-symbols-outlined position-absolute" style="left:10px; top:50%; transform:translateY(-50%); color: var(--cor-fonte-cinza);">barcode_scanner</span>
+                                            <input type="text" 
+                                                name="{{ form.sku_or_barcode.name }}" 
+                                                class="form-control rounded-pill bg-transparent ps-5 pe-4" 
+                                                style="color: var(--cor-fonte-cinza) !important;"
+                                                placeholder="Pesquisar produto ou bipar código..." 
+                                                autofocus
+                                                autocomplete="off"
+                                                id="search-input">
+                            </div>
                         </div>
 
-                        <div class="text-center">
-                            <label class="small text-secondary-custom fw-semibold d-block">QTD</label>
+                        <div>
+                            <label class="fs-texto fw-semibold d-block mb-2" style="color: var(--cor-fonte-preta);">QTD</label>
                             <input type="number" 
-                                   name="quantity" 
-                                   value="1" 
-                                   min="1"
-                                   class="form-control text-center input-focus" 
-                                   style="width:80px;">
+                                name="quantity" 
+                                value="1" 
+                                min="1"
+                                class="form-control text-center rounded-pill bg-transparent" 
+                                style="width:80px; color: var(--cor-fonte-cinza) !important;">
                         </div>
 
-                        <button type="submit" class="btn btn-success fw-bold px-4 d-flex align-items-center" style="height:38px; margin-bottom: 1px;">
+                        <button type="submit" class="btn botao-verde fw-semibold px-4 py-2">
                             ADICIONAR
                         </button>
                     </div>
                 </form>
 
-                <div class="scroll-area mt-3 border rounded border-separator">
-                    <table class="table table-hover-custom m-0">
-                        <thead class="bg-light position-sticky top-0 border-bottom border-separator" style="z-index: 1;">
-                            <tr class="text-uppercase small text-secondary-custom">
-                                <th class="ps-3 py-3">Produto</th>
-                                <th class="text-center">Qtd</th>
-                                <th class="text-end">Unitário</th>
-                                <th class="text-center">Desconto</th>
-                                <th class="text-end">Total</th>
-                                <th style="width:50px;"></th>
+                    <div class="scroll-area mt-3 border rounded border-separator">
+                    <table class="table table-bordered align-middle mb-0 table-hover-custom product-list">
+                        <thead class="position-sticky top-0 cabecalho" style="z-index: 1;">
+                            <tr class="text-uppercase text-center">
+                                <th class="text-center py-2">Produto</th>
+                                <th class="text-center py-2">Qtd</th>
+                                <th class="text-center py-2">Unitário</th>
+                                <th class="text-center py-2">Desconto</th>
+                                <th class="text-center py-2">Total</th>
+                                <th class="text-center py-2" style="width:50px;"></th>
                             </tr>
                         </thead>
 
                         <tbody>
                             {% for item in items %}
-                            <tr class="border-bottom border-separator">
-                                <td class="ps-3 py-2">
-                                    <div class="fw-semibold text-dark">{{ item.variation.product.name }}</div>
+                            <tr style="vertical-align: middle;">
+                                <td class="ps-3 py-2 text-center">
+                                    <div class="fw-semibold">{{ item.variation.product.name }}</div>
                                     {% if item.variation.name and item.variation.name != 'Unique' %}
                                         <small class="text-secondary">{{ item.variation.name }}</small>
                                     {% endif %}
@@ -175,7 +187,7 @@
                                 
                                 <td class="text-center fw-bold">{{ item.quantity }}</td>
                                 
-                                <td class="text-end">R$ {{ item.unit_price|floatformat:2 }}</td>
+                                <td class="text-center fw-semibold" style="color: var(--cor-fonte-rosa);">R$ {{ item.unit_price|floatformat:2 }}</td>
                                 
                                 <td class="text-center">
                                     <input class="form-control form-control-sm text-center input-focus d-inline-block" 
@@ -184,9 +196,9 @@
                                            disabled title="Funcionalidade em desenvolvimento">
                                 </td>
                                 
-                                <td class="text-end fw-bold text-dark">R$ {{ item.total_price|floatformat:2 }}</td>
+                                <td class="text-center fw-semibold" style="color: var(--cor-fonte-rosa);">R$ {{ item.total_price|floatformat:2 }}</td>
                                 
-                                <td class="text-end pe-2">
+                                <td class="text-center">
                                     <form action="{% url 'sales:remove-item' item.pk %}" method="POST" class="d-inline">
                                         {% csrf_token %}
                                         <button type="submit" class="btn btn-sm btn-link text-decoration-none text-secondary-custom p-1" title="Remover item">
@@ -209,67 +221,67 @@
             </div>
         </section>
 
-        <section class="col-lg-4 h-100">
-            <div class="bg-card shadow-subtle rounded p-3 h-100 d-flex flex-column border border-separator">
+        <section class="col-lg-4" style="height: 100%; overflow-y: auto;">
+            <div class="rounded p-2 d-flex flex-column border border-separator" style="min-height: 100%;">
 
-                <h5 class="fw-bold pb-2 border-bottom border-separator d-flex align-items-center gap-2">
-                    <span class="material-symbols-outlined text-primary">payments</span>
+                <h3 class="fw-bold pb-2 mb-2 border-bottom border-separator d-flex align-items-center gap-2" style="color: var(--cor-fonte-rosa); font-size: 1.2rem;">
+                    <span class="material-symbols-outlined">payments</span>
                     PAGAMENTO
-                </h5>
+                </h3>
 
-                <div class="d-flex flex-column gap-3 flex-grow-1 pt-2">
+                <div class="d-flex flex-column gap-2 flex-grow-1">
 
                     <div class="small">
                         <div class="d-flex justify-content-between mb-1">
-                            <span class="text-secondary-custom">Subtotal:</span>
-                            <span class="fw-medium">R$ {{ sale.net_amount|floatformat:2 }}</span>
+                            <span style="color: var(--cor-fonte-cinza);">Subtotal:</span>
+                            <span class="fw-semibold" style="color: var(--cor-fonte-preta);">R$ {{ sale.net_amount|floatformat:2 }}</span>
                         </div>
                         <div class="d-flex justify-content-between">
-                            <span class="text-secondary-custom">Descontos:</span>
-                            <span class="fw-medium text-success">- R$ 0,00</span>
+                            <span style="color: var(--cor-fonte-cinza);">Descontos:</span>
+                            <span class="fw-semibold" style="color: var(--cor-botao-verde);">- R$ 0,00</span>
                         </div>
                     </div>
 
-                    <div class="bg-light p-2 rounded border border-separator">
-                        <label class="small text-secondary-custom fw-bold" style="font-size: 0.7rem;">APLICAR DESCONTO NO TOTAL</label>
+                    <div class="p-2 rounded border border-separator">
+                        <label class="small fw-bold" style="font-size: 0.7rem; color: var(--cor-fonte-preta);">APLICAR DESCONTO NO TOTAL</label>
                         <div class="d-flex gap-2 mt-1 align-items-center">
                             <div class="position-relative flex-grow-1">
-                                <span class="position-absolute" style="left:10px; top:50%; transform:translateY(-50%); color:#806066; font-size: 0.8rem;">R$</span>
-                                <input class="form-control form-control-sm ps-4 input-focus" placeholder="0,00">
+                                <span class="position-absolute" style="left:12px; top:50%; transform:translateY(-50%); color: var(--cor-fonte-cinza); font-size: 0.8rem;">R$</span>
+                                <input class="form-control form-control-sm ps-5 input-focus rounded-pill bg-transparent" placeholder="0,00" style="color: var(--cor-fonte-cinza) !important;">
                             </div>
-                            <button class="btn btn-sm btn-white border shadow-sm text-success fw-bold">
+                            <button class="btn btn-sm botao-verde border shadow-sm fw-bold">
                                 <span class="material-symbols-outlined fs-6">check</span>
                             </button>
                         </div>
                     </div>
 
-                    <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded border border-separator">
-                        <span class="h6 m-0 fw-bold text-dark">Total da Venda:</span>
-                        <span class="h4 m-0 fw-bold text-primary">R$ {{ sale.net_amount|floatformat:2 }}</span>
+                    <div class="d-flex justify-content-between align-items-center p-2 rounded border border-separator">
+                        <span class="h6 m-0 fw-bold" style="color: var(--cor-fonte-preta);">Total da Venda:</span>
+                        <span class="h4 m-0 fw-bold" style="color: var(--cor-fonte-rosa);">R$ {{ sale.net_amount|floatformat:2 }}</span>
                     </div>
 
-                    <div class="border-top border-bottom border-separator py-3 small">
+                    <div class="border-top border-bottom border-separator py-2 small">
                         <div class="d-flex justify-content-between mb-2">
-                            <span class="text-secondary-custom">Valor Pago:</span>
-                            <span class="fw-medium text-success">R$ {{ sale.total_paid|floatformat:2 }}</span>
+                            <span style="color: var(--cor-fonte-cinza);">Valor Pago:</span>
+                            <span class="fw-semibold" style="color: var(--cor-botao-verde);">R$ {{ sale.total_paid|floatformat:2 }}</span>
                         </div>
                         
                         {% if sale.remaining_balance > 0 %}
                         <div class="d-flex justify-content-between align-items-center">
-                            <span class="text-secondary-custom fw-bold">Falta Pagar:</span>
-                            <span class="h5 m-0 fw-bold text-danger">R$ {{ sale.remaining_balance|floatformat:2 }}</span>
+                            <span class="fw-bold" style="color: var(--cor-fonte-cinza);">Falta Pagar:</span>
+                            <span class="h5 m-0 fw-bold" style="color: var(--cor-botao-vermelho);">R$ {{ sale.remaining_balance|floatformat:2 }}</span>
                         </div>
                         {% else %}
                          <div class="d-flex justify-content-between align-items-center">
-                            <span class="text-secondary-custom fw-bold">Troco:</span>
-                            <span class="h5 m-0 fw-bold text-primary">R$ {{ sale.change_preview|floatformat:2 }}</span>
+                            <span class="fw-bold" style="color: var(--cor-fonte-cinza);">Troco:</span>
+                            <span class="h5 m-0 fw-bold" style="color: var(--cor-fonte-rosa);">R$ {{ sale.change_preview|floatformat:2 }}</span>
                         </div>
                         {% endif %}
                     </div>
 
                     {% if sale.remaining_balance > 0 %}
                     <div>
-                        <label class="small text-secondary-custom fw-bold mb-1">ADICIONAR PAGAMENTO</label>
+                        <label class="small fw-bold mb-1" style="color: var(--cor-fonte-preta);">ADICIONAR PAGAMENTO</label>
                         <form action="{% url 'sales:add-payment' %}" method="POST">
                             {% csrf_token %}
                             <div class="d-flex gap-2">
@@ -278,11 +290,11 @@
                                     </div>
 
                                 <div class="position-relative flex-grow-1">
-                                    <span class="position-absolute" style="left:10px; top:50%; transform:translateY(-50%); color:#806066; font-size: 0.8rem;">R$</span>
+                                    <span class="position-absolute" style="left:10px; top:50%; transform:translateY(-50%); color: var(--cor-fonte-cinza); font-size: 0.8rem;">R$</span>
                                     {{ payment_form.amount }}
                                     </div>
 
-                                <button type="submit" class="btn btn-sm btn-light border text-success fw-bold hover-shadow">
+                                <button type="submit" class="btn btn-sm botao-verde border fw-bold hover-shadow">
                                     <span class="material-symbols-outlined fs-5">add</span>
                                 </button>
                             </div>
@@ -295,11 +307,11 @@
                     </div>
                     {% endif %}
 
-                    <div class="mt-auto">
+                    <div class="mt-2">
                         <form action="{% url 'sales:complete-sale' sale.pk %}" method="POST" id="finish-sale-form">
                             {% csrf_token %}
                             <button type="submit" 
-                                    class="btn btn-primary-custom fw-bold py-3 w-100 shadow-sm d-flex align-items-center justify-content-center gap-2"
+                                    class="btn botao-rosa fw-bold py-2 w-100 shadow-sm d-flex align-items-center justify-content-center gap-2"
                                     id="btn-finalizar"
                                     {% if sale.remaining_balance > 0 %}disabled style="opacity: 0.6; cursor: not-allowed;"{% endif %}>
                                 <span>FINALIZAR VENDA (F2)</span>

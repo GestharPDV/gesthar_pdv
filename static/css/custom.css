@@ -7,7 +7,7 @@
   --cor-botao-principal-rosa: #ff7690;
   --cor-botao-secundario-rosa: #f7e8eb;
   --cor-botao-verde: #89d46f;
-  --cor-botao-amarelo: #f1f0be;
+  --cor-botao-amarelo: #F7C948;
   --cor-botao-vermelho: #ea8484; 
   
   /* Cores da fonte */
@@ -112,8 +112,8 @@ th.cabecalho{
 }
 
 .botao-rosa:hover {
-  background-color: #ff5c76;
-
+  background-color: #ff5c76 !important;
+  color: var(--cor-fonte-branca) !important;
 }
 
 .botao-vermelho{

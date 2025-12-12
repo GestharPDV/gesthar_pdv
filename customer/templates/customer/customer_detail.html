@@ -7,9 +7,9 @@
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="titulo">DETALHES DO CLIENTE</h1>
     <div class="d-flex gap-2">
-      <a href="{% url 'customer:customer_update' customer.pk %}" class="botao-amarelo">Editar Cliente</a>
-      <a href="{% url 'customer:customer_delete' customer.pk %}" class="botao-vermelho">Excluir Cliente</a>
-      <a href="{% url 'customer:customer_list' %}" class="botao-rosa">Voltar</a>
+      <a href="{% url 'customer:customer_update' customer.pk %}" class="botao-amarelo p-2">Editar Cliente</a>
+      <a href="{% url 'customer:customer_delete' customer.pk %}" class="botao-vermelho p-2">Excluir Cliente</a>
+      <a href="{% url 'customer:customer_list' %}" class="botao-rosa p-2">Voltar</a>
     </div>
   </div>
 
@@ -23,9 +23,9 @@
 
   <div class="row g-4">
     <div class="col-lg-8">
-      <div class="card mb-4">
-        <div class="card-body">
-          <h2 class="subtitulo mb-3">Dados Pessoais</h2>
+      <div class="border border-separator rounded mb-4">
+        <h2 class="subtitulo mb-0">Dados Pessoais</h2>
+        <div class="p-3">
           <div class="row">
             <div class="col-md-6 mb-3">
               <p class="fs-texto text-secondary mb-1">Nome Completo</p>
@@ -69,9 +69,9 @@
         </div>
       </div>
 
-      <div class="card mb-4">
-        <div class="card-body">
-          <h2 class="subtitulo mb-3">Endereços</h2>
+      <div class="border border-separator rounded mb-4">
+        <h2 class="subtitulo mb-0">Endereços</h2>
+        <div class="p-3">
           {% if addresses %}
             <div class="row g-3">
               {% for address in addresses %}
@@ -114,9 +114,9 @@
     </div>
 
     <div class="col-lg-4">
-      <div class="card mb-4">
-        <div class="card-body">
-          <h2 class="subtitulo mb-3">Resumo de Compras</h2>
+      <div class="border border-separator rounded mb-4">
+        <h2 class="subtitulo mb-0">Resumo de Compras</h2>
+        <div class="p-3">
           <div class="mb-3">
             <p class="fs-texto text-secondary mb-1">Valor Total Gasto</p>
             <p class="h4 text-success fw-bold">R$ {{ total_spent|floatformat:2 }}</p>
@@ -132,9 +132,9 @@
         </div>
       </div>
 
-      <div class="card mb-4">
-        <div class="card-body">
-          <h2 class="subtitulo mb-3">Informações de Cadastro</h2>
+      <div class="border border-separator rounded mb-4">
+        <h2 class="subtitulo mb-0">Informações de Cadastro</h2>
+        <div class="p-3">
           <p class="mb-1">Cadastrado em</p>
           <p class="mb-2 fw-bold">{{ customer.created_at|date:"d/m/Y H:i" }}</p>
           <p class="mb-1">Última atualização</p>
@@ -144,9 +144,9 @@
     </div>
   </div>
 
-  <div class="card mb-4">
-    <div class="card-body">
-      <h2 class="subtitulo mb-3">Histórico de Compras</h2>
+  <div class="border border-separator rounded mb-4">
+    <h2 class="subtitulo mb-0">Histórico de Compras</h2>
+    <div class="p-3">
       {% if purchase_history %}
         <div class="table-responsive">
           <table class="table table-bordered align-middle mb-0">
@@ -180,9 +180,9 @@
   </div>
 
   {% if favorite_products %}
-    <div class="card mt-4">
-      <div class="card-body">
-        <h2 class="subtitulo mb-3">Produtos Favoritos</h2>
+    <div class="border border-separator rounded mt-4">
+      <h2 class="subtitulo mb-0">Produtos Favoritos</h2>
+      <div class="p-3">
         <div class="row g-3">
           {% for product in favorite_products %}
             <div class="col-md-4">

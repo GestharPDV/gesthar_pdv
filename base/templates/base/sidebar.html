@@ -1,16 +1,11 @@
 {% load static %}
 
 <style>
-    /* Estilos da Sidebar (Incluso aqui para garantir, mas idealmente vai no CSS global) */
-    .link-sidebar:hover {
-        background-color: #f8f9fa;
-        color: var(--primary-color); /* Certifique-se que --primary-color existe no :root */
-    }
-
     /* --- ESTADOS DA SIDEBAR --- */
     #sidebar-wrapper {
         transition: all 0.3s;
         width: 280px;
+        background-color: var(--cor-fundo-site);
     }
     
     #sidebar-wrapper.collapsed {
@@ -24,11 +19,6 @@
     #sidebar-wrapper.collapsed .logo-footer,
     #sidebar-wrapper.collapsed .collapse {
         display: none !important;
-    }
-
-    /* Mostrar logo pequena */
-    #sidebar-wrapper.collapsed .logo-small {
-        display: block !important;
     }
 
     /* Centralizar ícones */
@@ -46,17 +36,38 @@
     #sidebar-wrapper.collapsed .ms-4 {
         margin-left: 0 !important;
     }
+    
+    /* Centralizar botão do menu quando retraído */
+    #sidebar-wrapper.collapsed .header-sidebar {
+        justify-content: center !important;
+    }
+    
+    #sidebar-wrapper.collapsed .logo-container {
+        display: none !important;
+    }
+    
+    /* Botão de logout usando variáveis do projeto */
+    .btn-logout {
+        background-color: var(--cor-botao-principal-rosa);
+        color: var(--cor-fonte-branca);
+        border: none;
+        border-radius: var(--radius-botao);
+    }
+    
+    .btn-logout:hover {
+        background-color: #ff5c76;
+        color: var(--cor-fonte-branca);
+    }
 </style>
 
-<aside id="sidebar-wrapper" class="shadow d-flex flex-column sidebar-global vh-100 position-sticky top-0 bg-white">
+<aside id="sidebar-wrapper" class="shadow d-flex flex-column sidebar-global vh-100 position-sticky top-0" style="z-index:10;">
     
-    <div class="p-3 d-flex align-items-center justify-content-between">
+    <div class="p-3 d-flex align-items-center justify-content-between header-sidebar">
         <div class="logo-container mx-auto">
             <img src="{% static 'images/logo_lg.png' %}" alt="Logo" class="logo-large" style="max-height: 50px;" />
-            <span class="logo-small d-none fw-bold fs-3 text-primary">G</span> 
         </div>
         
-        <button id="btn-toggle-sidebar" class="btn btn-sm btn-light border-0 text-secondary">
+        <button id="btn-toggle-sidebar" class="btn btn-sm border-0" style="color: var(--cor-fonte-cinza);">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
@@ -66,7 +77,7 @@
     <nav class="flex-grow-1 p-3 d-flex flex-column gap-2 overflow-auto custom-scroll">
         
         <div class="mb-2">
-            <a class="w-100 d-flex align-items-center justify-content-between p-2 fw-semibold link-sidebar collapsed text-decoration-none text-dark rounded"
+            <a class="w-100 d-flex align-items-center justify-content-between p-2 fw-semibold link-sidebar collapsed text-decoration-none rounded"
                data-bs-toggle="collapse" href="#ponto-venda" role="button" aria-expanded="false">
                <div class="d-flex align-items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon-sidebar" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -85,7 +96,7 @@
         </div>
 
         <div class="mb-2">
-            <a class="w-100 d-flex align-items-center justify-content-between p-2 fw-semibold link-sidebar collapsed text-decoration-none text-dark rounded"
+            <a class="w-100 d-flex align-items-center justify-content-between p-2 fw-semibold link-sidebar collapsed text-decoration-none rounded"
                data-bs-toggle="collapse" href="#produtos-menu" role="button" aria-expanded="false">
                <div class="d-flex align-items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon-sidebar" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -104,7 +115,7 @@
         </div>
 
         <div class="mb-2">
-            <a class="w-100 d-flex align-items-center justify-content-between p-2 fw-semibold link-sidebar collapsed text-decoration-none text-dark rounded"
+            <a class="w-100 d-flex align-items-center justify-content-between p-2 fw-semibold link-sidebar collapsed text-decoration-none rounded"
                data-bs-toggle="collapse" href="#clientes-menu" role="button" aria-expanded="false">
                <div class="d-flex align-items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon-sidebar" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -123,7 +134,7 @@
         </div>
 
         <div class="mb-2">
-            <a class="w-100 d-flex align-items-center justify-content-between p-2 fw-semibold link-sidebar collapsed text-decoration-none text-dark rounded"
+            <a class="w-100 d-flex align-items-center justify-content-between p-2 fw-semibold link-sidebar collapsed text-decoration-none rounded"
                data-bs-toggle="collapse" href="#relatorios" role="button" aria-expanded="false">
                <div class="d-flex align-items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon-sidebar" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -144,7 +155,7 @@
         </div>
 
         <div class="mb-2">
-            <a class="w-100 d-flex align-items-center justify-content-between p-2 fw-semibold link-sidebar collapsed text-decoration-none text-dark rounded"
+            <a class="w-100 d-flex align-items-center justify-content-between p-2 fw-semibold link-sidebar collapsed text-decoration-none rounded"
                data-bs-toggle="collapse" href="#usuarios" role="button" aria-expanded="false">
                <div class="d-flex align-items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon-sidebar" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -171,7 +182,7 @@
 
         <form action="{% url 'accounts:logout' %}" method="post">
             {% csrf_token %}
-            <button type="submit" class="w-100 d-flex align-items-center justify-content-center btn btn-danger text-white py-2 shadow-sm">
+            <button type="submit" class="w-100 d-flex align-items-center justify-content-center btn btn-logout py-2 shadow-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
