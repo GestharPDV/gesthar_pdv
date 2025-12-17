@@ -1,38 +1,194 @@
 {% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Abertura de Caixa{% endblock %}
 
 {% block content %}
-<div class="container d-flex align-items-center justify-content-center" style="min-height: 80vh;">
-  <div class="card border-0 shadow-lg" style="max-width: 500px; width: 100%;">
-    <div class="card-header bg-primary text-white text-center py-4">
-      <h2 class="mb-0 fw-bold">ABERTURA DE CAIXA</h2>
-      <p class="mb-0 small opacity-75">Inicie seu turno de vendas</p>
-    </div>
-    
-    <div class="card-body p-5">
-      <form method="POST">
-        {% csrf_token %}
-        
-        <div class="mb-4 text-center">
-          <label for="{{ form.opening_balance.id_for_label }}" class="form-label text-muted fw-bold">
-            FUNDO DE TROCO (R$)
-          </label>
-          {{ form.opening_balance }}
-          {% if form.opening_balance.errors %}
-            <div class="text-danger small mt-1">{{ form.opening_balance.errors.0 }}</div>
-          {% endif %}
-          <div class="form-text">Informe o valor em dinheiro físico na gaveta.</div>
-        </div>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
 
-        <div class="d-grid gap-2">
-          <button type="submit" class="btn btn-primary btn-lg fw-bold py-3">
-            ABRIR CAIXA
-          </button>
-          <a href="{% url 'product:product-list' %}" class="btn btn-link text-muted text-decoration-none">
-            Voltar para Dashboard
-          </a>
+<style>
+    :root {
+        --primary-color: #FF4678;
+        --primary-hover: #e03565;
+        --bg-body: #f8f8f8;
+        --bg-card: #ffffff;
+        --text-main: #555555;
+        --text-secondary: #806066;
+        --border-color: #e5e5e5;
+    }
+
+    body {
+        background-color: var(--bg-body);
+        font-family: 'Inter', sans-serif;
+        color: var(--text-main);
+    }
+
+    .card-opening {
+        max-width: 450px;
+        width: 100%;
+        background: var(--bg-card);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        border: none;
+        transition: transform 0.3s ease;
+    }
+
+    .card-opening:hover {
+        transform: translateY(-5px);
+    }
+
+    .card-header-custom {
+        background-color: var(--primary-color);
+        padding: 40px 20px;
+        text-align: center;
+        color: white;
+        position: relative;
+    }
+
+    /* Padrão de bolinhas sutil no fundo do header */
+    .card-header-custom::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        opacity: 0.1;
+        background-image: radial-gradient(#fff 1px, transparent 1px);
+        background-size: 15px 15px;
+    }
+
+    .header-title {
+        font-weight: 700;
+        letter-spacing: 1px;
+        margin: 0;
+        font-size: 1.5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .header-subtitle {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        margin-top: 5px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .input-cash {
+        font-size: 1.5rem !important;
+        font-weight: 700 !important;
+        text-align: center !important;
+        color: var(--text-main) !important;
+        border-radius: 10px !important;
+        padding: 12px !important;
+        background-color: #f9f9f9 !important;
+        border: 2px solid var(--border-color) !important;
+    }
+
+    .input-cash:focus {
+        border-color: var(--primary-color) !important;
+        box-shadow: 0 0 0 0.25rem rgba(255, 70, 120, 0.1) !important;
+        outline: none;
+    }
+
+    .btn-open-cash {
+        background-color: var(--primary-color);
+        border: none;
+        color: white;
+        font-weight: 700;
+        padding: 15px;
+        border-radius: 8px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition: all 0.3s;
+    }
+
+    .btn-open-cash:hover {
+        background-color: var(--primary-hover);
+        color: white;
+        box-shadow: 0 4px 12px rgba(255, 70, 120, 0.3);
+    }
+
+    .btn-back {
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: color 0.2s;
+    }
+
+    .btn-back:hover {
+        color: var(--primary-color);
+    }
+
+    /* Estilização do input do Django se vier via form.as_p ou similar */
+    .django-input-wrapper input {
+        width: 100%;
+    }
+</style>
+
+<div class="container d-flex align-items-center justify-content-center" style="min-height: 85vh;">
+    <div class="card-opening">
+        <div class="card-header-custom">
+            <h1 class="header-title">ABERTURA DE CAIXA</h1>
+            <p class="header-subtitle">Inicie seu turno de vendas</p>
         </div>
-      </form>
+        
+        <div class="card-body p-4 p-md-5">
+            <form method="POST">
+                {% csrf_token %}
+                
+                <div class="text-center mb-4">
+                    <label for="{{ form.opening_balance.id_for_label }}" class="d-block text-uppercase fw-bold mb-3" style="font-size: 0.8rem; color: var(--text-main); letter-spacing: 0.5px;">
+                        Fundo de Troco (R$)
+                    </label>
+                    
+                    <div class="django-input-wrapper">
+                        {# Renderizando o input com classes personalizadas #}
+                        <input type="number" 
+                               name="{{ form.opening_balance.name }}" 
+                               id="{{ form.opening_balance.id_for_label }}"
+                               step="0.01" 
+                               value="{{ form.opening_balance.value|default:'0.00' }}"
+                               class="form-control input-cash" 
+                               placeholder="0,00"
+                               required>
+                    </div>
+
+                    {% if form.opening_balance.errors %}
+                        <div class="text-danger small mt-2">
+                            {{ form.opening_balance.errors.0 }}
+                        </div>
+                    {% endif %}
+                    
+                    <p class="mt-3 text-muted small">
+                        Informe o valor em dinheiro físico na gaveta.
+                    </p>
+                </div>
+
+                <div class="d-grid gap-3">
+                    <button type="submit" class="btn btn-open-cash">
+                        Abrir Caixa
+                        <span class="material-symbols-outlined">login</span>
+                    </button>
+                    
+                    <div class="text-center mt-2">
+                        <a href="{% url 'base:home' %}" class="btn-back">
+                            <span class="material-symbols-outlined" style="font-size: 18px;">arrow_back</span>
+                            Voltar para o início
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
-  </div>
 </div>
+
 {% endblock %}

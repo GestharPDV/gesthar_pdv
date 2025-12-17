@@ -1,44 +1,104 @@
 {% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Fechamento de Caixa{% endblock %}
 
 {% block content %}
-<div class="container d-flex align-items-center justify-content-center" style="min-height: 80vh;">
-  <div class="card border-0 shadow-lg" style="max-width: 500px; width: 100%;">
-    <div class="card-header bg-danger text-white text-center py-4">
-      <h2 class="mb-0 fw-bold">FECHAMENTO DE CAIXA</h2>
-      <p class="mb-0 small opacity-75">Sessão #{{ session.pk }} iniciada em {{ session.opened_at|date:"H:i" }}</p>
-    </div>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+
+<style>
+    :root {
+        --primary-color: #FF4678;
+        --bg-body: #f8f8f8;
+        --bg-card: #ffffff;
+        --text-main: #555555;
+        --border-color: #e5e5e5;
+        --danger-color: #dc3545;
+    }
+
+    body { background-color: var(--bg-body); font-family: 'Inter', sans-serif; color: var(--text-main); }
     
-    <div class="card-body p-5">
-      
-      <div class="alert alert-light border text-center mb-4">
-        <small class="text-muted d-block">Fundo de Troco Inicial</small>
-        <span class="fw-bold fs-5">R$ {{ session.opening_balance|floatformat:2 }}</span>
-      </div>
+    .card-closing {
+        max-width: 500px; width: 100%;
+        background: var(--bg-card); border-radius: 12px;
+        overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: none;
+    }
 
-      <form method="POST" onsubmit="return confirm('Tem certeza que deseja fechar o caixa? Esta ação é irreversível.');">
-        {% csrf_token %}
+    .card-header-custom {
+        background-color: var(--danger-color);
+        padding: 30px 20px; text-align: center; color: white;
+    }
+
+    .info-row {
+        display: flex; justify-content: space-between;
+        padding: 10px 0; border-bottom: 1px dashed var(--border-color);
+        font-size: 0.95rem;
+    }
+
+    .expected-box {
+        background: #fff5f6; border: 2px solid #ffebed;
+        padding: 15px; border-radius: 10px; text-align: center; margin: 20px 0;
+    }
+
+    .input-cash {
+        font-size: 1.5rem !important; font-weight: 700 !important;
+        text-align: center !important; border-radius: 10px !important;
+        border: 2px solid var(--border-color) !important;
+    }
+
+    .btn-close-cash {
+        background-color: var(--danger-color); border: none;
+        color: white; font-weight: 700; padding: 15px;
+        border-radius: 8px; text-transform: uppercase;
+        width: 100%; transition: 0.3s;
+    }
+</style>
+
+<div class="container d-flex align-items-center justify-content-center" style="min-height: 85vh;">
+    <div class="card-closing">
+        <div class="card-header-custom">
+            <h1 class="h4 fw-bold mb-0">FECHAMENTO DE CAIXA</h1>
+            <p class="small mb-0 opacity-75">Sessão #{{ session.pk }} iniciada em {{ session.opened_at|date:"d/m H:i" }}</p>
+        </div>
         
-        <div class="mb-4 text-center">
-          <label for="{{ form.closing_balance.id_for_label }}" class="form-label text-muted fw-bold">
-            VALOR EM GAVETA (CONFERÊNCIA)
-          </label>
-          {{ form.closing_balance }}
-          {% if form.closing_balance.errors %}
-            <div class="text-danger small mt-1">{{ form.closing_balance.errors.0 }}</div>
-          {% endif %}
-          <div class="form-text">Conte o dinheiro e informe o valor total.</div>
-        </div>
+        <div class="card-body p-4">
+            <div class="mb-3">
+                <div class="info-row">
+                    <span>Fundo de Troco (Abertura)</span>
+                    <span class="fw-semibold">R$ {{ session.opening_balance|floatformat:2 }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="text-success">(+) Vendas em Dinheiro (Líquido)</span>
+                    <span class="fw-semibold text-success">R$ {{ session.total_cash_sales|floatformat:2 }}</span>
+                </div>
+            </div>
 
-        <div class="d-grid gap-2">
-          <button type="submit" class="btn btn-danger btn-lg fw-bold py-3">
-            ENCERRAR TURNO
-          </button>
-          <a href="{% url 'sales:pdv' %}" class="btn btn-outline-secondary">
-            Voltar para Vendas
-          </a>
+            <div class="expected-box">
+                <small class="text-uppercase fw-bold text-muted" style="font-size: 0.7rem;">Saldo Esperado em Gaveta</small>
+                <div class="h3 fw-bold text-danger mb-0">R$ {{ session.expected_balance|floatformat:2 }}</div>
+            </div>
+
+            <form method="POST" onsubmit="return confirm('Confirmar o valor contado e fechar o caixa?');">
+                {% csrf_token %}
+                <div class="text-center mb-4">
+                    <label class="d-block text-uppercase fw-bold mb-2" style="font-size: 0.8rem;">
+                        Valor contado na Gaveta (R$)
+                    </label>
+                    {{ form.closing_balance }}
+                </div>
+
+                <button type="submit" class="btn-close-cash mb-3">
+                    Encerrar Turno
+                </button>
+                
+                <div class="text-center">
+                    <a href="{% url 'sales:pdv' %}" class="text-decoration-none text-muted small">
+                        Voltar para o PDV
+                    </a>
+                </div>
+            </form>
         </div>
-      </form>
     </div>
-  </div>
 </div>
 {% endblock %}

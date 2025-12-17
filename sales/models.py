@@ -69,6 +69,35 @@ class CashRegister(SoftDeleteModel):
         self.status = self.Status.CLOSED
         self.save()
 
+    @property
+    def total_cash_sales(self):
+        """
+        Soma todos os pagamentos em DINHEIRO de vendas CONCLUÍDAS 
+        nesta sessão, subtraindo o troco devolvido.
+        """
+        from .models import SalePayment, Sale
+        from decimal import Decimal
+
+        # Total que entrou em dinheiro
+        cash_in = SalePayment.objects.filter(
+            sale__cash_register_session=self,
+            sale__status=Sale.Status.COMPLETED,
+            method=SalePayment.Method.DINHEIRO
+        ).aggregate(total=models.Sum('amount'))['total'] or Decimal('0.00')
+
+        # Total que saiu como troco
+        change_out = Sale.objects.filter(
+            cash_register_session=self,
+            status=Sale.Status.COMPLETED
+        ).aggregate(total=models.Sum('change_amount'))['total'] or Decimal('0.00')
+
+        return cash_in - change_out
+
+    @property
+    def expected_balance(self):
+        """Saldo previsto na gaveta: Fundo de Troco + Entradas Líquidas em Dinheiro."""
+        return self.opening_balance + self.total_cash_sales
+
 
 class Sale(SoftDeleteModel):
     class Status(models.TextChoices):

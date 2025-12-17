@@ -235,7 +235,7 @@ def complete_sale_view(request, sale_id):
         Sale, pk=sale_id, status=Sale.Status.DRAFT, user=request.user
     )
 
-    cash_register_session = CashRegister.objects.filter(user=request.user, status='OPEN').first()
+    cash_register_session = CashRegister.objects.filter(user=request.user, status=CashRegister.Status.OPEN).first()
     if not cash_register_session:
         messages.error(request, "Seu caixa está fechado. Não é possível finalizar.")
         return redirect('sales:open-register')
