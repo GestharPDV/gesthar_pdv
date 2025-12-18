@@ -1,0 +1,201 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="pr-20 pl-20">
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="titulo">DETALHES DO CLIENTE</h1>
+    <div class="d-flex gap-2">
+      <a href="{% url 'customer:customer_update' customer.pk %}" class="botao-amarelo p-2">Editar Cliente</a>
+      <a href="{% url 'customer:customer_delete' customer.pk %}" class="botao-vermelho p-2">Excluir Cliente</a>
+      <a href="{% url 'customer:customer_list' %}" class="botao-rosa p-2">Voltar</a>
+    </div>
+  </div>
+
+  {% if messages %}
+    <div class="mb-3">
+      {% for message in messages %}
+        <div class="alert alert-success" role="alert">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="border border-separator rounded mb-4">
+        <h2 class="subtitulo mb-0">Dados Pessoais</h2>
+        <div class="p-3">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <small class="d-block text-uppercase text-muted">Nome Completo</small>
+              <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{{ customer.name }}</p>
+            </div>
+            <div class="col-md-6 mb-3">
+              <small class="d-block text-uppercase text-muted">CPF/CNPJ</small>
+              <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{{ customer.cpf_cnpj }}</p>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <small class="d-block text-uppercase text-muted">Data de Nascimento</small>
+              <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{% if customer.birth_date %}{{ customer.birth_date|date:"d/m/Y" }}{% else %}-{% endif %}</p>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <small class="d-block text-uppercase text-muted">Data Prevista do Parto</small>
+              <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{% if customer.baby_due_date %}{{ customer.baby_due_date|date:"d/m/Y" }}{% else %}-{% endif %}</p>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <small class="d-block text-uppercase text-muted">E-mail</small>
+              <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{{ customer.email }}</p>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <small class="d-block text-uppercase text-muted">Telefone/WhatsApp</small>
+              <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{{ customer.phone|default:"-" }}</p>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <small class="d-block text-uppercase text-muted">Preferências de Tamanho</small>
+              <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{{ customer.size_preferences|default:"-" }}</p>
+            </div>
+
+            <div class="col-12">
+              <small class="d-block text-uppercase text-muted">Observações</small>
+              <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{{ customer.note|default:"-" }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="border border-separator rounded mb-4">
+        <h2 class="subtitulo mb-0">Endereços</h2>
+        <div class="p-3">
+          {% if addresses %}
+            <div class="row g-3">
+              {% for address in addresses %}
+                <div class="col-12">
+                  <div class="rounded-2 p-3 address-card">
+                    <div class="row">
+                      <div class="col-md-8 mb-2">
+                        <small class="d-block text-uppercase text-muted">Endereço</small>
+                        <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{{ address.street }}, {{ address.number }}</p>
+                      </div>
+                      <div class="col-md-4 mb-2">
+                        <small class="d-block text-uppercase text-muted">Bairro</small>
+                        <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{{ address.neighborhood }}</p>
+                      </div>
+                    </div>
+
+                    <div class="row mt-2">
+                      <div class="col-md-3 mb-1">
+                        <small class="d-block text-uppercase text-muted">CEP</small>
+                        <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{{ address.cep }}</p>
+                      </div>
+                      <div class="col-md-5 mb-1">
+                        <small class="d-block text-uppercase text-muted">Cidade / Estado</small>
+                        <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{{ address.city }} / {{ address.state }}</p>
+                      </div>
+                      <div class="col-md-4 mb-1">
+                        <small class="d-block text-uppercase text-muted">Complemento</small>
+                        <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{% if address.complement %}{{ address.complement }}{% else %}-{% endif %}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="text-muted fst-italic">Nenhum endereço cadastrado.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="border border-separator rounded mb-4">
+        <h2 class="subtitulo mb-0">Resumo de Compras</h2>
+        <div class="p-3">
+          <div class="mb-3">
+            <p class="fs-texto text-secondary mb-1">Valor Total Gasto</p>
+            <p class="h4 text-success fw-bold">R$ {{ total_spent|floatformat:2 }}</p>
+          </div>
+          <div class="mb-3">
+            <p class="fs-texto text-secondary mb-1">Total de Compras</p>
+            <p class="h4 fw-bold">{{ purchase_frequency.total_purchases }}</p>
+          </div>
+          <div>
+            <p class="fs-texto text-secondary mb-1">Média Mensal</p>
+            <p class="h4 fw-bold">{{ purchase_frequency.average_per_month|floatformat:1 }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="border border-separator rounded mb-4">
+        <h2 class="subtitulo mb-0">Informações de Cadastro</h2>
+        <div class="p-3">
+          <small class="d-block text-uppercase text-muted mb-1">Cadastrado em</small>
+          <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{{ customer.created_at|date:"d/m/Y H:i" }}</p>
+          <small class="d-block text-uppercase text-muted mb-1">Última atualização</small>
+          <p class="fs-5 fw-semibold" style="color: var(--cor-fonte-preta);">{{ customer.updated_at|date:"d/m/Y H:i" }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="border border-separator rounded mb-4">
+    <h2 class="subtitulo mb-0">Histórico de Compras</h2>
+    <div class="p-3">
+      {% if purchase_history %}
+        <div class="table-responsive">
+          <table class="table table-bordered align-middle mb-0">
+            <thead class="table-light">
+              <tr class="text-uppercase text-secondary">
+                <th>Data</th>
+                <th>Produtos</th>
+                <th class="text-end">Valor Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for sale in purchase_history %}
+                <tr>
+                  <td>{{ sale.date|date:"d/m/Y" }}</td>
+                  <td>{{ sale.items_count }} item(s)</td>
+                  <td class="text-end text-rose">R$ {{ sale.total|floatformat:2 }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="text-center py-4">
+          <svg class="mx-auto mb-3" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <p class="text-muted">Histórico de compras será exibido após integração com o módulo de PDV/Vendas.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if favorite_products %}
+    <div class="border border-separator rounded mt-4">
+      <h2 class="subtitulo mb-0">Produtos Favoritos</h2>
+      <div class="p-3">
+        <div class="row g-3">
+          {% for product in favorite_products %}
+            <div class="col-md-4">
+              <div class="border rounded-2 p-3 bg-light">
+                <p class="mb-1 fw-semibold">{{ product.name }}</p>
+                <p class="mb-0 text-muted">Comprado {{ product.purchase_count }}x</p>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+

@@ -1,0 +1,31 @@
+{% extends "base/base.html" %}
+
+{% block content %}
+<div class="d-flex flex-column justify-content-center align-items-center">
+
+    <!-- Mensagem de boas-vindas -->
+    <h1 class="titulo">
+        Bem-vindo(a) ao Gesthar, {{ user.email }}!
+    </h1>
+
+    <!-- Botões principais -->
+    <div class="row row-cols-3 row-cols-md-4 g-1 d-flex justify-content-center pt-5 fs-4">
+        <!-- Ponto de Venda -->
+        <!-- Ponto de Venda -->
+        <a href="{% url 'sales:pdv' %}" class="fw-bold px-5 py-5 text-center shadow botao-rosa me-3">
+            PONTO DE VENDA
+        </a>
+
+        <!-- Estoque -->
+        <a href="#" class="fw-bold px-5 py-5 text-center shadow botao-rosa me-3">
+            CONSULTAR ESTOQUE
+        </a>
+
+        <!-- Cadastro de Cliente -->
+        <a href="#" class="fw-bold px-5 py-5 text-center shadow botao-rosa me-3">
+            CADASTRAR CLIENTE
+        </a>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,384 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="pr-15 pl-15">
+  <h1 class="titulo">{{ action|upper }} CLIENTE</h1>
+
+  <form method="POST" novalidate>
+    {% csrf_token %}
+
+    <div class="border border-separator rounded mb-4">
+      <h2 class="subtitulo mb-0">DADOS PESSOAIS</h2>
+      <div class="p-3">
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="{{ form.name.id_for_label }}" class="form-label">Nome <span class="text-danger">*</span></label>
+            {% render_field form.name class="form-control" placeholder=form.name.label %}
+            {% if form.name.errors %}
+              <div class="text-danger small">{{ form.name.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label for="{{ form.cpf_cnpj.id_for_label }}" class="form-label">{{ form.cpf_cnpj.label }} <span class="text-danger">*</span></label>
+            {% render_field form.cpf_cnpj class="form-control" %}
+            {% if form.cpf_cnpj.help_text %}
+              <div class="form-text">{{ form.cpf_cnpj.help_text }}</div>
+            {% endif %}
+            {% if form.cpf_cnpj.errors %}
+              <div class="text-danger small">{{ form.cpf_cnpj.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label for="{{ form.birth_date.id_for_label }}" class="form-label">{{ form.birth_date.label }}</label>
+            {% render_field form.birth_date class="form-control" %}
+            {% if form.birth_date.errors %}
+              <div class="text-danger small">{{ form.birth_date.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label for="{{ form.baby_due_date.id_for_label }}" class="form-label">{{ form.baby_due_date.label }}</label>
+            {% render_field form.baby_due_date class="form-control" %}
+            {% if form.baby_due_date.errors %}
+              <div class="text-danger small">{{ form.baby_due_date.errors.0 }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="border border-separator rounded mb-4">
+      <h2 class="subtitulo mb-0">CONTATO</h2>
+      <div class="p-3">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="{{ form.email.id_for_label }}" class="form-label">{{ form.email.label }} <span class="text-danger">*</span></label>
+            {% render_field form.email class="form-control" %}
+            {% if form.email.errors %}
+              <div class="text-danger small">{{ form.email.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label for="{{ form.phone.id_for_label }}" class="form-label">{{ form.phone.label }}</label>
+            {% render_field form.phone class="form-control" %}
+            {% if form.phone.errors %}
+              <div class="text-danger small">{{ form.phone.errors.0 }}</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="border border-separator rounded mb-4">
+      <h2 class="subtitulo mb-0">PREFERÊNCIAS E OBSERVAÇÕES</h2>
+      <div class="p-3">
+        <div class="mb-3">
+          <label for="{{ form.size_preferences.id_for_label }}" class="form-label">{{ form.size_preferences.label }}</label>
+          {% render_field form.size_preferences class="form-control" %}
+          {% if form.size_preferences.errors %}
+            <div class="text-danger small">{{ form.size_preferences.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="mb-3">
+          <label for="{{ form.note.id_for_label }}" class="form-label">{{ form.note.label }}</label>
+          {% render_field form.note class="form-control" %}
+          {% if form.note.errors %}
+            <div class="text-danger small">{{ form.note.errors.0 }}</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="border border-separator rounded mb-4">
+      <h2 class="subtitulo mb-0">ENDEREÇOS</h2>
+      <div class="p-3">
+
+        {{ address_formset.management_form }}
+
+        <div id="address-formset">
+          {% for form in address_formset %}
+            <div class="address-form border rounded p-3 mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="mb-0">Endereço {{ forloop.counter }}</h5>
+                {% if not address_formset.forms|length == 1 %}
+                  <div class="d-flex align-items-center">
+                    {{ form.DELETE }}
+                    <label for="{{ form.DELETE.id_for_label }}" class="ms-2 text-danger small">Remover</label>
+                  </div>
+                {% endif %}
+              </div>
+
+              <div class="row">
+                <div class="col-md-3 mb-3">
+                  <label for="{{ form.cep.id_for_label }}" class="form-label">{{ form.cep.label }} {% if forloop.first %}<span class="text-danger">*</span>{% endif %}</label>
+                  {% render_field form.cep class="form-control" %}
+                  {% if form.cep.errors %}
+                    <div class="text-danger small">{{ form.cep.errors.0 }}</div>
+                  {% endif %}
+                </div>
+
+                <div class="col-md-3 mb-3">
+                  <label for="{{ form.state.id_for_label }}" class="form-label">{{ form.state.label }} {% if forloop.first %}<span class="text-danger">*</span>{% endif %}</label>
+                  {% render_field form.state class="form-control" %}
+                  {% if form.state.errors %}
+                    <div class="text-danger small">{{ form.state.errors.0 }}</div>
+                  {% endif %}
+                </div>
+
+                <div class="col-md-3 mb-3">
+                  <label for="{{ form.city.id_for_label }}" class="form-label">{{ form.city.label }} {% if forloop.first %}<span class="text-danger">*</span>{% endif %}</label>
+                  {% render_field form.city class="form-control" %}
+                  {% if form.city.errors %}
+                    <div class="text-danger small">{{ form.city.errors.0 }}</div>
+                  {% endif %}
+                </div>
+
+                <div class="col-md-3 mb-3">
+                  <label for="{{ form.neighborhood.id_for_label }}" class="form-label">{{ form.neighborhood.label }} {% if forloop.first %}<span class="text-danger">*</span>{% endif %}</label>
+                  {% render_field form.neighborhood class="form-control" %}
+                  {% if form.neighborhood.errors %}
+                    <div class="text-danger small">{{ form.neighborhood.errors.0 }}</div>
+                  {% endif %}
+                </div>
+
+                <div class="col-md-6 mb-3">
+                  <label for="{{ form.street.id_for_label }}" class="form-label">{{ form.street.label }} {% if forloop.first %}<span class="text-danger">*</span>{% endif %}</label>
+                  {% render_field form.street class="form-control" %}
+                  {% if form.street.errors %}
+                    <div class="text-danger small">{{ form.street.errors.0 }}</div>
+                  {% endif %}
+                </div>
+
+                <div class="col-md-3 mb-3">
+                  <label for="{{ form.number.id_for_label }}" class="form-label">{{ form.number.label }} {% if forloop.first %}<span class="text-danger">*</span>{% endif %}</label>
+                  {% render_field form.number class="form-control" %}
+                  {% if form.number.errors %}
+                    <div class="text-danger small">{{ form.number.errors.0 }}</div>
+                  {% endif %}
+                </div>
+
+                <div class="col-md-12 mb-3">
+                  <label for="{{ form.complement.id_for_label }}" class="form-label">{{ form.complement.label }}</label>
+                  {% render_field form.complement class="form-control" %}
+                  {% if form.complement.errors %}
+                    <div class="text-danger small">{{ form.complement.errors.0 }}</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        {% if address_formset.non_form_errors %}
+          <div class="alert alert-danger" role="alert">{{ address_formset.non_form_errors }}</div>
+        {% endif %}
+
+      </div>
+    </div>
+
+    <div class="mt-4 d-flex gap-3">
+      <button type="submit" class="botao-rosa p-3 fw-bold">FINALIZAR CADASTRO</button>
+      <a href="{% url 'customer:customer_list' %}" class="botao-vermelho p-3 fw-bold">CANCELAR</a>
+    </div>
+
+  </form>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  // CPF/CNPJ formatting as user types
+  var cpfInput = document.getElementById("{{ form.cpf_cnpj.id_for_label }}");
+  if (cpfInput) {
+    cpfInput.addEventListener('input', function (e) {
+      var v = e.target.value.replace(/\D/g, '');
+      if (v.length <= 11) {
+        // CPF: 000.000.000-00
+        v = v.replace(/(\d{3})(\d)/, '$1.$2');
+        v = v.replace(/(\d{3})\.(\d{3})(\d)/, '$1.$2.$3');
+        v = v.replace(/(\d{3})\.(\d{3})\.(\d{3})(\d)/, '$1.$2.$3-$4');
+        e.target.value = v.slice(0, 14);
+      } else {
+        // CNPJ: 00.000.000/0000-00
+        v = v.replace(/(\d{2})(\d)/, '$1.$2');
+        v = v.replace(/(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+        v = v.replace(/\.(\d{3})(\d)/, '.$1/$2');
+        v = v.replace(/(\d{4})(\d)/, '$1-$2');
+        e.target.value = v.slice(0, 18);
+      }
+    });
+  }
+
+  // Phone formatting: (DD) 00000-0000 or (DD) 0000-0000
+  var phoneInput = document.getElementById("{{ form.phone.id_for_label }}");
+  if (phoneInput) {
+    phoneInput.addEventListener('input', function (e) {
+      var v = e.target.value.replace(/\D/g, '');
+      if (v.length > 11) v = v.slice(0, 11);
+      if (v.length <= 10) {
+        // (99) 9999-9999
+        v = v.replace(/^(\d{2})(\d{0,4})(\d{0,4}).*/, '($1) $2' + (v.length>6?'-'+v.slice(6):''));
+      } else {
+        // (99) 99999-9999
+        v = v.replace(/^(\d{2})(\d{0,5})(\d{0,4}).*/, '($1) $2' + (v.length>7?'-'+v.slice(7):''));
+      }
+      e.target.value = v.trim();
+    });
+  }
+
+  // Função para validar CPF
+  function validarCPF(cpf) {
+    cpf = cpf.replace(/\D/g, '');
+    if (cpf.length !== 11) return false;
+    // Verifica se todos os dígitos são iguais
+    if (/^(\d)\1{10}$/.test(cpf)) return false;
+    // Calcula primeiro dígito verificador
+    var soma = 0;
+    for (var i = 0; i < 9; i++) soma += parseInt(cpf[i]) * (10 - i);
+    var resto = soma % 11;
+    var digito1 = resto < 2 ? 0 : 11 - resto;
+    if (parseInt(cpf[9]) !== digito1) return false;
+    // Calcula segundo dígito verificador
+    soma = 0;
+    for (var i = 0; i < 10; i++) soma += parseInt(cpf[i]) * (11 - i);
+    resto = soma % 11;
+    var digito2 = resto < 2 ? 0 : 11 - resto;
+    return parseInt(cpf[10]) === digito2;
+  }
+
+  // Função para validar CNPJ
+  function validarCNPJ(cnpj) {
+    cnpj = cnpj.replace(/\D/g, '');
+    if (cnpj.length !== 14) return false;
+    if (/^(\d)\1{13}$/.test(cnpj)) return false;
+    var mult1 = [5,4,3,2,9,8,7,6,5,4,3,2];
+    var mult2 = [6,5,4,3,2,9,8,7,6,5,4,3,2];
+    var soma = 0;
+    for (var i = 0; i < 12; i++) soma += parseInt(cnpj[i]) * mult1[i];
+    var resto = soma % 11;
+    var digito1 = resto < 2 ? 0 : 11 - resto;
+    if (parseInt(cnpj[12]) !== digito1) return false;
+    soma = 0;
+    for (var i = 0; i < 13; i++) soma += parseInt(cnpj[i]) * mult2[i];
+    resto = soma % 11;
+    var digito2 = resto < 2 ? 0 : 11 - resto;
+    return parseInt(cnpj[13]) === digito2;
+  }
+
+  // Função auxiliar para exibir erro
+  function mostrarErro(input, mensagem) {
+    var container = input.closest('.mb-3') || input.parentElement;
+    var erroExistente = container.querySelector('.validation-error');
+    if (erroExistente) erroExistente.remove();
+    if (mensagem) {
+      var erroDiv = document.createElement('div');
+      erroDiv.className = 'text-danger small validation-error';
+      erroDiv.textContent = mensagem;
+      container.appendChild(erroDiv);
+    }
+    input.classList.toggle('is-invalid', !!mensagem);
+  }
+
+  // Validação de CPF/CNPJ ao sair do campo
+  if (cpfInput) {
+    cpfInput.addEventListener('blur', function (e) {
+      var valor = e.target.value.replace(/\D/g, '');
+      if (!valor) {
+        mostrarErro(e.target, '');
+        return;
+      }
+      if (valor.length === 11) {
+        if (!validarCPF(valor)) {
+          mostrarErro(e.target, 'CPF inválido. Verifique os dígitos.');
+        } else {
+          mostrarErro(e.target, '');
+        }
+      } else if (valor.length === 14) {
+        if (!validarCNPJ(valor)) {
+          mostrarErro(e.target, 'CNPJ inválido. Verifique os dígitos.');
+        } else {
+          mostrarErro(e.target, '');
+        }
+      } else {
+        mostrarErro(e.target, 'CPF deve ter 11 dígitos ou CNPJ deve ter 14 dígitos.');
+      }
+    });
+  }
+
+  // Validação de baby_due_date
+  var babyDueDateInput = document.getElementById("{{ form.baby_due_date.id_for_label }}");
+  if (babyDueDateInput) {
+    babyDueDateInput.addEventListener('change', function (e) {
+      var valor = e.target.value;
+      if (!valor) {
+        mostrarErro(e.target, '');
+        return;
+      }
+      var dataEscolhida = new Date(valor);
+      var hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+      var maxData = new Date(hoje);
+      maxData.setDate(maxData.getDate() + 350); // 50 semanas
+      if (dataEscolhida > maxData) {
+        mostrarErro(e.target, 'A data prevista do parto não pode ser superior a 50 semanas a partir de hoje.');
+      } else {
+        mostrarErro(e.target, '');
+      }
+    });
+  }
+
+  // Validação no submit do formulário
+  var form = document.querySelector('form');
+  if (form) {
+    form.addEventListener('submit', function (e) {
+      var valido = true;
+      
+      // Validar CPF/CNPJ
+      if (cpfInput && cpfInput.value) {
+        var cpfValor = cpfInput.value.replace(/\D/g, '');
+        if (cpfValor.length === 11 && !validarCPF(cpfValor)) {
+          mostrarErro(cpfInput, 'CPF inválido. Verifique os dígitos.');
+          valido = false;
+        } else if (cpfValor.length === 14 && !validarCNPJ(cpfValor)) {
+          mostrarErro(cpfInput, 'CNPJ inválido. Verifique os dígitos.');
+          valido = false;
+        } else if (cpfValor.length !== 11 && cpfValor.length !== 14) {
+          mostrarErro(cpfInput, 'CPF deve ter 11 dígitos ou CNPJ deve ter 14 dígitos.');
+          valido = false;
+        }
+      }
+      
+      // Validar baby_due_date
+      if (babyDueDateInput && babyDueDateInput.value) {
+        var dataEscolhida = new Date(babyDueDateInput.value);
+        var hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+        var maxData = new Date(hoje);
+        maxData.setDate(maxData.getDate() + 350);
+        if (dataEscolhida > maxData) {
+          mostrarErro(babyDueDateInput, 'A data prevista do parto não pode ser superior a 50 semanas a partir de hoje.');
+          valido = false;
+        }
+      }
+      
+      if (!valido) {
+        e.preventDefault();
+        // Scroll para o primeiro erro
+        var primeiroErro = document.querySelector('.is-invalid');
+        if (primeiroErro) {
+          primeiroErro.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          primeiroErro.focus();
+        }
+      }
+    });
+  }
+});
+</script>
+{% endblock %}
+

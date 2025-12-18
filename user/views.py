@@ -1,25 +1,101 @@
-from django.shortcuts import render,redirect
-from django.contrib.auth import authenticate, login,logout
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views.generic import DetailView, ListView
+from django.db.models import Q
+import re  # Importação necessária para limpar a busca
 
-from .form import EmailAuthenticationForm
+from .models import UserGesthar
+from .form import UserGestharChangeForm
 
 
-# Create your views here.
-def login_view(request):
+class UserDetailView(LoginRequiredMixin, DetailView):
+    model = UserGesthar
+    template_name = "user/user_detail.html"
+    context_object_name = "user_obj"
+
+
+class UserListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    model = UserGesthar
+    template_name = "user/user_list.html"
+    context_object_name = "users"
+    paginate_by = 10
+
+    def test_func(self):
+        return self.request.user.is_staff
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        query = self.request.GET.get('query')
+        
+        if query:
+            # Cria uma versão da busca contendo apenas números para comparar com CPF/Telefone
+            query_numbers = re.sub(r'[^0-9]', '', query)
+
+            # Monta os filtros
+            q_filter = Q(first_name__icontains=query) | \
+                       Q(last_name__icontains=query) | \
+                       Q(email__icontains=query) | \
+                       Q(role__icontains=query)
+
+            # Se a busca tiver números, adiciona filtro por CPF e Telefone usando a versão limpa
+            if query_numbers:
+                q_filter |= Q(cpf__icontains=query_numbers)
+                q_filter |= Q(phone_number__icontains=query_numbers)
+
+            queryset = queryset.filter(q_filter)
+            
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['query'] = self.request.GET.get('query', '')
+        return context
+
+
+@login_required
+def profile_edit_view(request, pk):
+    user = get_object_or_404(UserGesthar, pk=pk) 
+    
     if request.method == "POST":
-        form = EmailAuthenticationForm(request, data=request.POST)
+        form = UserGestharChangeForm(request.POST, instance=user)
         if form.is_valid():
-            email = form.cleaned_data.get("username")
-            password = form.cleaned_data.get("password")
-            user = authenticate(request, username=email, password=password)
-            if user is not None:
-                login(request, user)
-                return redirect("global:home")  # Redireciona para a página inicial após o login bem-sucedido
+            is_active = form.cleaned_data.get('is_active')
+            
+            if user == request.user and is_active is False:
+                form.add_error(None, "Ação bloqueada: Você não pode inativar seu próprio usuário, pois isso o desconectaria do sistema.")
+            else:
+                form.save()
+                return redirect("user:user-list") 
     else:
-        form = EmailAuthenticationForm()
-    return render(request, "user/login_page.html", {"form": form}) # Renderiza o template de login com o formulário
+        form = UserGestharChangeForm(instance=user)
+    
+    return render(request, "user/user_form.html", {"form": form})
 
-def logout_view(request):
-    logout(request)
-    return redirect("global:home")  # Redireciona para a página inicial após o logout
 
+def superuser_required(user):
+    return user.is_superuser
+
+
+@login_required
+@user_passes_test(superuser_required)
+def user_delete_view(request, pk):
+    user_to_delete = get_object_or_404(UserGesthar, pk=pk)
+
+    if user_to_delete == request.user:
+        return render(
+            request,
+            "user/user_confirm_delete.html",
+            {
+                "user_to_delete": user_to_delete,
+                "error_message": "Você não pode excluir a si mesmo.",
+            },
+        )
+
+    if request.method == "POST":
+        user_to_delete.delete()
+        return redirect("user:user-list")
+
+    return render(
+        request, "user/user_confirm_delete.html", {"user_to_delete": user_to_delete}
+    )

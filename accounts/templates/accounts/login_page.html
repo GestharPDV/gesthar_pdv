@@ -1,0 +1,67 @@
+{% extends 'base/base.html' %}
+{% load widget_tweaks %}
+{% load static %}
+
+{% block content %}
+<div class="position-relative d-flex justify-content-center align-items-center" style="min-height:75vh;">
+    <!-- ícone de fundo parecido com versão anterior -->
+    <div class="position-absolute bottom-0 start-0" style="z-index:-1;">
+        <img src="{% static 'images/ICONE-GESTHAR.svg' %}" alt="icone gesthar" style="width:550px; opacity:0.9;">
+    </div>
+
+    <div class="w-100" style="max-width:900px;">
+        <div class="text-center mb-0">
+            <img src="{% static 'images/logo_gesthar.svg' %}" alt="logo gesthar" style="max-width:260px;" class="img-fluid mx-auto mb-3">
+        </div>
+        <div class="card shadow-lg rounded-4 border-0" style="background: rgba(249,250,251,0.85); border-radius:1.5rem; margin-top:-18px;">
+            <div class="card-body p-4">
+                <div class="text-center mb-3">
+                    <img src="{% static 'images/logo_lg.png' %}" alt="logo linda gestante" style="max-width:180px;" class="img-fluid d-block mx-auto mb-3">
+                    <h2 class="text-center" style="color:var(--cor-fonte-rosa); font-weight:700; font-size:var(--fonte-titulo-login);">
+                        BEM-VINDO(A) AO <span style="font-weight:700">GESTHAR</span>
+                    </h2>
+                    <h3 class="text-center" style="color:var(--cor-fonte-rosa); font-weight:600; margin-bottom:1rem; font-size:var(--fonte-login);">SISTEMA DE GESTÃO!</h3>
+                </div>
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger" role="alert">
+                        {% for error in form.non_field_errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                        <form method="post" class="mx-auto" style="max-width:520px; padding-left:2rem; padding-right:2rem;">
+                    {% csrf_token %}
+
+                            <div class="mb-3">
+                                {{ form.username.label_tag }}
+                                {{ form.username|add_class:'form-control rounded-3 py-2' }}
+                                {% if form.username.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.username.errors|join:", " }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form.password.label_tag }}
+                                {{ form.password|add_class:'form-control rounded-3 py-2' }}
+                                {% if form.password.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.password.errors|join:", " }}</div>
+                                {% endif %}
+                            </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <a href="#" class="text-decoration-none text-muted">Esqueceu sua senha? Clique aqui.</a>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn botao-rosa py-2 fw-semibold">ENTRAR</button>
+                    </div>
+        </form>
+
+        <div class="text-center mt-3 text-muted small">&copy;Gesthar - 2025</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 
-@login_required(login_url="/login/")
+@login_required
 def home_view(request):
-    return render(request, "global/home_page.html")
+    return render(request, "base/home_page.html")

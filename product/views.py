@@ -172,12 +172,15 @@ def product_detail_view(request, pk):
     suppliers = product.productsupplier_set.select_related("supplier").order_by(
         "supplier__name"
     )
+    # Escolhe um fornecedor primário (o primeiro ordenado por nome) para exibir nas variações
+    primary_supplier = suppliers.first() if suppliers.exists() else None
     profit_value = product.selling_price - product.average_cost_price
 
     context = {
         "product": product,
         "variations": variations,
         "suppliers": suppliers,
+        "primary_supplier": primary_supplier,
         "profit_value": profit_value,
         "page_title": f"Detalhes: {product.name}",
     }

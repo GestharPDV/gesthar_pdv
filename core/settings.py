@@ -39,12 +39,14 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "global",
     "product",
     "customer",
+    "accounts",
     "user",
     "widget_tweaks",
     "stock",
+    "sales",
+    "base",
 ]
 
 MIDDLEWARE = [
@@ -62,7 +64,7 @@ ROOT_URLCONF = "core.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "global"],
+        "DIRS": [BASE_DIR / "base"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -139,5 +141,5 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Definir o modelo de usuário personalizado como o modelo de usuário padrão
 AUTH_USER_MODEL = "user.UserGesthar"
 
-LOGIN_URL = "user:login"
-LOGOUT_REDIRECT_URL = "user:login"
+LOGIN_URL = "accounts:login"
+LOGOUT_REDIRECT_URL = "accounts:login"

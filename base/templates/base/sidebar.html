@@ -1,0 +1,215 @@
+{% load static %}
+
+<style>
+    /* --- ESTADOS DA SIDEBAR --- */
+    #sidebar-wrapper {
+        transition: all 0.3s;
+        width: 280px;
+        background-color: var(--cor-fundo-site);
+    }
+    
+    #sidebar-wrapper.collapsed {
+        width: 80px !important;
+    }
+
+    /* Esconder textos e elementos extras quando retraído */
+    #sidebar-wrapper.collapsed .text-label,
+    #sidebar-wrapper.collapsed .chev,
+    #sidebar-wrapper.collapsed .logo-large,
+    #sidebar-wrapper.collapsed .logo-footer,
+    #sidebar-wrapper.collapsed .collapse {
+        display: none !important;
+    }
+
+    /* Centralizar ícones */
+    #sidebar-wrapper.collapsed .link-sidebar {
+        justify-content: center !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+    
+    #sidebar-wrapper.collapsed nav {
+        align-items: center;
+    }
+    
+    /* Segurança para margens */
+    #sidebar-wrapper.collapsed .ms-4 {
+        margin-left: 0 !important;
+    }
+    
+    /* Centralizar botão do menu quando retraído */
+    #sidebar-wrapper.collapsed .header-sidebar {
+        justify-content: center !important;
+    }
+    
+    #sidebar-wrapper.collapsed .logo-container {
+        display: none !important;
+    }
+    
+    /* Botão de logout usando variáveis do projeto */
+    .btn-logout {
+        background-color: var(--cor-botao-principal-rosa);
+        color: var(--cor-fonte-branca);
+        border: none;
+        border-radius: var(--radius-botao);
+    }
+    
+    .btn-logout:hover {
+        background-color: #ff5c76;
+        color: var(--cor-fonte-branca);
+    }
+</style>
+
+<aside id="sidebar-wrapper" class="shadow d-flex flex-column sidebar-global vh-100 position-sticky top-0" style="z-index:10;">
+    
+    <div class="p-3 d-flex align-items-center justify-content-between header-sidebar">
+        <div class="logo-container mx-auto">
+            <img src="{% static 'images/logo_lg.png' %}" alt="Logo" class="logo-large" style="max-height: 50px;" />
+        </div>
+        
+        <button id="btn-toggle-sidebar" class="btn btn-sm border-0" style="color: var(--cor-fonte-cinza);">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+        </button>
+    </div>
+
+    <nav class="flex-grow-1 p-3 d-flex flex-column gap-2 overflow-auto custom-scroll">
+        
+        <div class="mb-2">
+            <a class="w-100 d-flex align-items-center justify-content-between p-2 fw-semibold link-sidebar collapsed text-decoration-none rounded"
+               data-bs-toggle="collapse" href="#ponto-venda" role="button" aria-expanded="false">
+               <div class="d-flex align-items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon-sidebar" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span class="ms-3 text-label">PONTO DE VENDA</span>
+               </div>
+               <svg xmlns="http://www.w3.org/2000/svg" class="chev text-secondary" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+               </svg>
+            </a>
+            <div class="collapse ms-4 mt-2" id="ponto-venda">
+                <a href="{% url 'sales:pdv' %}" class="d-block p-2 link-sidebar text-decoration-none small">REALIZAR VENDA</a>
+                <a href="#" class="d-block p-2 link-sidebar text-decoration-none small">CONSULTAR VENDAS</a>
+            </div>
+        </div>
+
+        <div class="mb-2">
+            <a class="w-100 d-flex align-items-center justify-content-between p-2 fw-semibold link-sidebar collapsed text-decoration-none rounded"
+               data-bs-toggle="collapse" href="#produtos-menu" role="button" aria-expanded="false">
+               <div class="d-flex align-items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon-sidebar" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span class="ms-3 text-label">PRODUTOS</span>
+               </div>
+               <svg xmlns="http://www.w3.org/2000/svg" class="chev text-secondary" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+               </svg>
+            </a>
+            <div class="collapse ms-4 mt-2" id="produtos-menu">
+                <a href="{% url 'product:product-create' %}" class="d-block p-2 link-sidebar text-decoration-none small">CADASTRAR</a>
+                <a href="{% url 'product:product-list' %}" class="d-block p-2 link-sidebar text-decoration-none small">CONSULTAR</a>
+            </div>
+        </div>
+
+        <div class="mb-2">
+            <a class="w-100 d-flex align-items-center justify-content-between p-2 fw-semibold link-sidebar collapsed text-decoration-none rounded"
+               data-bs-toggle="collapse" href="#clientes-menu" role="button" aria-expanded="false">
+               <div class="d-flex align-items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon-sidebar" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <span class="ms-3 text-label">CLIENTES</span>
+               </div>
+               <svg xmlns="http://www.w3.org/2000/svg" class="chev text-secondary" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+               </svg>
+            </a>
+            <div id="clientes-menu" class="collapse ms-4 mt-2">
+                <a href="{% url 'customer:customer-create' %}" class="d-block p-2 link-sidebar text-decoration-none small">CADASTRAR</a>
+                <a href="{% url 'customer:customer_list' %}" class="d-block p-2 link-sidebar text-decoration-none small">CONSULTAR</a>
+            </div>
+        </div>
+
+        <div class="mb-2">
+            <a class="w-100 d-flex align-items-center justify-content-between p-2 fw-semibold link-sidebar collapsed text-decoration-none rounded"
+               data-bs-toggle="collapse" href="#relatorios" role="button" aria-expanded="false">
+               <div class="d-flex align-items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon-sidebar" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <span class="ms-3 text-label">RELATÓRIOS</span>
+               </div>
+               <svg xmlns="http://www.w3.org/2000/svg" class="chev text-secondary" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+               </svg>
+            </a>
+            <div class="collapse ms-4 mt-2" id="relatorios">
+                <a href="#" class="d-block p-2 link-sidebar text-decoration-none small">ESTOQUE</a>
+                <a href="#" class="d-block p-2 link-sidebar text-decoration-none small">FINANCEIRO</a>
+                <a href="#" class="d-block p-2 link-sidebar text-decoration-none small">VENDAS</a>
+                <a href="#" class="d-block p-2 link-sidebar text-decoration-none small">DIVERGÊNCIAS</a>
+            </div>
+        </div>
+
+        <div class="mb-2">
+            <a class="w-100 d-flex align-items-center justify-content-between p-2 fw-semibold link-sidebar collapsed text-decoration-none rounded"
+               data-bs-toggle="collapse" href="#usuarios" role="button" aria-expanded="false">
+               <div class="d-flex align-items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon-sidebar" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <span class="ms-3 text-label">USUÁRIOS</span>
+               </div>
+               <svg xmlns="http://www.w3.org/2000/svg" class="chev text-secondary" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+               </svg>
+            </a>
+            <div class="collapse ms-4 mt-2" id="usuarios">
+                <a href="{% url 'accounts:register' %}" class="d-block p-2 link-sidebar text-decoration-none small">CADASTRAR</a>
+                <a href="{% url 'user:user-list' %}" class="d-block p-2 link-sidebar text-decoration-none small">VISUALIZAR</a>
+            </div>
+        </div>
+
+    </nav>
+
+    <div class="p-3 mt-auto text-center border-top">
+        <div class="footer-logo mb-3">
+             <img src="{% static 'images/logo_gesthar.svg' %}" alt="Logo" class="logo-footer d-block mx-auto" style="height: 100px; transition: 0.3s;" />
+        </div>
+
+        <form action="{% url 'accounts:logout' %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="w-100 d-flex align-items-center justify-content-center btn btn-logout py-2 shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                <span class="ms-2 text-label fw-bold">SAIR</span>
+            </button>
+        </form>
+    </div>
+</aside>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggleBtn = document.getElementById('btn-toggle-sidebar');
+        const sidebar = document.getElementById('sidebar-wrapper');
+        
+        // Função para alternar
+        toggleBtn.addEventListener('click', function() {
+            sidebar.classList.toggle('collapsed');
+            
+            // Salvar preferência no navegador
+            const isCollapsed = sidebar.classList.contains('collapsed');
+            localStorage.setItem('sidebar-collapsed', isCollapsed);
+        });
+
+        // Restaurar estado ao carregar a página
+        const savedState = localStorage.getItem('sidebar-collapsed');
+        if (savedState === 'true') {
+            sidebar.classList.add('collapsed');
+        }
+    });
+</script>

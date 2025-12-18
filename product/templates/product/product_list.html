@@ -1,87 +1,90 @@
-{% extends 'global/sidebar.html' %}
+{% extends 'base/base.html' %}
 {% load static %}
 
 {% block content %}
-  <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold text-[#FF7690]">LISTA DE PRODUTOS</h1>
-
-    <a href="{% url 'product:product-create' %}" class="bg-[#F1F0BE] hover:bg-[#E0DFAB] text-[#555555] px-6 py-2 rounded-lg font-medium transition-colors cursor-pointer">Adicionar Produto</a>
+<div class="pr-20 pl-20">
+    <div class="d-flex justify-content-between align-items-center">
+    <h1 class="titulo">LISTA DE PRODUTOS</h1>
   </div>
 
-  <form method="GET" action="{% url 'product:product-list' %}" class="mb-6 flex justify-end items-center">
-    <div class="relative w-full max-w-md">
-      <input id="search_right" type="text" name="query" value="{{ query }}" placeholder="Pesquisar por Nome, Categoria, SKU ou Fornecedor" class="w-full border border-gray-300 rounded-lg py-2 pl-4 pr-10 bg-white focus:outline-none focus:ring-2 focus:ring-rose-400" />
-
-      <div class="absolute inset-y-0 right-0 flex items-center pr-3">
-        <button type="submit" class="text-gray-400 hover:text-gray-600">
-          <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-            <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" />
-          </svg>
-        </button>
-      </div>
+  <form method="GET" action="{% url 'product:product-list' %}" class="mb-4 d-flex justify-content-end">
+    <div class="position-relative w-100" style="max-width:400px;">
+      <input id="search_right" type="text" name="query" value="{{ query }}"
+        class="form-control rounded-pill bg-transparent pe-4" placeholder="Pesquisar"
+        style="color: var(--cor-fonte-cinza) !important;">
+      <button type="submit" aria-label="Pesquisar" style="color: var(--cor-fonte-cinza) !important;"
+        class="position-absolute end-0 top-50 translate-middle-y border-0 bg-transparent p-0 pe-3">
+        <!-- Heroicons magnifying glass (outline) -->
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+          class="h-5 w-5" width="20" height="20" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M21 21l-4.35-4.35M11 18.5a7.5 7.5 0 100-15 7.5 7.5 0 000 15z" />
+        </svg>
+      </button>
     </div>
   </form>
 
-  <div class="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-300">
-    <table class="w-full">
-      <thead class="bg-[#F7E8EB]">
-        <tr>
-          <th class="px-6 py-3 text-center text-xs font-medium text-[#555555] uppercase border border-gray-300">Visualizar</th>
-          <th class="px-6 py-3 text-center text-xs font-medium text-[#555555] uppercase border border-gray-300">Editar</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-[#555555] uppercase border border-gray-300">Nome</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-[#555555] uppercase border border-gray-300">Categoria</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-[#555555] uppercase border border-gray-300">Preço de Venda</th>
-          <th class="px-6 py-3 text-center text-xs font-medium text-[#555555] uppercase border border-gray-300">Lucro (%)</th>
-          <th class="px-6 py-3 text-center text-xs font-medium text-[#555555] uppercase border border-gray-300">Estoque</th>
-          <th class="px-6 py-3 text-center text-xs font-medium text-[#555555] uppercase border border-gray-300">Status</th>
+  <div class="rounded-4 shadow-sm border border-light overflow-hidden">
+    <table class="table table-bordered align-middle mb-0 text-center product-list">
+    <thead>
+  <tr class="cabecalho text-center text-uppercase text-secondary">
+          <th>Visualizar</th>
+          <th>Nome</th>
+          <th>Categoria</th>
+          <th>Estoque</th>
+          <th>Preço</th>
+          <th>Status</th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-gray-200">
+
+      <tbody>
         {% for product in products %}
-          <tr class="hover:bg-rose-50">
-            <td class="px-6 py-4 text-center border border-gray-300">
-              <a href="{% url 'product:product-detail' product.pk %}" class="text-gray-600" title="Visualizar Variações">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 inline" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                  <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.523 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
-                </svg>
-              </a>
-            </td>
+        <tr class="align-middle" style="cursor:default;">
+          <!-- Visualizar -->
+          <td class="d-flex justify-content-center align-items-center">
+            <a href="{% url 'product:product-detail' product.pk %}" class="text-secondary d-inline-flex"
+              title="Visualizar">
+              <!-- Feather-style eye (stroke) - chosen variant -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"
+                class="feather feather-eye" aria-hidden="true">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </a>
+          </td>
 
-            <td class="px-6 py-4 text-center border border-gray-300">
-              <a href="{% url 'product:product-update' product.pk %}" class="text-blue-600 hover:text-blue-800" title="Editar Produto">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 inline" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
-                  <path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" />
-                </svg>
-              </a>
-            </td>
 
-            <td class="px-6 py-4 text-sm text-gray-900 border border-gray-300">{{ product.name }}</td>
-            <td class="px-6 py-4 text-sm text-gray-900 border border-gray-300">{{ product.category.name }}</td>
-            <td class="px-6 py-4 text-sm font-medium text-rose-600 border border-gray-300">R$ {{ product.selling_price|floatformat:2 }}</td>
-            <td class="px-6 py-4 text-center text-sm text-gray-900 border border-gray-300">
-              {% if product.profit_margin > 0 %}
-                {{ product.profit_margin|floatformat:2 }}%
-              {% else %}
-                -
-              {% endif %}
-            </td>
-            <td class="px-6 py-4 text-center text-sm text-gray-900 border border-gray-300">{{ product.total_stock }}</td>
-            <td class="px-6 py-4 text-center text-sm border border-gray-300">
-              {% if product.is_active %}
-                <span class="text-green-600 font-semibold">Ativo</span>
-              {% else %}
-                <span class="text-red-600 font-semibold">Inativo</span>
-              {% endif %}
-            </td>
-          </tr>
+          <!-- Nome -->
+          <td>{{ product.name }}</td>
+
+          <!-- Categoria -->
+          <td>{{ product.category.name }}</td>
+
+          <!-- Estoque -->
+          <td>{{ product.total_stock }}</td>
+
+          <!-- Preço -->
+          <td class="fw-semibold" style="color:var(--cor-fonte-rosa);">R$ {{ product.selling_price|floatformat:2 }}</td>
+
+          <!-- Status -->
+          <td class="fw-semibold">
+            {% if product.is_active %}
+            <span class="text-success">Ativo</span>
+            {% else %}
+            <span class="text-danger">Inativo</span>
+            {% endif %}
+          </td>
+        </tr>
         {% empty %}
-          <tr>
-            <td colspan="8" class="px-6 py-4 text-center text-[#555555] border border-gray-300">Nenhum produto encontrado.</td>
-          </tr>
+        <tr>
+          <td colspan="6" class="text-center text-muted py-4">
+            Nenhum produto encontrado.
+          </td>
+        </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
+</div>
 {% endblock %}

@@ -51,13 +51,25 @@ class UserGesthar(AbstractUser):
         blank=True,
         null=True,
     )
-    cpf = models.CharField(max_length=14, unique=True, verbose_name="CPF")
+    cpf = models.CharField(max_length=14, verbose_name="CPF")
     email = models.EmailField(unique=True, verbose_name="E-mail")
     phone_number = models.CharField(
         max_length=15, verbose_name="Telefone", blank=True, null=True
     )
     hire_date = models.DateField(
         blank=True, verbose_name="Data de Contratação", null=True
+    )
+    birth_date = models.DateField(
+        blank=True, verbose_name="Data de Nascimento", null=True
+    )
+    role = models.CharField(
+        max_length=100, verbose_name="Cargo/Função", blank=True, null=True
+    )
+    notes = models.TextField(
+        verbose_name="Observações", blank=True, null=True
+    )
+    exit_date = models.DateField(
+        blank=True, verbose_name="Data de Saída", null=True
     )
 
     # Definindo o campo de autenticação para ser o email
