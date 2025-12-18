@@ -27,7 +27,7 @@ SECRET_KEY = "django-insecure-oeg=j03p*vavs$)=^#it)4%&u=wcq3+vf0u7v=i+6q1^6_mwd_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["pdv.gesthar.com.br"]
 
 
 # Application definition
