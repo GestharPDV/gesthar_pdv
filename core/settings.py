@@ -25,9 +25,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-oeg=j03p*vavs$)=^#it)4%&u=wcq3+vf0u7v=i+6q1^6_mwd_"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG =  os.getenv('DEBUG')
 
 ALLOWED_HOSTS = ["pdv.gesthar.com.br"]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://pdv.gesthar.com.br",
+    "https://*.gesthar.com.br"
+]
 
 
 # Application definition
