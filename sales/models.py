@@ -188,7 +188,7 @@ class Sale(SoftDeleteModel):
     def remaining_balance(self):
         """Quanto falta pagar (Total Líquido - Total Pago)."""
         balance = self.net_amount - self.total_paid
-        return balance if balance > 0 else Decimal("0.00")
+        return round(balance, 2) if balance > 0 else Decimal("0.00")
 
     @property
     def is_fully_paid(self):

@@ -36,10 +36,6 @@ def open_register_view(request):
             session.status = CashRegister.Status.OPEN
             session.save()
 
-            messages.success(
-                request,
-                f"Caixa aberto com sucesso! Fundo de Troco: R$ {session.opening_balance}",
-            )
             return redirect("sales:pdv")
 
     return render(request, "sales/open_register.html", {"form": form})
@@ -88,9 +84,6 @@ def pdv_view(request):
     ).first()
 
     if not cash_register_session:
-        messages.warning(
-            request, "O caixa está fechado. Abra o caixa para começar a vender."
-        )
         return redirect("sales:open-register")
 
     # Busca a última venda em aberto (RASCUNHO)
@@ -111,15 +104,12 @@ def pdv_view(request):
 
     sale.calculate_totals()
 
-    if created:
-        messages.info(request, "Nova venda iniciada.")
-
     items = sale.items.select_related("variation__product").all().order_by("-id")
 
     # busca pagamentos relacionados
     payments = sale.payments.all().order_by("created_at")
     # Cria o formulário de pagamento com o valor restante
-    payment_form = PaymentForm(initial={"amount": sale.remaining_balance})
+    payment_form = PaymentForm(initial={"amount": round(sale.remaining_balance, 2)})
     available_products = ProductVariation.active.select_related('product', 'color', 'size').order_by('product__name')
 
     context = {

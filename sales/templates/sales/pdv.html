@@ -279,32 +279,34 @@
                         {% endif %}
                     </div>
 
-                    {% if sale.remaining_balance > 0 %}
-                    <div>
-                        <label class="small fw-bold mb-1" style="color: var(--cor-fonte-preta);">ADICIONAR PAGAMENTO</label>
-                        <form action="{% url 'sales:add-payment' %}" method="POST">
-                            {% csrf_token %}
-                            <div class="d-flex gap-2">
-                                <div style="width: 40%;">
-                                    {{ payment_form.method }} 
+                    {% if sale.net_amount > 0 %}
+                        {% if sale.remaining_balance > 0 %}
+                            <div>
+                                <label class="small fw-bold mb-1" style="color: var(--cor-fonte-preta);">ADICIONAR PAGAMENTO</label>
+                                <form action="{% url 'sales:add-payment' %}" method="POST">
+                                    {% csrf_token %}
+                                    <div class="d-flex gap-2">
+                                        <div style="width: 40%;">{{ payment_form.method }}</div>
+                                        <div class="position-relative flex-grow-1">
+                                            <span class="position-absolute" style="left:10px; top:50%; transform:translateY(-50%); color: var(--cor-fonte-cinza); font-size: 0.8rem;">R$</span>
+                                            {{ payment_form.amount }}
+                                        </div>
+                                        <button type="submit" class="btn btn-sm botao-verde border fw-bold hover-shadow">
+                                            <span class="material-symbols-outlined fs-5">add</span>
+                                        </button>
                                     </div>
-
-                                <div class="position-relative flex-grow-1">
-                                    <span class="position-absolute" style="left:10px; top:50%; transform:translateY(-50%); color: var(--cor-fonte-cinza); font-size: 0.8rem;">R$</span>
-                                    {{ payment_form.amount }}
-                                    </div>
-
-                                <button type="submit" class="btn btn-sm botao-verde border fw-bold hover-shadow">
-                                    <span class="material-symbols-outlined fs-5">add</span>
-                                </button>
+                                </form>
                             </div>
-                        </form>
-                    </div>
+                        {% else %}
+                            <div class="alert alert-success d-flex align-items-center p-2 small mb-0">
+                                <span class="material-symbols-outlined me-2">check_circle</span>
+                                Pagamento concluído!
+                            </div>
+                        {% endif %}
                     {% else %}
-                    <div class="alert alert-success d-flex align-items-center p-2 small mb-0">
-                        <span class="material-symbols-outlined me-2">check_circle</span>
-                        Pagamento concluído!
-                    </div>
+                        <div class="alert alert-light border border-separator text-center p-2 mb-0">
+                            <span class="text-muted small">Aguardando itens...</span>
+                        </div>
                     {% endif %}
 
                     <div class="mt-2">
@@ -313,7 +315,7 @@
                             <button type="submit" 
                                     class="btn botao-rosa fw-bold py-2 w-100 shadow-sm d-flex align-items-center justify-content-center gap-2"
                                     id="btn-finalizar"
-                                    {% if sale.remaining_balance > 0 %}disabled style="opacity: 0.6; cursor: not-allowed;"{% endif %}>
+                                    {% if sale.remaining_balance > 0 or sale.net_amount == 0 %}disabled style="opacity: 0.6; cursor: not-allowed;"{% endif %}>
                                 <span>FINALIZAR VENDA (F2)</span>
                                 <span class="material-symbols-outlined">arrow_forward</span>
                             </button>
@@ -350,6 +352,17 @@
             const searchInput = document.getElementById('search-input');
             if(searchInput) searchInput.focus();
         }
+    });
+
+    // Auto-ocultar alertas após 3 segundos
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.alert-dismissible');
+            alerts.forEach(function(alert) {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 3000); // 3000ms = 3 segundos
     });
 </script>
 
