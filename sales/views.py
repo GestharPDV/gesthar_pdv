@@ -64,7 +64,7 @@ def close_register_view(request):
                 messages.success(
                     request, f"Caixa fechado. Valor final: R$ {final_value}"
                 )
-                return redirect("product:product-list")
+                return redirect("base:home")
             except ValidationError as e:
                 messages.error(request, e.message)
 
