@@ -1,6 +1,5 @@
 name: CI/CD Pipeline
 
-# Aciona o workflow em pushes nas branches main e develop
 on:
   push:
     branches:
@@ -12,10 +11,27 @@ on:
       - "develop"
 
 jobs:
-  # Job 1: Rodar Testes
   tests:
     name: Run Tests
     runs-on: ubuntu-latest
+    
+    # ADICIONADO: Configuração do Serviço de Banco de Dados
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: test_db
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+        ports:
+          - 5432:5432
+        # Healthcheck para garantir que o banco subiu antes dos testes começarem
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout do código
         uses: actions/checkout@v4
@@ -31,10 +47,10 @@ jobs:
           pip install -r requirements.txt
 
       - name: Executar Testes do Django
-        # Define variáveis de ambiente necessárias para o settings.py não quebrar
         env:
           SECRET_KEY: 'test-secret-key-for-actions'
           DEBUG: 'True'
+          # As credenciais aqui devem bater com o 'services' acima
           DB_NAME: 'test_db'
           DB_USER: 'test_user'
           DB_PASSWORD: 'test_password'
@@ -43,7 +59,6 @@ jobs:
         run: |
           python manage.py test
 
-  # Job 2: Deploy (Só executa se 'tests' passar e for push na main)
   deploy:
     needs: tests
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -66,7 +81,6 @@ jobs:
         with:
           context: .
           push: true
-          # Gera tags 'latest' e com o SHA curto do commit para versionamento
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/gesthar_pdv:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/gesthar_pdv:${{ github.sha }}
