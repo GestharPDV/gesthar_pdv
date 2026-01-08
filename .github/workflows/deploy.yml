@@ -84,3 +84,9 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/gesthar_pdv:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/gesthar_pdv:${{ github.sha }}
+
+       # --- AVISAR O COOLIFY ---     
+      - name: Trigger Coolify Deploy
+        run: |
+          curl --request GET '${{ secrets.COOLIFY_WEBHOOK }}' \
+               --header 'Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}'
