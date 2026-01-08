@@ -1,12 +1,52 @@
-name: Deploy to Docker Hub
+name: CI/CD Pipeline
 
+# Aciona o workflow em pushes nas branches main e develop
 on:
   push:
     branches:
-      - "main"  # Executa o deploy sempre que houver push na branch main
+      - "main"
+      - "develop"
+  pull_request:
+    branches:
+      - "main"
+      - "develop"
 
 jobs:
-  build-and-push:
+  # Job 1: Rodar Testes
+  tests:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar Dependências
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Executar Testes do Django
+        # Define variáveis de ambiente necessárias para o settings.py não quebrar
+        env:
+          SECRET_KEY: 'test-secret-key-for-actions'
+          DEBUG: 'True'
+          DB_NAME: 'test_db'
+          DB_USER: 'test_user'
+          DB_PASSWORD: 'test_password'
+          DB_HOST: 'localhost'
+          DB_PORT: '5432'
+        run: |
+          python manage.py test
+
+  # Job 2: Deploy (Só executa se 'tests' passar e for push na main)
+  deploy:
+    needs: tests
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout do código
@@ -26,4 +66,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/gesthar_pdv:latest
+          # Gera tags 'latest' e com o SHA curto do commit para versionamento
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/gesthar_pdv:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/gesthar_pdv:${{ github.sha }}
