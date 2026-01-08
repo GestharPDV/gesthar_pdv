@@ -103,8 +103,9 @@ class ProductIntegrationTests(TestCase):
         )
         
         # Criar cores e tamanhos únicos para este teste
-        color_vermelho = Color.objects.create(name="Vermelho Polo")
-        color_verde = Color.objects.create(name="Verde Polo")
+        color_vermelho = Color.objects.create(name="Vermelho Escuro") 
+        # Verde Claro -> VC
+        color_verde = Color.objects.create(name="Verde Claro")
         size_p = Size.objects.create(name="PP")
         size_g = Size.objects.create(name="GG")
         
