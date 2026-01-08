@@ -102,10 +102,11 @@ class ProductIntegrationTests(TestCase):
             category=self.category
         )
         
-        # Criar cores e tamanhos únicos para este teste
+        # --- ALTERAÇÃO AQUI: Nomes que geram siglas diferentes (VE e VC) ---
         color_vermelho = Color.objects.create(name="Vermelho Escuro") 
-        # Verde Claro -> VC
         color_verde = Color.objects.create(name="Verde Claro")
+        # -------------------------------------------------------------------
+
         size_p = Size.objects.create(name="PP")
         size_g = Size.objects.create(name="GG")
         
@@ -141,7 +142,7 @@ class ProductIntegrationTests(TestCase):
         # Verificar estoque total
         products = Product.objects.with_stock()
         product_with_stock = products.get(pk=product.pk)
-        self.assertEqual(product_with_stock.total_stock, 100)  # 4 variações x 25
+        self.assertEqual(product_with_stock.total_stock, 100)
     
     def test_sku_unico_por_variacao(self):
         """Teste que cada variação tem SKU único"""
@@ -198,4 +199,3 @@ class ProductIntegrationTests(TestCase):
         self.assertEqual(p.average_cost_price, Decimal("80.00"))
         # Margem = (100 - 80) / 100 * 100 = 20%
         self.assertEqual(p.profit_margin, Decimal("20.00"))
-
