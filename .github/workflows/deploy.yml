@@ -90,5 +90,6 @@ jobs:
        # --- AVISAR O COOLIFY ---     
       - name: Trigger Coolify Deploy
         run: |
-          curl --request GET '${{ secrets.COOLIFY_WEBHOOK }}' \
+          # Avisa o Coolify para usar a imagem com o ID deste commit específico
+          curl --request GET '${{ secrets.COOLIFY_WEBHOOK }}&force=true&image=${{ secrets.DOCKERHUB_USERNAME }}/gesthar_pdv:${{ github.sha }}' \
                --header 'Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}'
