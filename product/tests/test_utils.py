@@ -114,7 +114,8 @@ class GenerateSKUTests(TestCase):
             size=self.size
         )
         sku = generate_sku(variation)
-        self.assertEqual(sku, "CAMBR-A-M")
+        # Verifica se COMEÇA com o padrão esperado (ignorando o sufixo aleatório)
+        self.assertTrue(sku.startswith("CAMBR-A-M"))
     
     def test_sku_com_cor_composta(self):
         """Teste SKU com cor composta"""
@@ -125,7 +126,7 @@ class GenerateSKUTests(TestCase):
             size=self.size
         )
         sku = generate_sku(variation)
-        self.assertEqual(sku, "CAMBR-AM-M")
+        self.assertTrue(sku.startswith("CAMBR-AM-M"))
     
     def test_sku_com_produto_multiplas_palavras(self):
         """Teste SKU com produto de múltiplas palavras"""
@@ -140,7 +141,7 @@ class GenerateSKUTests(TestCase):
             size=self.size
         )
         sku = generate_sku(variation)
-        self.assertEqual(sku, "CALJESF-A-M")
+        self.assertTrue(sku.startswith("CALJESF-A-M"))
     
     def test_sku_gerado_automaticamente_ao_salvar(self):
         """Teste que SKU é gerado automaticamente ao salvar"""
@@ -151,7 +152,7 @@ class GenerateSKUTests(TestCase):
             stock=10
         )
         self.assertIsNotNone(variation.sku)
-        self.assertEqual(variation.sku, "CAMBR-A-M")
+        self.assertTrue(variation.sku.startswith("CAMBR-A-M"))
 
 
 class StandardizeNameTests(TestCase):
@@ -183,4 +184,3 @@ class StandardizeNameTests(TestCase):
         # title() mantém espaços internos, mas strip() remove externos
         self.assertIn("Produto", result)
         self.assertIn("Teste", result)
-
