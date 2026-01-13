@@ -6,7 +6,8 @@ from django.db.models import Q
 import re  # Importação necessária para limpar a busca
 
 from .models import UserGesthar
-from .form import UserGestharChangeForm
+from .form import UserGestharChangeForm, UserGestharCreationForm
+from django.contrib import messages
 
 
 class UserDetailView(LoginRequiredMixin, DetailView):
@@ -70,7 +71,28 @@ def profile_edit_view(request, pk):
     else:
         form = UserGestharChangeForm(instance=user)
     
-    return render(request, "user/user_form.html", {"form": form})
+    return render(request, "user/user_form.html", {"form": form, "action": "Editar"})
+
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def user_create_view(request):
+    """View para criar novo usuário"""
+    if request.method == "POST":
+        form = UserGestharCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            messages.success(request, f'Usuário "{user.get_full_name()}" cadastrado com sucesso!')
+            return redirect("user:user-list")
+        else:
+            # Adiciona mensagens de erro
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{form.fields.get(field, {}).get('label', field) if field in form.fields else field}: {error}")
+    else:
+        form = UserGestharCreationForm()
+    
+    return render(request, "user/user_form.html", {"form": form, "action": "Cadastrar"})
 
 
 def superuser_required(user):

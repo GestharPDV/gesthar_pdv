@@ -194,6 +194,6 @@ AddressFormSet = inlineformset_factory(
     form=AddressForm,
     extra=1,  # Número de formulários vazios extras
     can_delete=True,  # Permite deletar endereços
-    min_num=1,  # Pelo menos um endereço é obrigatório
-    validate_min=True,
+    min_num=0,  # Endereço é opcional
+    validate_min=False,  # Não valida mínimo obrigatório
 )

@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import UserChangeForm
+from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from django.core.exceptions import ValidationError
 from .models import UserGesthar
 import re
@@ -169,3 +169,117 @@ class UserGestharChangeForm(UserChangeForm):
             return phone_limpo
 
         return phone
+
+
+class UserGestharCreationForm(UserCreationForm):
+    """Formulário para criar novo usuário no sistema"""
+    
+    class Meta:
+        model = UserGesthar
+        fields = [
+            "first_name",
+            "last_name",
+            "email",
+            "cpf",
+            "phone_number",
+            "hire_date",
+            "birth_date",
+            "role",
+            "notes",
+        ]
+        widgets = {
+            'birth_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'hire_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'cpf': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '000.000.000-00', 'maxlength': '14'}),
+            'phone_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '(00) 00000-0000', 'maxlength': '15'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nome'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Sobrenome'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'email@exemplo.com'}),
+            'role': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Vendedor, Gerente'}),
+            'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Observações adicionais'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Campos obrigatórios
+        self.fields['first_name'].required = True
+        self.fields['last_name'].required = True
+        self.fields['email'].required = True
+        self.fields['cpf'].required = True
+        self.fields['hire_date'].required = True
+        self.fields['birth_date'].required = True
+        self.fields['role'].required = True
+        
+        # Estilização dos campos de senha
+        self.fields['password1'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Digite a senha'})
+        self.fields['password2'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Confirme a senha'})
+        
+        # Validações de data
+        today = date.today()
+        min_birth_date = today.replace(year=today.year - 110)
+        self.fields['birth_date'].widget.attrs.update({
+            'min': min_birth_date.strftime('%Y-%m-%d'),
+            'max': today.strftime('%Y-%m-%d'),
+        })
+
+    def clean(self):
+        """Validação cruzada entre campos"""
+        cleaned_data = super().clean()
+        hire_date = cleaned_data.get('hire_date')
+        birth_date = cleaned_data.get('birth_date')
+
+        if birth_date and hire_date:
+            if hire_date < birth_date:
+                self.add_error('hire_date', "A data de admissão não pode ser anterior à data de nascimento.")
+            else:
+                # Verifica idade mínima de 14 anos
+                age_at_hire = hire_date.year - birth_date.year - ((hire_date.month, hire_date.day) < (birth_date.month, birth_date.day))
+                if age_at_hire < 14:
+                    self.add_error('hire_date', f"Idade inválida para contratação. A idade mínima é 14 anos completos.")
+        
+        return cleaned_data
+
+    def clean_cpf(self):
+        """Valida e limpa o campo CPF"""
+        cpf = self.cleaned_data.get('cpf', '')
+        cpf_limpo = re.sub(r'[^0-9]', '', cpf)
+
+        if not cpf_limpo:
+            raise ValidationError("O campo CPF é obrigatório.")
+
+        if len(cpf_limpo) != 11:
+            raise ValidationError("O CPF deve conter exatamente 11 dígitos.")
+
+        if not validar_cpf(cpf_limpo):
+            raise ValidationError("Número de CPF inválido.")
+
+        return cpf_limpo
+
+    def clean_birth_date(self):
+        """Valida a data de nascimento"""
+        birth_date = self.cleaned_data.get('birth_date')
+        if birth_date:
+            min_birth_date = date.today().replace(year=date.today().year - 110)
+            if birth_date < min_birth_date:
+                raise ValidationError("A data de nascimento não pode ser anterior a 110 anos da data atual.")
+        return birth_date
+
+    def clean_phone_number(self):
+        """Valida e limpa o telefone"""
+        phone = self.cleaned_data.get('phone_number', '')
+        if phone:
+            phone_limpo = re.sub(r'[^0-9]', '', phone)
+            if len(phone_limpo) < 10 or len(phone_limpo) > 11:
+                raise ValidationError("O telefone deve ter 10 ou 11 dígitos (com DDD).")
+            return phone_limpo
+        return phone
+    
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        # Garante que o username seja preenchido com o email se estiver vazio
+        if not user.username:
+            user.username = user.email
+        if commit:
+            user.save()
+        return user

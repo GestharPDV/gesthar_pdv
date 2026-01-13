@@ -90,7 +90,22 @@ class CustomerCreateView(LoginRequiredMixin, CreateView):
             messages.success(self.request, f'Cliente "{self.object.name}" cadastrado com sucesso!')
             return redirect(self.success_url)
         else:
+            # Adiciona mensagens de erro do formset
+            for error in address_formset.non_form_errors():
+                messages.error(self.request, error)
+            for form_error in address_formset.errors:
+                if form_error:
+                    for field, errors in form_error.items():
+                        for error in errors:
+                            messages.error(self.request, f"Erro no endereço - {field}: {error}")
             return self.form_invalid(form)
+    
+    def form_invalid(self, form):
+        # Adiciona mensagens de erro do formulário principal
+        for field, errors in form.errors.items():
+            for error in errors:
+                messages.error(self.request, f"{form.fields[field].label if field in form.fields else field}: {error}")
+        return super().form_invalid(form)
 
 
 class CustomerUpdateView(LoginRequiredMixin, UpdateView):
@@ -122,7 +137,22 @@ class CustomerUpdateView(LoginRequiredMixin, UpdateView):
             messages.success(self.request, f'Cliente "{self.object.name}" atualizado com sucesso!')
             return redirect(self.success_url)
         else:
+            # Adiciona mensagens de erro do formset
+            for error in address_formset.non_form_errors():
+                messages.error(self.request, error)
+            for form_error in address_formset.errors:
+                if form_error:
+                    for field, errors in form_error.items():
+                        for error in errors:
+                            messages.error(self.request, f"Erro no endereço - {field}: {error}")
             return self.form_invalid(form)
+    
+    def form_invalid(self, form):
+        # Adiciona mensagens de erro do formulário principal
+        for field, errors in form.errors.items():
+            for error in errors:
+                messages.error(self.request, f"{form.fields[field].label if field in form.fields else field}: {error}")
+        return super().form_invalid(form)
 
 
 class CustomerDeleteView(LoginRequiredMixin, DeleteView):

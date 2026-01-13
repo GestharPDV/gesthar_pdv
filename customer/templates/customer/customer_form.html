@@ -6,6 +6,17 @@
 <div class="pr-15 pl-15">
   <h1 class="titulo">{{ action|upper }} CLIENTE</h1>
 
+  {% if messages %}
+    <div class="mb-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
   <form method="POST" novalidate>
     {% csrf_token %}
 
@@ -98,7 +109,7 @@
     </div>
 
     <div class="border border-separator rounded mb-4">
-      <h2 class="subtitulo mb-0">ENDEREÇOS</h2>
+      <h2 class="subtitulo mb-0">ENDEREÇOS <small class="text-muted" style="font-size: 0.7rem;">(opcional)</small></h2>
       <div class="p-3">
 
         {{ address_formset.management_form }}
@@ -118,7 +129,7 @@
 
               <div class="row">
                 <div class="col-md-3 mb-3">
-                  <label for="{{ form.cep.id_for_label }}" class="form-label">{{ form.cep.label }} {% if forloop.first %}<span class="text-danger">*</span>{% endif %}</label>
+                  <label for="{{ form.cep.id_for_label }}" class="form-label">{{ form.cep.label }}</label>
                   {% render_field form.cep class="form-control" %}
                   {% if form.cep.errors %}
                     <div class="text-danger small">{{ form.cep.errors.0 }}</div>
@@ -126,7 +137,7 @@
                 </div>
 
                 <div class="col-md-3 mb-3">
-                  <label for="{{ form.state.id_for_label }}" class="form-label">{{ form.state.label }} {% if forloop.first %}<span class="text-danger">*</span>{% endif %}</label>
+                  <label for="{{ form.state.id_for_label }}" class="form-label">{{ form.state.label }}</label>
                   {% render_field form.state class="form-control" %}
                   {% if form.state.errors %}
                     <div class="text-danger small">{{ form.state.errors.0 }}</div>
@@ -134,7 +145,7 @@
                 </div>
 
                 <div class="col-md-3 mb-3">
-                  <label for="{{ form.city.id_for_label }}" class="form-label">{{ form.city.label }} {% if forloop.first %}<span class="text-danger">*</span>{% endif %}</label>
+                  <label for="{{ form.city.id_for_label }}" class="form-label">{{ form.city.label }}</label>
                   {% render_field form.city class="form-control" %}
                   {% if form.city.errors %}
                     <div class="text-danger small">{{ form.city.errors.0 }}</div>
@@ -142,7 +153,7 @@
                 </div>
 
                 <div class="col-md-3 mb-3">
-                  <label for="{{ form.neighborhood.id_for_label }}" class="form-label">{{ form.neighborhood.label }} {% if forloop.first %}<span class="text-danger">*</span>{% endif %}</label>
+                  <label for="{{ form.neighborhood.id_for_label }}" class="form-label">{{ form.neighborhood.label }}</label>
                   {% render_field form.neighborhood class="form-control" %}
                   {% if form.neighborhood.errors %}
                     <div class="text-danger small">{{ form.neighborhood.errors.0 }}</div>
@@ -150,7 +161,7 @@
                 </div>
 
                 <div class="col-md-6 mb-3">
-                  <label for="{{ form.street.id_for_label }}" class="form-label">{{ form.street.label }} {% if forloop.first %}<span class="text-danger">*</span>{% endif %}</label>
+                  <label for="{{ form.street.id_for_label }}" class="form-label">{{ form.street.label }}</label>
                   {% render_field form.street class="form-control" %}
                   {% if form.street.errors %}
                     <div class="text-danger small">{{ form.street.errors.0 }}</div>
@@ -158,7 +169,7 @@
                 </div>
 
                 <div class="col-md-3 mb-3">
-                  <label for="{{ form.number.id_for_label }}" class="form-label">{{ form.number.label }} {% if forloop.first %}<span class="text-danger">*</span>{% endif %}</label>
+                  <label for="{{ form.number.id_for_label }}" class="form-label">{{ form.number.label }}</label>
                   {% render_field form.number class="form-control" %}
                   {% if form.number.errors %}
                     <div class="text-danger small">{{ form.number.errors.0 }}</div>
