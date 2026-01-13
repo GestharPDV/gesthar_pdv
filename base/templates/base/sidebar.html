@@ -64,7 +64,9 @@
     
     <div class="p-3 d-flex align-items-center justify-content-between header-sidebar">
         <div class="logo-container mx-auto">
-            <img src="{% static 'images/logo_lg.png' %}" alt="Logo" class="logo-large" style="max-height: 50px;" />
+            <a href="{% url 'base:home' %}">
+                <img src="{% static 'images/logo_lg.png' %}" alt="Logo" class="logo-large" style="max-height: 50px;" />
+            </a>
         </div>
         
         <button id="btn-toggle-sidebar" class="btn btn-sm border-0" style="color: var(--cor-fonte-cinza);">
@@ -91,7 +93,7 @@
             </a>
             <div class="collapse ms-4 mt-2" id="ponto-venda">
                 <a href="{% url 'sales:pdv' %}" class="d-block p-2 link-sidebar text-decoration-none small">REALIZAR VENDA</a>
-                <a href="#" class="d-block p-2 link-sidebar text-decoration-none small">CONSULTAR VENDAS</a>
+                <a href="{% url 'sales:sale-list' %}" class="d-block p-2 link-sidebar text-decoration-none small">CONSULTAR VENDAS</a>
             </div>
         </div>
 
@@ -177,7 +179,9 @@
 
     <div class="p-3 mt-auto text-center border-top">
         <div class="footer-logo mb-3">
-             <img src="{% static 'images/logo_gesthar.svg' %}" alt="Logo" class="logo-footer d-block mx-auto" style="height: 100px; transition: 0.3s;" />
+            <a href="{% url 'base:home' %}">
+                <img src="{% static 'images/logo_gesthar.svg' %}" alt="Logo" class="logo-footer d-block mx-auto" style="height: 100px; transition: 0.3s;" />
+            </a>
         </div>
 
         <form action="{% url 'accounts:logout' %}" method="post">

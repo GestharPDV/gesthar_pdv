@@ -6,10 +6,13 @@
 <div class="pr-15 pl-15">
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="titulo">{{ page_title|upper }}</h1>
-    <div class="d-flex gap-2">
-      <button type="button" class="botao-amarelo p-2">Editar Produto</button>
-      <button type="button" class="botao-vermelho p-2">Excluir Produto</button>
-      <button type="button" class="botao-rosa p-2">Voltar</button>
+    <div class="d-flex gap-2 align-items-center">
+      <a href="{% url 'product:product-update' product.pk %}" class="botao-amarelo p-2 text-decoration-none">Editar Produto</a>
+      <form action="{% url 'product:product-delete' product.pk %}" method="post" class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir o produto {{ product.name }}?');">
+        {% csrf_token %}
+        <button type="submit" class="botao-vermelho p-2">Excluir Produto</button>
+      </form>
+      <a href="{% url 'product:product-list' %}" class="botao-rosa p-2 text-decoration-none">Voltar</a>
     </div>
   </div>
 

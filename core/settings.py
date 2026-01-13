@@ -27,7 +27,7 @@ SECRET_KEY = "django-insecure-oeg=j03p*vavs$)=^#it)4%&u=wcq3+vf0u7v=i+6q1^6_mwd_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG =  os.getenv('DEBUG')
 
-ALLOWED_HOSTS = ["pdv.gesthar.com.br"]
+ALLOWED_HOSTS = ["pdv.gesthar.com.br", "localhost", "127.0.0.1"]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://pdv.gesthar.com.br",

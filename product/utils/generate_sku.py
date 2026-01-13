@@ -1,6 +1,10 @@
+# product/utils/generate_sku.py
+import random
+import string
+
 def generate_product_part(product_name):
     """
-    Gera a parte do SKU referente ao produto de forma robusta.
+    Gera a parte do SKU referente ao produto.
     Regra: 3 letras da 1ª palavra, 2 da 2ª, e 1 de todas as subsequentes.
     """
     words = product_name.upper().split()
@@ -22,7 +26,6 @@ def generate_product_part(product_name):
 def _generate_color_part(color_name):
     """
     Gera a parte do SKU referente à cor.
-    Regra: Primeira letra de cada palavra.
     """
     name = color_name.upper()
     if name == "N/A":
@@ -35,7 +38,6 @@ def _generate_color_part(color_name):
 def generate_size_part(size_name):
     """
     Gera a parte do SKU referente ao tamanho.
-    Regra: Apenas o código em maiúsculas.
     """
     name = size_name.upper()
     if name == "N/A":
@@ -44,12 +46,19 @@ def generate_size_part(size_name):
     return size_name.upper()
 
 
+def generate_random_suffix():
+    """Gera um sufixo aleatório de 3 caracteres (Letras/Números) para evitar colisão."""
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=3))
+
+
 def generate_sku(variation):
     """
-    Cria SKU final para um objeto ProductVariation.
+    Cria SKU final para um objeto ProductVariation com sufixo único.
+    Formato: PRODUTO-COR-TAMANHO-XXX
     """
     product_part = generate_product_part(variation.product.name)
     color_part = _generate_color_part(variation.color.name)
     size_part = generate_size_part(variation.size.name)
+    suffix = generate_random_suffix()
 
-    return f"{product_part}-{color_part}-{size_part}"
+    return f"{product_part}-{color_part}-{size_part}-{suffix}"

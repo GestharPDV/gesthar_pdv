@@ -16,9 +16,23 @@
   {% if messages %}
     <div class="mb-3">
       {% for message in messages %}
-        <div class="alert alert-success" role="alert">{{ message }}</div>
+        <div class="alert alert-success alert-dismissible fade show auto-dismiss" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+        </div>
       {% endfor %}
     </div>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const alerts = document.querySelectorAll('.auto-dismiss');
+        alerts.forEach(function(alert) {
+          setTimeout(function() {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+          }, 4000);
+        });
+      });
+    </script>
   {% endif %}
 
   <div class="row g-4">

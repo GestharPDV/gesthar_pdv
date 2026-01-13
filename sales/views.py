@@ -3,6 +3,10 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import ListView, DetailView
+from django.db.models import Q
+from django.http import JsonResponse
 
 from product.models import ProductVariation
 from .models import Sale, SaleItem, CashRegister, SalePayment
@@ -91,6 +95,7 @@ def pdv_view(request):
     sale, created = Sale.objects.get_or_create(
         status=Sale.Status.DRAFT,
         user=request.user,
+        cash_register_session=cash_register_session,  # <--- ADICIONE ESTA LINHA NO FILTRO
         defaults={
             "status": Sale.Status.DRAFT,
             "user": request.user,
@@ -271,3 +276,76 @@ def identify_customer_view(request):
             messages.error(request, error)
 
     return redirect("sales:pdv")
+
+class SaleListView(LoginRequiredMixin, ListView):
+    """Lista o histórico de vendas concluídas."""
+    model = Sale
+    template_name = 'sales/sale_list.html'
+    context_object_name = 'sales'
+    paginate_by = 20
+    ordering = ['-created_at']
+
+    def get_queryset(self):
+        # Filtra apenas vendas concluídas (exclui rascunhos e canceladas se desejar)
+        queryset = super().get_queryset().filter(status=Sale.Status.COMPLETED)
+        
+        query = self.request.GET.get('query')
+        if query:
+            # Permite buscar por ID da venda ou Nome do Cliente
+            queryset = queryset.filter(
+                Q(id__icontains=query) |
+                Q(customer__name__icontains=query)
+            )
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['query'] = self.request.GET.get('query', '')
+        return context
+
+
+class SaleDetailView(LoginRequiredMixin, DetailView):
+    """Exibe os detalhes completos de uma venda específica."""
+    model = Sale
+    template_name = 'sales/sale_detail.html'
+    context_object_name = 'sale'
+
+
+@login_required
+def search_products_api(request):
+    """Retorna lista de produtos para o autocomplete do PDV em JSON"""
+    query = request.GET.get('term', '')
+    results = []
+
+    if len(query) > 2:
+        # Adicionamos 'color' e 'size' no select_related para otimizar
+        variations = ProductVariation.active.select_related('product', 'color', 'size').filter(
+            Q(product__name__icontains=query) |
+            Q(sku__icontains=query)
+        )[:10]
+
+        for v in variations:
+            full_name = v.product.name
+            
+            # Monta os detalhes da variação (Cor e Tamanho)
+            details = []
+            
+            # Verifica se a cor é relevante (diferente de N/A)
+            if v.color and v.color.name.upper() != "N/A":
+                details.append(v.color.name)
+                
+            # Verifica se o tamanho é relevante
+            if v.size and v.size.name.upper() != "N/A":
+                details.append(v.size.name)
+            
+            # Se tiver detalhes, adiciona ao nome (Ex: "Sutiã - Vermelho M")
+            if details:
+                full_name += f" - {' '.join(details)}"
+            
+            results.append({
+                'label': full_name,
+                'value': v.sku,
+                'price': float(v.product.selling_price)
+            })
+
+    return JsonResponse(results, safe=False)
