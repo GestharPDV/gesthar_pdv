@@ -9,6 +9,7 @@ urlpatterns = [
     path('detail/<int:pk>/', views.product_detail_view, name='product-detail'),
     path('create/', views.ProductCreateView.as_view(), name='product-create'),
     path('update/<int:pk>/', views.ProductUpdateView.as_view(), name='product-update'),
+    path('delete/<int:pk>/', views.product_delete_view, name='product-delete'),
     # Category URLs
     path('category/create', views.category_create_view, name='category-create'),
     # Supplier URLs
