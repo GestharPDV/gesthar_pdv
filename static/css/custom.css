@@ -235,3 +235,11 @@ a[aria-expanded="false"] .chev {
   padding-bottom: 6px;
   border-bottom: 1px solid #eee;
 }
+
+/* Compatibilidade: algumas mensagens usam a tag 'error' do Django
+   Mapeia visualmente para o estilo de alerta 'danger' (fundo vermelho) */
+.alert-error {
+  background-color: #f8d7da !important;
+  color: #842029 !important;
+  border-color: #f5c2c7 !important;
+}
