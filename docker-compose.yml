@@ -1,13 +1,17 @@
 version: '3.8'
 
 services:
-  # Serviço da Aplicação Django
   web:
-    build: .
+    image: frjunioalves/gesthar_pdv:latest
     command: python manage.py runserver 0.0.0.0:8000
-    volumes:
-      - .:/app  # Espelha seu código local para dentro do container (hot-reload)
+    pull_policy: always1
     ports:
       - "8000:8000"
-    env_file:
-      - .env
+    environment:
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - GIT_TOKEN=${GIT_TOKEN}
+      - DEBUG=${DEBUG}

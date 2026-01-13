@@ -24,4 +24,7 @@ urlpatterns = [
     # Ações da Venda (POST only)
     path("complete/<int:sale_id>/", views.complete_sale_view, name="complete-sale"),
     # path('cancel/<int:sale_id>/', views.cancel_sale_view, name='cancel-sale'), # Futuro
+    path('list/', views.SaleListView.as_view(), name='sale-list'),
+    path('detail/<int:pk>/', views.SaleDetailView.as_view(), name='sale-detail'),
+    path('api/search-products/', views.search_products_api, name='api-search-products'),
 ]

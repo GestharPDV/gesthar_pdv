@@ -1,0 +1,55 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="pr-20 pl-20">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="titulo">HISTÓRICO DE VENDAS</h1>
+  </div>
+
+  <form method="GET" class="mb-4 d-flex justify-content-end">
+    <div class="position-relative w-100" style="max-width:400px;">
+      <input type="text" name="query" value="{{ query }}" class="form-control rounded-pill bg-transparent pe-4" placeholder="Buscar por ID ou Cliente..." style="color: var(--cor-fonte-cinza) !important;">
+      <button type="submit" class="position-absolute end-0 top-50 translate-middle-y border-0 bg-transparent p-0 pe-3">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M11 18.5a7.5 7.5 0 100-15 7.5 7.5 0 000 15z" /></svg>
+      </button>
+    </div>
+  </form>
+
+  <div class="rounded-4 shadow-sm border border-light overflow-hidden">
+    <table class="table table-bordered align-middle mb-0 text-center">
+      <thead>
+        <tr class="cabecalho text-uppercase text-secondary">
+          <th>Visualizar</th>
+          <th>ID Venda</th>
+          <th>Data</th>
+          <th>Cliente</th>
+          <th>Vendedor</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for sale in sales %}
+        <tr>
+          <td>
+            <a href="{% url 'sales:sale-detail' sale.pk %}" class="text-secondary" title="Ver Detalhes">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </a>
+          </td>
+          <td>#{{ sale.id|stringformat:"04d" }}</td>
+          <td>{{ sale.created_at|date:"d/m/Y H:i" }}</td>
+          <td>{{ sale.customer.name|default:"- Consumidor Final -" }}</td>
+          <td>{{ sale.user.get_full_name|default:sale.user.username }}</td>
+          <td class="fw-bold text-success">R$ {{ sale.net_amount|floatformat:2 }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center py-4 text-muted">Nenhuma venda encontrada.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  
+  </div>
+{% endblock %}
