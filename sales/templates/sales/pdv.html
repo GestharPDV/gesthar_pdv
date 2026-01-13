@@ -133,16 +133,20 @@
                         <div class="flex-grow-1">
                             <label class="fs-texto fw-semibold d-block mb-1" style="color: var(--cor-fonte-preta);">CÓDIGO DE BARRAS / SKU / NOME PRODUTO</label>
                             <div class="position-relative">
-                                <span class="material-symbols-outlined position-absolute" style="left:10px; top:50%; transform:translateY(-50%); color: var(--cor-fonte-cinza);">barcode_scanner</span>
-                                            <input type="text" 
-                                                name="{{ form.sku_or_barcode.name }}" 
-                                                class="form-control rounded-pill bg-transparent ps-5 pe-4" 
-                                                style="color: var(--cor-fonte-cinza) !important;"
-                                                placeholder="Pesquisar produto ou bipar código..." 
-                                                autofocus
-                                                autocomplete="off"
-                                                id="search-input">
-                            </div>
+                            <span class="material-symbols-outlined position-absolute" style="left:10px; top:50%; transform:translateY(-50%); color: var(--cor-fonte-cinza);">barcode_scanner</span>
+                            
+                            <input type="text" 
+                                name="{{ form.sku_or_barcode.name }}" 
+                                class="form-control rounded-pill bg-transparent ps-5 pe-4" 
+                                style="color: var(--cor-fonte-cinza) !important;"
+                                placeholder="Pesquisar produto ou bipar código..." 
+                                autofocus
+                                autocomplete="off"
+                                id="search-input">
+                            
+                            <div id="search-results" class="position-absolute w-100 bg-white shadow-lg rounded-3 mt-1 overflow-hidden" style="z-index: 1000; display: none; border: 1px solid var(--border-color);">
+                                </div>
+                        </div>
                         </div>
 
                         <div>
@@ -363,6 +367,85 @@
                 bsAlert.close();
             });
         }, 3000); // 3000ms = 3 segundos
+    });
+
+    // Busca de Produtos via API
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('search-input');
+        const resultsContainer = document.getElementById('search-results');
+        let timeoutId;
+
+        // Função para fechar a lista
+        function closeResults() {
+            resultsContainer.style.display = 'none';
+            resultsContainer.innerHTML = '';
+        }
+
+        // Evento de digitação
+        searchInput.addEventListener('input', function() {
+            const query = this.value;
+            
+            clearTimeout(timeoutId); // Debounce para não chamar a API a cada letra
+            
+            if (query.length < 3) {
+                closeResults();
+                return;
+            }
+
+            timeoutId = setTimeout(() => {
+                fetch(`{% url 'sales:api-search-products' %}?term=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        resultsContainer.innerHTML = '';
+                        
+                        if (data.length > 0) {
+                            resultsContainer.style.display = 'block';
+                            const ul = document.createElement('ul');
+                            ul.className = 'list-group list-group-flush'; // Classes Bootstrap
+                            
+                            data.forEach(item => {
+                                const li = document.createElement('li');
+                                li.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center cursor-pointer';
+                                li.style.cursor = 'pointer';
+                                li.innerHTML = `
+                                    <div>
+                                        <div class="fw-semibold text-dark">${item.label}</div>
+                                        <small class="text-muted">SKU: ${item.value}</small>
+                                    </div>
+                                    <span class="fw-bold text-success">R$ ${item.price.toFixed(2)}</span>
+                                `;
+                                
+                                // Ao clicar no item
+                                li.addEventListener('click', function() {
+                                    searchInput.value = item.value; // Preenche com o SKU
+                                    closeResults();
+                                    
+                                    // Opcional: Focar na quantidade ou submeter
+                                    // document.querySelector('input[name="quantity"]').focus(); 
+                                    // ou 
+                                    // document.getElementById('add-item-form').submit();
+                                });
+                                
+                                ul.appendChild(li);
+                            });
+                            
+                            resultsContainer.appendChild(ul);
+                        } else {
+                            closeResults();
+                        }
+                    })
+                    .catch(error => console.error('Erro na busca:', error));
+            }, 300); // Espera 300ms após parar de digitar
+        });
+
+        // Fechar ao clicar fora
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !resultsContainer.contains(e.target)) {
+                closeResults();
+            }
+        });
+        
+        // Navegação com teclado (Setas) pode ser adicionada aqui se desejar
     });
 </script>
 
