@@ -205,10 +205,19 @@
                                 <td class="text-center fw-semibold" style="color: var(--cor-fonte-rosa);">R$ {{ item.unit_price|floatformat:2 }}</td>
                                 
                                 <td class="text-center">
-                                    <input class="form-control form-control-sm text-center input-focus d-inline-block" 
-                                           style="width:80px;" 
-                                           placeholder="R$ 0,00"
-                                           disabled title="Funcionalidade em desenvolvimento">
+                                    <div class="position-relative d-inline-block" style="width:90px;">
+                                        <span class="position-absolute" style="left:8px; top:50%; transform:translateY(-50%); color: var(--cor-fonte-cinza); font-size: 0.75rem;">R$</span>
+                                        <input type="number" 
+                                               class="form-control form-control-sm text-center input-focus" 
+                                               style="width:90px; padding-left: 28px;" 
+                                               placeholder="0,00"
+                                               step="0.01"
+                                               min="0"
+                                               data-item-id="{{ item.pk }}"
+                                               data-unit-price="{{ item.unit_price }}"
+                                               data-quantity="{{ item.quantity }}"
+                                               onchange="updateItemDiscount(this)">
+                                    </div>
                                 </td>
                                 
                                 <td class="text-center fw-semibold" style="color: var(--cor-fonte-rosa);">R$ {{ item.total_price|floatformat:2 }}</td>
@@ -253,21 +262,30 @@
                         </div>
                         <div class="d-flex justify-content-between">
                             <span style="color: var(--cor-fonte-cinza);">Descontos:</span>
-                            <span class="fw-semibold" style="color: var(--cor-botao-verde);">- R$ 0,00</span>
+                            <span class="fw-semibold" style="color: var(--cor-botao-verde);">- R$ {{ sale.discount_amount|default:0|floatformat:2 }}</span>
                         </div>
                     </div>
 
                     <div class="p-2 rounded border border-separator">
                         <label class="small fw-bold" style="font-size: 0.7rem; color: var(--cor-fonte-preta);">APLICAR DESCONTO NO TOTAL</label>
-                        <div class="d-flex gap-2 mt-1 align-items-center">
-                            <div class="position-relative flex-grow-1">
-                                <span class="position-absolute" style="left:12px; top:50%; transform:translateY(-50%); color: var(--cor-fonte-cinza); font-size: 0.8rem;">R$</span>
-                                <input class="form-control form-control-sm ps-5 input-focus rounded-pill bg-transparent" placeholder="0,00" style="color: var(--cor-fonte-cinza) !important;">
+                        <form action="{% url 'sales:apply-discount' %}" method="POST" id="discount-form">
+                            {% csrf_token %}
+                            <div class="d-flex gap-2 mt-1 align-items-center">
+                                <div class="position-relative flex-grow-1">
+                                    <span class="position-absolute" style="left:12px; top:50%; transform:translateY(-50%); color: var(--cor-fonte-cinza); font-size: 0.8rem;">R$</span>
+                                    <input type="number" 
+                                           name="discount_amount" 
+                                           class="form-control form-control-sm input-focus rounded-pill bg-transparent" 
+                                           placeholder="0,00" 
+                                           step="0.01"
+                                           min="0"
+                                           style="color: var(--cor-fonte-cinza) !important; padding-left: 32px;">
+                                </div>
+                                <button type="submit" class="btn btn-sm botao-verde border shadow-sm fw-bold">
+                                    <span class="material-symbols-outlined fs-6">check</span>
+                                </button>
                             </div>
-                            <button class="btn btn-sm botao-verde border shadow-sm fw-bold">
-                                <span class="material-symbols-outlined fs-6">check</span>
-                            </button>
-                        </div>
+                        </form>
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center p-2 rounded border border-separator">
@@ -303,11 +321,11 @@
                                     <div class="d-flex gap-2">
                                         <div style="width: 40%;">{{ payment_form.method }}</div>
                                         <div class="position-relative flex-grow-1">
-                                            <span class="position-absolute" style="left:10px; top:50%; transform:translateY(-50%); color: var(--cor-fonte-cinza); font-size: 0.8rem;">R$</span>
+                                            <span class="position-absolute" style="left:10px; top:50%; transform:translateY(-50%); color: var(--cor-fonte-cinza); font-size: 0.8rem; z-index: 10;">R$</span>
                                             {{ payment_form.amount }}
                                         </div>
-                                        <button type="submit" class="btn btn-sm botao-verde border fw-bold hover-shadow">
-                                            <span class="material-symbols-outlined fs-5">add</span>
+                                        <button type="submit" class="btn btn-sm botao-verde border fw-bold hover-shadow" title="Confirmar Pagamento">
+                                            <span class="material-symbols-outlined fs-5">check_circle</span>
                                         </button>
                                     </div>
                                 </form>
@@ -379,6 +397,57 @@
             });
         }, 3000); // 3000ms = 3 segundos
     });
+
+    // Função para atualizar desconto individual do item
+    function updateItemDiscount(input) {
+        const itemId = input.dataset.itemId;
+        const discountValue = parseFloat(input.value) || 0;
+        const unitPrice = parseFloat(input.dataset.unitPrice);
+        const quantity = parseFloat(input.dataset.quantity);
+        
+        // Valida se o desconto não excede o valor total do item
+        const itemTotal = unitPrice * quantity;
+        if (discountValue > itemTotal) {
+            alert('O desconto não pode ser maior que o valor total do item!');
+            input.value = '';
+            return;
+        }
+        
+        // Aqui você pode fazer uma requisição AJAX para atualizar no backend
+        // Por enquanto, apenas atualiza visualmente
+        const totalCell = input.closest('tr').querySelector('td:nth-child(5)');
+        const newTotal = itemTotal - discountValue;
+        totalCell.textContent = 'R$ ' + newTotal.toFixed(2);
+        
+        // Recalcula o total da venda
+        recalculateSaleTotal();
+    }
+    
+    // Função para recalcular o total da venda
+    function recalculateSaleTotal() {
+        let subtotal = 0;
+        let totalDiscount = 0;
+        
+        // Soma todos os totais dos itens
+        document.querySelectorAll('.product-list tbody tr').forEach(row => {
+            const totalText = row.querySelector('td:nth-child(5)')?.textContent;
+            if (totalText && totalText.includes('R$')) {
+                const value = parseFloat(totalText.replace('R$', '').replace(',', '.').trim());
+                if (!isNaN(value)) {
+                    subtotal += value;
+                }
+            }
+            
+            // Soma os descontos individuais
+            const discountInput = row.querySelector('input[data-item-id]');
+            if (discountInput && discountInput.value) {
+                totalDiscount += parseFloat(discountInput.value) || 0;
+            }
+        });
+        
+        // Atualiza o subtotal exibido (já considera descontos individuais aplicados)
+        // Não precisa subtrair novamente pois já está calculado no totalCell
+    }
 
     // Busca de Produtos via API
     document.addEventListener('DOMContentLoaded', function() {

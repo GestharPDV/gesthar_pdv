@@ -349,3 +349,37 @@ def search_products_api(request):
             })
 
     return JsonResponse(results, safe=False)
+
+
+@require_POST
+@login_required
+def apply_discount_view(request):
+    """Aplica desconto no total da venda"""
+    sale = Sale.objects.filter(status=Sale.Status.DRAFT, user=request.user).first()
+    if not sale:
+        messages.error(request, "Nenhuma venda em andamento.")
+        return redirect("sales:pdv")
+    
+    discount_str = request.POST.get('discount_amount', '0')
+    
+    try:
+        discount = float(discount_str) if discount_str else 0
+        
+        if discount < 0:
+            messages.error(request, "O desconto não pode ser negativo.")
+            return redirect("sales:pdv")
+        
+        if discount > float(sale.gross_amount):
+            messages.error(request, "O desconto não pode ser maior que o valor total da venda.")
+            return redirect("sales:pdv")
+        
+        sale.discount_amount = discount
+        sale.save(update_fields=['discount_amount'])
+        sale.calculate_totals()
+        
+        messages.success(request, f"Desconto de R$ {discount:.2f} aplicado com sucesso!")
+        
+    except (ValueError, TypeError):
+        messages.error(request, "Valor de desconto inválido.")
+    
+    return redirect("sales:pdv")

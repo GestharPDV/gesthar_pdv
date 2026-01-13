@@ -19,6 +19,7 @@ urlpatterns = [
         name="remove-payment",
     ),
     path("remove-item/<int:item_id>/", views.remove_item_view, name="remove-item"),
+    path("apply-discount/", views.apply_discount_view, name="apply-discount"),
     # Identificar Cliente na Venda
     path("identify-customer/", views.identify_customer_view, name="identify-customer"),
     # Ações da Venda (POST only)

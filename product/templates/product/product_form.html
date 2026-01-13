@@ -145,8 +145,10 @@
 
         <div id="variation-form-list">
           {% for form in variation_formset.forms %}
-          <div class="border rounded p-3 mb-3 variation-form">
+          <div class="border rounded p-3 mb-3 variation-form position-relative">
             {{ form.id }}
+            <button type="button" class="btn-close position-absolute remove-variation-btn remove-form-btn" aria-label="Excluir" style="top: 10px; right: 10px; z-index: 10;"></button>
+            
             {% if form.non_field_errors %}
             <div class="alert alert-danger py-2 mb-3">
               <strong>Erro nesta variação:</strong>
@@ -157,50 +159,55 @@
               </ul>
             </div>
             {% endif %}
-            <div class="row  align-items-start">
-              <div class="col-md-2">
-                <label class="form-label fw-semibold mb-2" for="{{ form.color.id_for_label }}">COR</label>
-                <div class="d-flex gap-2 align-items-center">
-                  {{ form.color }}
-                  <button type="button" class="botao-verde p-2 add-color-btn align-self-stretch" title="Adicionar Cor">+</button>
+            
+            <div class="row g-3">
+              <div class="col-md-3">
+                <label class="form-label fw-semibold mb-2 d-block" for="{{ form.color.id_for_label }}">COR</label>
+                <div class="d-flex gap-2">
+                  <div class="flex-grow-1">{{ form.color }}</div>
+                  <button type="button" class="botao-verde p-2 add-color-btn" style="height: 38px; min-width: 38px;" title="Adicionar Cor">+</button>
                 </div>
                 {% for error in form.color.errors %}
-                <div class="text-danger small">{{ error }}</div>
+                <div class="text-danger small mt-1">{{ error }}</div>
                 {% endfor %}
               </div>
-              <div class="col-md-2">
-                <label class="form-label fw-semibold mb-2 " for="{{ form.size.id_for_label }}">TAMANHO</label>
-                <div class="d-flex gap-2 align-items-center">
-                  {{ form.size }}
-                  <button type="button" class="botao-verde p-2 add-size-btn align-self-stretch" title="Adicionar Tamanho">+</button>
+              
+              <div class="col-md-3">
+                <label class="form-label fw-semibold mb-2 d-block" for="{{ form.size.id_for_label }}">TAMANHO</label>
+                <div class="d-flex gap-2">
+                  <div class="flex-grow-1">{{ form.size }}</div>
+                  <button type="button" class="botao-verde p-2 add-size-btn" style="height: 38px; min-width: 38px;" title="Adicionar Tamanho">+</button>
                 </div>
                 {% for error in form.size.errors %}
-                <div class="text-danger small">{{ error }}</div>
+                <div class="text-danger small mt-1">{{ error }}</div>
                 {% endfor %}
               </div>
-              <div class="col-md-3">
+              
+              <div class="col-md-2">
                 <label class="form-label fw-semibold mb-2 d-block" for="{{ form.stock.id_for_label }}">ESTOQUE</label>
                 {{ form.stock }}
                 {% for error in form.stock.errors %}
-                <div class="text-danger small">{{ error }}</div>
+                <div class="text-danger small mt-1">{{ error }}</div>
                 {% endfor %}
               </div>
-              <div class="col-md-3">
+              
+              <div class="col-md-2">
                 <label class="form-label fw-semibold mb-2 d-block" for="{{ form.minimum_stock.id_for_label }}">MÍNIMO</label>
                 {{ form.minimum_stock }}
                 {% for error in form.minimum_stock.errors %}
-                <div class="text-danger small">{{ error }}</div>
+                <div class="text-danger small mt-1">{{ error }}</div>
                 {% endfor %}
               </div>
-              <div class="col-md-2 pt-4 d-flex flex-column align-items-center justify-content-center gap-2 position-relative">
-                <div class="form-check align-items-center justify-content-center">
+              
+              <div class="col-md-2 d-flex align-items-end justify-content-center">
+                <div class="form-check">
                   {{ form.is_active }}
                   <label class="form-check-label" for="{{ form.is_active.id_for_label }}">ATIVO</label>
                 </div>
-                <div class="d-none">{{ form.DELETE }}</div>
-                <button type="button" class="btn-close position-absolute top-0 end-0 remove-variation-btn remove-form-btn" aria-label="Excluir" style="z-index:2;"></button>
               </div>
             </div>
+            
+            <div class="d-none">{{ form.DELETE }}</div>
           </div>
           {% endfor %}
         </div>
@@ -208,23 +215,22 @@
         <div id="empty-variation-form" class="d-none">
           <div class="border rounded p-3 mb-3 position-relative variation-form">
             {{ variation_formset.empty_form.id }}
-            <div class="d-none">{{ variation_formset.empty_form.DELETE }}</div>
-
+            <button type="button" class="btn-close position-absolute remove-variation-btn remove-form-btn" aria-label="Excluir" style="top: 10px; right: 10px; z-index: 10;"></button>
+            
             <div class="row g-3">
-
               <div class="col-md-3">
                 <label class="form-label fw-semibold mb-2 d-block">COR</label>
-                <div class="d-flex gap-2 align-items-center">
+                <div class="d-flex gap-2">
                   <div class="flex-grow-1">{{ variation_formset.empty_form.color }}</div>
-                  <button type="button" class="botao-verde p-2 add-color-btn" title="Adicionar Cor">+</button>
+                  <button type="button" class="botao-verde p-2 add-color-btn" style="height: 38px; min-width: 38px;" title="Adicionar Cor">+</button>
                 </div>
               </div>
 
               <div class="col-md-3">
                 <label class="form-label fw-semibold mb-2 d-block">TAMANHO</label>
-                <div class="d-flex gap-2 align-items-center">
+                <div class="d-flex gap-2">
                   <div class="flex-grow-1">{{ variation_formset.empty_form.size }}</div>
-                  <button type="button" class="botao-verde p-2 add-size-btn" title="Adicionar Tamanho">+</button>
+                  <button type="button" class="botao-verde p-2 add-size-btn" style="height: 38px; min-width: 38px;" title="Adicionar Tamanho">+</button>
                 </div>
               </div>
 
@@ -238,16 +244,15 @@
                 {{ variation_formset.empty_form.minimum_stock }}
               </div>
 
-              <div class="col-md-2 d-flex flex-column align-items-center justify-content-center gap-2">
-                <div class="form-check d-flex flex-column align-items-center justify-content-center">
+              <div class="col-md-2 d-flex align-items-end justify-content-center">
+                <div class="form-check">
                   {{ variation_formset.empty_form.is_active }}
-                  <label class="form-check-label">Ativo</label>
+                  <label class="form-check-label">ATIVO</label>
                 </div>
-
-                <!-- botão de remover substituído por um 'x' posicionado no topo (consistente com fornecedores) -->
               </div>
-
             </div>
+            
+            <div class="d-none">{{ variation_formset.empty_form.DELETE }}</div>
           </div>
         </div>
 

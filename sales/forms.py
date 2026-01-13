@@ -136,7 +136,8 @@ class PaymentForm(forms.ModelForm):
                 attrs={
                     "class": "form-control",
                     "step": "0.01",
-                    "placeholder": "R$ 0,00",
+                    "placeholder": "0,00",
+                    "style": "padding-left: 32px;",
                 }
             ),
         }
