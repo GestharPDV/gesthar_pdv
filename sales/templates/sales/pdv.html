@@ -114,12 +114,23 @@
     {% if messages %}
     <div class="position-absolute top-0 start-50 translate-middle-x mt-5" style="z-index: 1050; width: 50%;">
         {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm auto-dismiss" role="alert">
             {{ message }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
         {% endfor %}
     </div>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const alerts = document.querySelectorAll('.auto-dismiss');
+        alerts.forEach(function(alert) {
+          setTimeout(function() {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+          }, 4000);
+        });
+      });
+    </script>
     {% endif %}
 
     <div class="row g-3" style="height: calc(100vh - 120px);">

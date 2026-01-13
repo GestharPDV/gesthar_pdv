@@ -316,3 +316,20 @@ def size_create_view(request):
         return JsonResponse(
             {"status": "error", "message": "Ocorreu um erro inesperado."}, status=500
         )
+
+
+@login_required
+@require_POST
+def product_delete_view(request, pk):
+    """
+    View para excluir (desativar) um produto.
+    """
+    product = get_object_or_404(Product, pk=pk)
+    product_name = product.name
+    
+    # Desativa o produto ao invés de excluir permanentemente
+    product.is_active = False
+    product.save()
+    
+    messages.success(request, f'Produto "{product_name}" excluído com sucesso!')
+    return redirect("product:product-list")
