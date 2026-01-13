@@ -84,4 +84,13 @@ class UserGesthar(AbstractUser):
         verbose_name_plural = "Usuários"
 
     def __str__(self):
-        return self.get_full_name() or self.username
+        return self.get_full_name() or self.username or self.email or f"Usuário #{self.pk}"
+    
+    def get_full_name(self):
+        """Retorna o nome completo do usuário, com fallback para email"""
+        full_name = super().get_full_name().strip()
+        if full_name:
+            return full_name
+        if self.username:
+            return self.username
+        return self.email.split('@')[0] if self.email else f"Usuário #{self.pk}"

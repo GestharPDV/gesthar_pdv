@@ -255,6 +255,39 @@
 
                 <div class="d-flex flex-column gap-2 flex-grow-1">
 
+                    <!-- IDENTIFICAR CLIENTE -->
+                    <div class="p-2 rounded border border-separator">
+                        <label class="small fw-bold mb-1 d-flex align-items-center gap-1" style="font-size: 0.7rem; color: var(--cor-fonte-preta);">
+                            <span class="material-symbols-outlined" style="font-size: 1rem;">person</span>
+                            IDENTIFICAR CLIENTE
+                        </label>
+                        {% if sale.customer %}
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="fw-semibold" style="color: var(--cor-fonte-preta); font-size: 0.85rem;">{{ sale.customer.name }}</div>
+                                    <small style="color: var(--cor-fonte-cinza);">{{ sale.customer.cpf_cnpj }}</small>
+                                </div>
+                                <span class="badge bg-success">Vinculado</span>
+                            </div>
+                        {% else %}
+                            <form action="{% url 'sales:identify-customer' %}" method="POST" class="mt-1">
+                                {% csrf_token %}
+                                <div class="d-flex gap-2 align-items-center">
+                                    <div class="flex-grow-1">
+                                        <input type="text" 
+                                               name="cpf_cnpj" 
+                                               class="form-control form-control-sm input-focus rounded-pill bg-transparent" 
+                                               placeholder="CPF ou CNPJ..."
+                                               style="color: var(--cor-fonte-cinza) !important;">
+                                    </div>
+                                    <button type="submit" class="btn btn-sm botao-verde border shadow-sm fw-bold" title="Vincular Cliente">
+                                        <span class="material-symbols-outlined fs-6">person_add</span>
+                                    </button>
+                                </div>
+                            </form>
+                        {% endif %}
+                    </div>
+
                     <div class="small">
                         <div class="d-flex justify-content-between mb-1">
                             <span style="color: var(--cor-fonte-cinza);">Subtotal:</span>

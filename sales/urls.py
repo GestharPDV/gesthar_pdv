@@ -20,8 +20,6 @@ urlpatterns = [
     ),
     path("remove-item/<int:item_id>/", views.remove_item_view, name="remove-item"),
     path("apply-discount/", views.apply_discount_view, name="apply-discount"),
-    # Identificar Cliente na Venda
-    path("identify-customer/", views.identify_customer_view, name="identify-customer"),
     # Ações da Venda (POST only)
     path("complete/<int:sale_id>/", views.complete_sale_view, name="complete-sale"),
     # path('cancel/<int:sale_id>/', views.cancel_sale_view, name='cancel-sale'), # Futuro
