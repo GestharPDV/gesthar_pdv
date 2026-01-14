@@ -1,9 +1,15 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
-from .forms import UserGestharCreationForm, EmailAuthenticationForm
+from django.contrib import messages
+from .forms import (
+    UserGestharCreationForm,
+    EmailAuthenticationForm,
+    SuperUserCreationForm,
+    superuser_required,
+)
 
 
 def login_view(request):
@@ -50,3 +56,33 @@ def password_change_view(request):
     else:
         form = PasswordChangeForm(request.user)
     return render(request, "accounts/password_change.html", {"form": form})
+
+
+@login_required
+@user_passes_test(superuser_required)
+def register_admin_view(request):
+    """
+    View protegida para criar superusuários.
+    Apenas superusuários podem acessar esta página.
+    """
+    if request.method == "POST":
+        form = SuperUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            messages.success(
+                request,
+                f"Superusuário {user.email} criado com sucesso!",
+            )
+            return redirect("accounts:register-admin")
+    else:
+        form = SuperUserCreationForm()
+    return render(request, "accounts/register_admin.html", {"form": form})
+
+
+@login_required
+def profile_view(request):
+    """
+    View para exibir o perfil do usuário logado.
+    """
+    user = request.user
+    return render(request, "accounts/profile.html", {"user_obj": user})
