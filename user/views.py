@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.views.generic import DetailView, ListView
+from django.views.generic import DetailView, ListView, DeleteView
+from django.urls import reverse_lazy
 from django.db.models import Q
 import re  # Importação necessária para limpar a busca
 
@@ -95,29 +96,40 @@ def user_create_view(request):
     return render(request, "user/user_form.html", {"form": form, "action": "Cadastrar"})
 
 
+class UserDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    """
+    View para deletar usuário com confirmação.
+    """
+    model = UserGesthar
+    template_name = 'user/user_confirm_delete.html'
+    success_url = reverse_lazy('user:user-list')
+    context_object_name = 'user_to_delete'
+
+    def test_func(self):
+        return self.request.user.is_staff
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user_obj = self.get_object()
+        
+        # Verifica se é tentativa de deletar a si mesmo
+        if user_obj == self.request.user:
+            context['error_message'] = "Você não pode deletar sua própria conta."
+        
+        return context
+
+    def delete(self, request, *args, **kwargs):
+        user_obj = self.get_object()
+        
+        # Impede que o usuário delete sua própria conta
+        if user_obj == request.user:
+            messages.error(request, "Ação bloqueada: Você não pode deletar sua própria conta.")
+            return redirect("user:user-profile", pk=user_obj.pk)
+        
+        user_name = user_obj.get_full_name()
+        messages.success(request, f'Usuário "{user_name}" removido com sucesso!')
+        return super().delete(request, *args, **kwargs)
+
+
 def superuser_required(user):
     return user.is_superuser
-
-
-@login_required
-@user_passes_test(superuser_required)
-def user_delete_view(request, pk):
-    user_to_delete = get_object_or_404(UserGesthar, pk=pk)
-
-    if user_to_delete == request.user:
-        return render(
-            request,
-            "user/user_confirm_delete.html",
-            {
-                "user_to_delete": user_to_delete,
-                "error_message": "Você não pode excluir a si mesmo.",
-            },
-        )
-
-    if request.method == "POST":
-        user_to_delete.delete()
-        return redirect("user:user-list")
-
-    return render(
-        request, "user/user_confirm_delete.html", {"user_to_delete": user_to_delete}
-    )
