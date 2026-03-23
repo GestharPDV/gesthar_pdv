@@ -1,12 +1,12 @@
-{% extends 'base/base.html' %}
-{% load static %}
-
-{% block content %}
+{% extends 'base/base.html' %} {% load static %} {% block content %}
 <div class="pr-20 pl-20">
   <!-- Título -->
   <div class="mb-4 d-flex justify-content-between align-items-center">
     <h1 class="titulo mb-0">VISUALIZAR USUÁRIOS</h1>
-    <a href="{% url 'user:user-create' %}" class="botao-verde p-3 px-4 fw-bold text-uppercase text-decoration-none shadow-sm">
+    <a
+      href="{% url 'user:user-create' %}"
+      class="botao-verde p-3 px-4 fw-bold text-uppercase text-decoration-none shadow-sm"
+    >
       + Cadastrar Usuário
     </a>
   </div>
@@ -67,6 +67,37 @@
     </a>
     {% endif %}
   </form>
+
+  <!-- Mensagens -->
+  {% if messages %}
+  <div class="mb-3">
+    {% for message in messages %}
+    <div
+      class="alert alert-success alert-dismissible fade show auto-dismiss"
+      role="alert"
+    >
+      {{ message }}
+      <button
+        type="button"
+        class="btn-close"
+        data-bs-dismiss="alert"
+        aria-label="Fechar"
+      ></button>
+    </div>
+    {% endfor %}
+  </div>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const alerts = document.querySelectorAll(".auto-dismiss");
+      alerts.forEach(function (alert) {
+        setTimeout(function () {
+          const bsAlert = new bootstrap.Alert(alert);
+          bsAlert.close();
+        }, 4000);
+      });
+    });
+  </script>
+  {% endif %}
 
   <!-- Tabela -->
   <div class="rounded-4 shadow-sm border border-light overflow-hidden">
@@ -135,11 +166,8 @@
 
           <!-- Idade -->
           <td>
-            {% if user.birth_date %}
-              {{ user.birth_date|timesince|slice:":2" }}
-            {% else %}
-              -
-            {% endif %}
+            {% if user.birth_date %} {{ user.birth_date|timesince|slice:":2" }}
+            {% else %} - {% endif %}
           </td>
 
           <!-- Cargo -->
@@ -147,19 +175,14 @@
 
           <!-- Telefone Formatado -->
           <td>
-            {% if user.phone_number %}
-              {% with phone_str=user.phone_number|stringformat:"s" %}
-                {% if phone_str|length == 11 %}
-                  ({{ phone_str|slice:":2" }}) {{ phone_str|slice:"2:7" }}-{{ phone_str|slice:"7:" }}
-                {% elif phone_str|length == 10 %}
-                  ({{ phone_str|slice:":2" }}) {{ phone_str|slice:"2:6" }}-{{ phone_str|slice:"6:" }}
-                {% else %}
-                  {{ user.phone_number }}
-                {% endif %}
-              {% endwith %}
-            {% else %}
-              -
-            {% endif %}
+            {% if user.phone_number %} {% with
+            phone_str=user.phone_number|stringformat:"s" %} {% if
+            phone_str|length == 11 %} ({{ phone_str|slice:":2" }}) {{
+            phone_str|slice:"2:7" }}-{{ phone_str|slice:"7:" }} {% elif
+            phone_str|length == 10 %} ({{ phone_str|slice:":2" }}) {{
+            phone_str|slice:"2:6" }}-{{ phone_str|slice:"6:" }} {% else %} {{
+            user.phone_number }} {% endif %} {% endwith %} {% else %} - {% endif
+            %}
           </td>
 
           <!-- Admissão -->
@@ -175,16 +198,14 @@
             class="text-center py-4"
             style="color: var(--cor-fonte-cinza)"
           >
-            {% if query %}
-              Nenhum usuário encontrado para "{{ query }}".<br />
-              <a
-                href="{% url 'user:user-list' %}"
-                class="text-decoration-none fw-bold mt-2 d-inline-block"
-                style="color: var(--cor-fonte-rosa)"
-              >Limpar pesquisa</a>
-            {% else %}
-              Nenhum usuário cadastrado.
-            {% endif %}
+            {% if query %} Nenhum usuário encontrado para "{{ query }}".<br />
+            <a
+              href="{% url 'user:user-list' %}"
+              class="text-decoration-none fw-bold mt-2 d-inline-block"
+              style="color: var(--cor-fonte-rosa)"
+              >Limpar pesquisa</a
+            >
+            {% else %} Nenhum usuário cadastrado. {% endif %}
           </td>
         </tr>
         {% endfor %}

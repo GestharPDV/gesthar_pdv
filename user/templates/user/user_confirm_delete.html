@@ -1,58 +1,147 @@
-{% extends 'base/base.html' %}
-{% load static %}
-
-{% block content %}
+{% extends 'base/base.html' %} {% load static %} {% block content %}
 <div class="pr-20 pl-20">
-  
-  <div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="titulo">EXCLUIR USUÁRIO</h1>
+    <a
+      href="{% url 'user:user-profile' user_to_delete.pk %}"
+      class="botao-rosa p-2 fw-bold"
+      >Voltar</a
+    >
   </div>
 
   <div class="row justify-content-center">
-    <div class="col-md-6">
-      <div class="card border-light shadow-sm">
-        <h2 class="subtitulo bg-danger text-white">ATENÇÃO</h2>
-        
-        <div class="card-body text-center p-5">
-          <!-- Ícone de Alerta -->
-          <div class="mb-4 text-danger">
-            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-exclamation-triangle" viewBox="0 0 16 16">
-              <path d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.146.146 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.163.163 0 0 1-.054.06.116.116 0 0 1-.066.017H1.146a.115.115 0 0 1-.066-.017.163.163 0 0 1-.054-.06.176.176 0 0 1 .002-.183L7.884 2.073a.147.147 0 0 1 .054-.057zm1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566z"/>
-              <path d="M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995z"/>
+    <div class="col-lg-8">
+      <div class="card mb-4">
+        <div class="card-body">
+          <h2 class="subtitulo mb-4">Confirmar Exclusão</h2>
+
+          <div class="text-center mb-4">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="64"
+              height="64"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              style="color: var(--cor-botao-vermelho)"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
             </svg>
           </div>
 
-          <h4 class="mb-3 fw-bold" style="color: var(--cor-fonte-preta);">Confirmação de Exclusão</h4>
-          
-          <p class="fs-5 mb-4" style="color: var(--cor-fonte-cinza);">
-            Tem certeza que deseja excluir permanentemente o usuário: <br>
-            <strong class="text-danger">{{ user_to_delete.email }}</strong>?
-          </p>
+          <div class="text-center mb-4">
+            <p class="mb-2">
+              Tem certeza que deseja excluir o usuário
+              <strong>"{{ user_to_delete.get_full_name }}"</strong>?
+            </p>
+            <p class="text-danger small">
+              Esta ação não pode ser desfeita e todos os dados relacionados
+              serão permanentemente removidos.
+            </p>
+          </div>
 
-          <div class="alert alert-warning small">
-            Esta ação não poderá ser desfeita e todos os dados vinculados a este usuário podem ser perdidos.
+          <div
+            class="card mb-4"
+            style="background-color: var(--cor-fundo-linha)"
+          >
+            <div class="card-body">
+              <h3
+                class="fw-bold mb-3"
+                style="font-size: var(--fonte-subtitulo)"
+              >
+                Dados do Usuário:
+              </h3>
+              <div class="row">
+                <div class="col-md-6 mb-2">
+                  <p class="text-secondary small mb-1">Nome Completo</p>
+                  <p class="fw-bold mb-0">{{ user_to_delete.get_full_name }}</p>
+                </div>
+                <div class="col-md-6 mb-2">
+                  <p class="text-secondary small mb-1">Email</p>
+                  <p class="fw-bold mb-0">{{ user_to_delete.email }}</p>
+                </div>
+                <div class="col-md-6 mb-2">
+                  <p class="text-secondary small mb-1">CPF</p>
+                  <p class="fw-bold mb-0">
+                    {% if user_to_delete.cpf and user_to_delete.cpf|length == 11
+                    %} {{ user_to_delete.cpf|slice:":3" }}.{{
+                    user_to_delete.cpf|slice:"3:6" }}.{{
+                    user_to_delete.cpf|slice:"6:9" }}-{{
+                    user_to_delete.cpf|slice:"9:" }} {% else %} {{
+                    user_to_delete.cpf|default:"-" }} {% endif %}
+                  </p>
+                </div>
+                <div class="col-md-6 mb-2">
+                  <p class="text-secondary small mb-1">Cargo/Função</p>
+                  <p class="fw-bold mb-0">
+                    {{ user_to_delete.role|default:"-" }}
+                  </p>
+                </div>
+                <div class="col-md-6 mb-2">
+                  <p class="text-secondary small mb-1">Status</p>
+                  <p class="fw-bold mb-0">
+                    {% if user_to_delete.is_active %}
+                    <span class="text-success">ATIVO</span>
+                    {% else %}
+                    <span class="text-danger">INATIVO</span>
+                    {% endif %}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
           {% if error_message %}
-            <div class="alert alert-danger fw-bold">
-                <i class="bi bi-slash-circle me-2"></i>{{ error_message }}
-            </div>
+          <div class="alert alert-warning mb-4">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              class="bi bi-exclamation-circle me-2"
+              viewBox="0 0 16 16"
+              style="display: inline"
+            >
+              <path
+                d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"
+              />
+              <path
+                d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"
+              />
+            </svg>
+            {{ error_message }}
+          </div>
           {% endif %}
 
-          <form method="post" class="mt-4 d-flex justify-content-center gap-3">
+          <form method="POST">
             {% csrf_token %}
-            
-            <a href="{% url 'user:user-list' %}" class="botao-amarelo p-3 fw-bold text-uppercase text-decoration-none" style="color: #555;">
-              Cancelar
-            </a>
 
-            <!-- Botão desativado se houver mensagem de erro -->
-            <button type="submit" class="botao-vermelho p-3 fw-bold text-uppercase" 
-                {% if error_message %}disabled style="opacity: 0.5; cursor: not-allowed;"{% endif %}>
-              Confirmar Exclusão
-            </button>
+            <div class="d-flex justify-content-center gap-3">
+              <a
+                href="{% url 'user:user-profile' user_to_delete.pk %}"
+                class="botao-rosa p-2 px-4 fw-bold"
+              >
+                Cancelar
+              </a>
+              <button
+                type="submit"
+                class="botao-vermelho p-2 px-4 fw-bold"
+                {%
+                if
+                error_message
+                %}disabled{%
+                endif
+                %}
+              >
+                Confirmar Exclusão
+              </button>
+            </div>
           </form>
-
         </div>
       </div>
     </div>
