@@ -175,14 +175,19 @@
 
           <!-- Telefone Formatado -->
           <td>
-            {% if user.phone_number %} {% with
-            phone_str=user.phone_number|stringformat:"s" %} {% if
-            phone_str|length == 11 %} ({{ phone_str|slice:":2" }}) {{
-            phone_str|slice:"2:7" }}-{{ phone_str|slice:"7:" }} {% elif
-            phone_str|length == 10 %} ({{ phone_str|slice:":2" }}) {{
-            phone_str|slice:"2:6" }}-{{ phone_str|slice:"6:" }} {% else %} {{
-            user.phone_number }} {% endif %} {% endwith %} {% else %} - {% endif
-            %}
+            {% if user.phone_number %} 
+              {% with phone_str=user.phone_number|stringformat:"s" %} 
+                {% if phone_str|length == 11 %} 
+                  ({{ phone_str|slice:":2" }}) {{phone_str|slice:"2:7" }}-{{ phone_str|slice:"7:" }} 
+                {% elif phone_str|length == 10 %} 
+                  ({{ phone_str|slice:":2" }}) {{phone_str|slice:"2:6" }}-{{ phone_str|slice:"6:" }} 
+                {% else %} 
+                  {{user.phone_number }} 
+                {% endif %} 
+              {% endwith %} 
+            {% else %} 
+              - 
+            {% endif%}
           </td>
 
           <!-- Admissão -->
