@@ -5,263 +5,206 @@
   {% if messages %}
   <div class="mb-3">
     {% for message in messages %}
-    <div
-      class="alert alert-{{ message.tags }} alert-dismissible fade show"
-      role="alert"
-    >
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
       {{ message }}
-      <button
-        type="button"
-        class="btn-close"
-        data-bs-dismiss="alert"
-        aria-label="Close"
-      ></button>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     {% endfor %}
   </div>
-  {% endif %} {% if form.non_field_errors %}
-  <div
-    class="alert alert-danger alert-dismissible fade show mt-3 shadow-sm"
-    role="alert"
-  >
+  {% endif %} 
+  
+  {% if form.non_field_errors %}
+  <div class="alert alert-danger alert-dismissible fade show mt-3 shadow-sm" role="alert">
     <strong>Ocorreram erros ao salvar:</strong>
     <ul class="mb-0 mt-2">
       {% for error in form.non_field_errors %}
       <li>{{ error }}</li>
       {% endfor %}
     </ul>
-    <button
-      type="button"
-      class="btn-close"
-      data-bs-dismiss="alert"
-      aria-label="Close"
-    ></button>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
   </div>
   {% endif %}
 
-  <form method="post" novalidate>
+  <form method="post" id="userForm" novalidate>
     {% csrf_token %}
 
-    <!-- Seção: Dados Pessoais -->
     <div class="border border-separator rounded mb-4">
       <h2 class="subtitulo mb-0">DADOS PESSOAIS</h2>
       <div class="p-3">
         <div class="row">
           <div class="col-md-6 mb-3">
-            <label for="{{ form.first_name.id_for_label }}" class="form-label"
-              >Nome <span class="text-danger">*</span></label
-            >
-            {{ form.first_name }} {% if form.first_name.errors %}
-            <div class="text-danger small">{{ form.first_name.errors.0 }}</div>
-            {% endif %}
+            <label for="id_first_name" class="form-label">Nome <span class="text-danger">*</span></label>
+            <input type="text" name="first_name" id="id_first_name" class="form-control" 
+                   value="{% if request.POST %}{{ request.POST.first_name }}{% else %}{{ form.instance.first_name|default_if_none:'' }}{% endif %}" 
+                   placeholder="Nome" required>
+            {% if form.first_name.errors %}<div class="text-danger small">{{ form.first_name.errors.0 }}</div>{% endif %}
           </div>
+          
           <div class="col-md-6 mb-3">
-            <label for="{{ form.last_name.id_for_label }}" class="form-label"
-              >Sobrenome <span class="text-danger">*</span></label
-            >
-            {{ form.last_name }} {% if form.last_name.errors %}
-            <div class="text-danger small">{{ form.last_name.errors.0 }}</div>
-            {% endif %}
+            <label for="id_last_name" class="form-label">Sobrenome <span class="text-danger">*</span></label>
+            <input type="text" name="last_name" id="id_last_name" class="form-control" 
+                   value="{% if request.POST %}{{ request.POST.last_name }}{% else %}{{ form.instance.last_name|default_if_none:'' }}{% endif %}" 
+                   placeholder="Sobrenome" required>
+            {% if form.last_name.errors %}<div class="text-danger small">{{ form.last_name.errors.0 }}</div>{% endif %}
           </div>
         </div>
 
         <div class="row">
           <div class="col-md-6 mb-3">
-            <label for="{{ form.cpf.id_for_label }}" class="form-label"
-              >CPF <span class="text-danger">*</span></label
-            >
-            {{ form.cpf }} {% if form.cpf.errors %}
-            <div class="text-danger small">{{ form.cpf.errors.0 }}</div>
-            {% endif %}
+            <label for="id_cpf" class="form-label">CPF <span class="text-danger">*</span></label>
+            <input type="text" name="cpf" id="id_cpf" class="form-control" 
+                   value="{% if request.POST %}{{ request.POST.cpf }}{% else %}{{ form.instance.cpf|default_if_none:'' }}{% endif %}" 
+                   placeholder="000.000.000-00" maxlength="14" required>
+            {% if form.cpf.errors %}<div class="text-danger small">{{ form.cpf.errors.0 }}</div>{% endif %}
           </div>
+          
           <div class="col-md-6 mb-3">
-            <label for="{{ form.birth_date.id_for_label }}" class="form-label"
-              >Data de Nascimento</label
-            >
-            {{ form.birth_date }} {% if form.birth_date.errors %}
-            <div class="text-danger small">{{ form.birth_date.errors.0 }}</div>
-            {% endif %}
+            <label for="id_birth_date" class="form-label">Data de Nascimento <span class="text-danger">*</span></label>
+            <input type="date" name="birth_date" id="id_birth_date" class="form-control" 
+                   value="{% if request.POST %}{{ request.POST.birth_date }}{% else %}{{ form.instance.birth_date|date:'Y-m-d'|default_if_none:'' }}{% endif %}" 
+                   required>
+            {% if form.birth_date.errors %}<div class="text-danger small">{{ form.birth_date.errors.0 }}</div>{% endif %}
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Seção: Contato -->
     <div class="border border-separator rounded mb-4">
       <h2 class="subtitulo mb-0">CONTATO</h2>
       <div class="p-3">
         <div class="row">
           <div class="col-md-6 mb-3">
-            <label for="{{ form.email.id_for_label }}" class="form-label"
-              >Email <span class="text-danger">*</span></label
-            >
-            {{ form.email }} {% if form.email.errors %}
-            <div class="text-danger small">{{ form.email.errors.0 }}</div>
-            {% endif %}
+            <label for="id_email" class="form-label">Email <span class="text-danger">*</span></label>
+            <input type="email" name="email" id="id_email" class="form-control" 
+                   value="{% if request.POST %}{{ request.POST.email }}{% else %}{{ form.instance.email|default_if_none:'' }}{% endif %}" 
+                   placeholder="email@exemplo.com" required>
+            {% if form.email.errors %}<div class="text-danger small">{{ form.email.errors.0 }}</div>{% endif %}
           </div>
+          
           <div class="col-md-6 mb-3">
-            <label for="{{ form.phone_number.id_for_label }}" class="form-label"
-              >Telefone</label
-            >
-            {{ form.phone_number }} {% if form.phone_number.errors %}
-            <div class="text-danger small">
-              {{ form.phone_number.errors.0 }}
-            </div>
-            {% endif %}
+            <label for="id_phone_number" class="form-label">Telefone <span class="text-danger">*</span></label>
+            <input type="text" name="phone_number" id="id_phone_number" class="form-control" 
+                   value="{% if request.POST %}{{ request.POST.phone_number }}{% else %}{{ form.instance.phone_number|default_if_none:'' }}{% endif %}" 
+                   placeholder="(00) 00000-0000" maxlength="15" required>
+            {% if form.phone_number.errors %}<div class="text-danger small">{{ form.phone_number.errors.0 }}</div>{% endif %}
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Seção: Dados Profissionais -->
     <div class="border border-separator rounded mb-4">
       <h2 class="subtitulo mb-0">DADOS PROFISSIONAIS</h2>
       <div class="p-3">
         <div class="row">
           <div class="col-md-6 mb-3">
-            <label for="{{ form.role.id_for_label }}" class="form-label"
-              >Cargo/Função <span class="text-danger">*</span></label
-            >
-            {{ form.role }} {% if form.role.errors %}
-            <div class="text-danger small">{{ form.role.errors.0 }}</div>
-            {% endif %}
+            <label for="id_role" class="form-label">Cargo/Função <span class="text-danger">*</span></label>
+            <input type="text" name="role" id="id_role" class="form-control" 
+                   value="{% if request.POST %}{{ request.POST.role }}{% else %}{{ form.instance.role|default_if_none:'' }}{% endif %}" 
+                   placeholder="Ex: Vendedor, Gerente" required>
+            {% if form.role.errors %}<div class="text-danger small">{{ form.role.errors.0 }}</div>{% endif %}
           </div>
+          
           <div class="col-md-6 mb-3">
-            <label for="{{ form.hire_date.id_for_label }}" class="form-label"
-              >Data de Admissão <span class="text-danger">*</span></label
-            >
-            {{ form.hire_date }} {% if form.hire_date.errors %}
-            <div class="text-danger small">{{ form.hire_date.errors.0 }}</div>
-            {% endif %}
+            <label for="id_hire_date" class="form-label">Data de Admissão <span class="text-danger">*</span></label>
+            <input type="date" name="hire_date" id="id_hire_date" class="form-control" 
+                   value="{% if request.POST %}{{ request.POST.hire_date }}{% else %}{{ form.instance.hire_date|date:'Y-m-d'|default_if_none:'' }}{% endif %}" 
+                   required>
+            {% if form.hire_date.errors %}<div class="text-danger small">{{ form.hire_date.errors.0 }}</div>{% endif %}
           </div>
         </div>
 
-        {% if 'exit_date' in form.fields %}
+        {% if form.instance.pk %}
         <div class="row">
           <div class="col-md-6 mb-3">
-            <label for="{{ form.exit_date.id_for_label }}" class="form-label"
-              >Data de Saída</label
-            >
-            {{ form.exit_date }} {% if form.exit_date.errors %}
-            <div class="text-danger small">{{ form.exit_date.errors.0 }}</div>
-            {% endif %}
+            <label for="id_exit_date" class="form-label">Data de Saída</label>
+            <input type="date" name="exit_date" id="id_exit_date" class="form-control" 
+                   value="{% if request.POST %}{{ request.POST.exit_date }}{% else %}{{ form.instance.exit_date|date:'Y-m-d'|default_if_none:'' }}{% endif %}">
+            {% if form.exit_date.errors %}<div class="text-danger small">{{ form.exit_date.errors.0 }}</div>{% endif %}
           </div>
         </div>
         {% endif %}
       </div>
     </div>
 
-    <!-- Seção: Informações Adicionais -->
     <div class="border border-separator rounded mb-4">
       <h2 class="subtitulo mb-0">INFORMAÇÕES ADICIONAIS</h2>
       <div class="p-3">
         <div class="mb-3">
-          <label for="{{ form.notes.id_for_label }}" class="form-label"
-            >Observações</label
-          >
-          {{ form.notes }} {% if form.notes.errors %}
-          <div class="text-danger small">{{ form.notes.errors.0 }}</div>
-          {% endif %}
+          <label for="id_notes" class="form-label">Observações</label>
+          <textarea name="notes" id="id_notes" class="form-control" rows="3" placeholder="Observações adicionais">{% if request.POST %}{{ request.POST.notes }}{% else %}{{ form.instance.notes|default_if_none:'' }}{% endif %}</textarea>
+          {% if form.notes.errors %}<div class="text-danger small">{{ form.notes.errors.0 }}</div>{% endif %}
         </div>
 
-        {% if 'is_active' in form.fields %}
+        {% if form.instance.pk %}
         <div class="form-check">
-          {{ form.is_active }}
-          <label
-            class="form-check-label"
-            for="{{ form.is_active.id_for_label }}"
-            >Usuário Ativo</label
-          >
-          {% if form.is_active.errors %}
-          <div class="text-danger small">{{ form.is_active.errors.0 }}</div>
-          {% endif %}
+          <input type="checkbox" name="is_active" id="id_is_active" class="form-check-input" 
+                 {% if request.POST %}{% if request.POST.is_active %}checked{% endif %}{% else %}{% if form.instance.is_active %}checked{% endif %}{% endif %}>
+          <label class="form-check-label" for="id_is_active">Usuário Ativo</label>
+          {% if form.is_active.errors %}<div class="text-danger small">{{ form.is_active.errors.0 }}</div>{% endif %}
         </div>
         {% endif %}
       </div>
     </div>
 
-    <!-- Seção: Senha (apenas na criação) -->
     {% if not form.instance.pk %}
     <div class="border border-separator rounded mb-4">
       <h2 class="subtitulo mb-0">SENHA DE ACESSO</h2>
       <div class="p-3">
         <div class="row">
           <div class="col-md-6 mb-3">
-            <label for="{{ form.password1.id_for_label }}" class="form-label"
-              >Senha <span class="text-danger">*</span></label
-            >
-            {{ form.password1 }} {% if form.password1.errors %}
-            <div class="text-danger small">{{ form.password1.errors.0 }}</div>
-            {% endif %}
+            <label for="id_password1" class="form-label">Senha <span class="text-danger">*</span></label>
+            <input type="password" name="password1" id="id_password1" class="form-control" placeholder="Digite a senha" required>
+            {% if form.password1.errors %}<div class="text-danger small">{{ form.password1.errors.0 }}</div>{% endif %}
           </div>
           <div class="col-md-6 mb-3">
-            <label for="{{ form.password2.id_for_label }}" class="form-label"
-              >Confirmar Senha <span class="text-danger">*</span></label
-            >
-            {{ form.password2 }} {% if form.password2.errors %}
-            <div class="text-danger small">{{ form.password2.errors.0 }}</div>
-            {% endif %}
+            <label for="id_password2" class="form-label">Confirmar Senha <span class="text-danger">*</span></label>
+            <input type="password" name="password2" id="id_password2" class="form-control" placeholder="Confirme a senha" required>
+            {% if form.password2.errors %}<div class="text-danger small">{{ form.password2.errors.0 }}</div>{% endif %}
           </div>
         </div>
       </div>
     </div>
     {% endif %}
 
-    <!-- Botões de Ação -->
     <div class="d-flex gap-3 mb-4">
-      <button
-        type="submit"
-        class="botao-rosa p-3 px-5 fw-bold text-uppercase shadow-sm"
-      >
+      <button type="submit" id="btnSalvar" class="botao-rosa p-3 px-5 fw-bold text-uppercase shadow-sm">
         SALVAR
       </button>
 
-      <a
-        href="{% url 'user:user-list' %}"
-        class="botao-vermelho p-3 px-5 fw-bold text-uppercase shadow-sm text-decoration-none"
-      >
+      <a href="{% url 'user:user-list' %}" class="botao-vermelho p-3 px-5 fw-bold text-uppercase shadow-sm text-decoration-none">
         CANCELAR
       </a>
     </div>
   </form>
 </div>
 
-<!-- Scripts de Máscara (Formatação enquanto digita) -->
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     // --- MÁSCARA CPF ---
-    const cpfInput = document.getElementById("{{ form.cpf.id_for_label }}");
+    const cpfInput = document.getElementById("id_cpf");
     if (cpfInput) {
       cpfInput.addEventListener("input", function (e) {
-        let value = e.target.value.replace(/\D/g, ""); // Remove tudo que não é número
-        if (value.length > 11) value = value.slice(0, 11); // Limita a 11 números
+        let value = e.target.value.replace(/\D/g, "");
+        if (value.length > 11) value = value.slice(0, 11);
 
-        // Aplica a máscara 000.000.000-00
         if (value.length > 9) {
-          value = value.replace(
-            /^(\d{3})(\d{3})(\d{3})(\d{2}).*/,
-            "$1.$2.$3-$4",
-          );
+          value = value.replace(/^(\d{3})(\d{3})(\d{3})(\d{2}).*/, "$1.$2.$3-$4");
         } else if (value.length > 6) {
           value = value.replace(/^(\d{3})(\d{3})(\d{3}).*/, "$1.$2.$3");
         } else if (value.length > 3) {
           value = value.replace(/^(\d{3})(\d{3}).*/, "$1.$2");
         }
-
         e.target.value = value;
       });
     }
 
     // --- MÁSCARA TELEFONE ---
-    const phoneInput = document.getElementById(
-      "{{ form.phone_number.id_for_label }}",
-    );
+    const phoneInput = document.getElementById("id_phone_number");
     if (phoneInput) {
       phoneInput.addEventListener("input", function (e) {
         let value = e.target.value.replace(/\D/g, "");
         if (value.length > 11) value = value.slice(0, 11);
 
-        // Aplica máscara (XX) XXXXX-XXXX
         if (value.length > 10) {
           value = value.replace(/^(\d{2})(\d{5})(\d{4}).*/, "($1) $2-$3");
         } else if (value.length > 6) {
@@ -273,6 +216,43 @@
         }
         e.target.value = value;
       });
+    }
+
+    // --- VALIDAÇÃO DO BOTÃO SALVAR ---
+    const form = document.getElementById("userForm");
+    const btnSalvar = document.getElementById("btnSalvar");
+
+    if (form && btnSalvar) {
+      const requiredInputs = form.querySelectorAll("[required]");
+
+      const checkFormValidity = () => {
+        let allFilled = true;
+
+        requiredInputs.forEach(input => {
+          if (!input.value.trim()) {
+            allFilled = false;
+          }
+        });
+
+        const isValid = allFilled && form.checkValidity();
+
+        if (!isValid) {
+          btnSalvar.disabled = true;
+          btnSalvar.style.opacity = "0.5";
+          btnSalvar.style.cursor = "not-allowed";
+        } else {
+          btnSalvar.disabled = false;
+          btnSalvar.style.opacity = "1";
+          btnSalvar.style.cursor = "pointer";
+        }
+      };
+
+      requiredInputs.forEach(input => {
+        input.addEventListener("input", checkFormValidity);
+        input.addEventListener("change", checkFormValidity);
+      });
+
+      checkFormValidity();
     }
   });
 </script>

@@ -68,12 +68,11 @@
                 <div class="col-md-6 mb-2">
                   <p class="text-secondary small mb-1">CPF</p>
                   <p class="fw-bold mb-0">
-                    {% if user_to_delete.cpf and user_to_delete.cpf|length == 11
-                    %} {{ user_to_delete.cpf|slice:":3" }}.{{
-                    user_to_delete.cpf|slice:"3:6" }}.{{
-                    user_to_delete.cpf|slice:"6:9" }}-{{
-                    user_to_delete.cpf|slice:"9:" }} {% else %} {{
-                    user_to_delete.cpf|default:"-" }} {% endif %}
+                    {% if user_to_delete.cpf and user_to_delete.cpf|length == 11 %}
+                      {{ user_to_delete.cpf|slice:":3" }}.{{ user_to_delete.cpf|slice:"3:6" }}.{{ user_to_delete.cpf|slice:"6:9" }}-{{ user_to_delete.cpf|slice:"9:" }}
+                    {% else %}
+                      {{ user_to_delete.cpf|default:"-" }}
+                    {% endif %}
                   </p>
                 </div>
                 <div class="col-md-6 mb-2">
