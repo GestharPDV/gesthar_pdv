@@ -1,9 +1,54 @@
-<!-- {% extends 'global/base.html' %}
-{% block content %}
-  <h2>Cadastro de Usuário</h2>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Cadastrar</button>
-  </form>
-{% endblock %} -->
+{% extends 'base/base.html' %} {% load static %} {% block content %}
+<div class="pr-20 pl-20">
+  <!-- Título -->
+  <div class="mb-4">
+    <h1 class="titulo mb-0">CADASTRAR USUÁRIO</h1>
+  </div>
+
+  <!-- Formulário -->
+  <div
+    class="rounded-4 shadow-sm border border-light p-4"
+    style="max-width: 600px"
+  >
+    <form method="post" class="needs-validation">
+      {% csrf_token %} {% if form.non_field_errors %}
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>Erro!</strong>
+        {% for error in form.non_field_errors %}
+        <div>{{ error }}</div>
+        {% endfor %}
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+          aria-label="Fechar"
+        ></button>
+      </div>
+      {% endif %} {% for field in form %}
+      <div class="mb-3">
+        {{ field.label_tag }} {{ field }} {% if field.errors %}
+        <div class="text-danger small mt-1">
+          {% for error in field.errors %} {{ error }} {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+
+      <div class="d-flex gap-2">
+        <button
+          type="submit"
+          class="botao-verde p-2 px-4 fw-bold text-uppercase text-decoration-none shadow-sm"
+        >
+          Cadastrar
+        </button>
+        <a
+          href="{% url 'user:user-list' %}"
+          class="botao-rosa p-2 px-4 fw-bold text-uppercase text-decoration-none shadow-sm"
+        >
+          Cancelar
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
