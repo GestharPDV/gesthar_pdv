@@ -1,21 +1,13 @@
 {% extends 'base/base.html' %} {% load static %} {% block content %}
 <div class="pr-20 pl-20">
-  <!-- Título -->
-  <div class="mb-4 d-flex justify-content-between align-items-center">
+  <div class="mb-4 text-center text-sm-start">
     <h1 class="titulo mb-0">VISUALIZAR USUÁRIOS</h1>
-    <a
-      href="{% url 'user:user-create' %}"
-      class="botao-verde p-3 px-4 fw-bold text-uppercase text-decoration-none shadow-sm"
-    >
-      + Cadastrar Usuário
-    </a>
   </div>
 
-  <!-- Barra de Pesquisa -->
   <form
     method="GET"
     action="{% url 'user:user-list' %}"
-    class="mb-3 d-flex justify-content-end align-items-center gap-2"
+    class="mb-3 d-flex justify-content-center justify-content-sm-end align-items-center gap-2"
   >
     <div class="position-relative w-100" style="max-width: 300px">
       <input
@@ -23,12 +15,11 @@
         type="text"
         name="query"
         value="{{ query }}"
-        class="form-control rounded-pill bg-transparent pe-5"
+        class="form-control rounded-pill bg-transparent pe-5 w-100"
         style="color: var(--cor-fonte-preta); border-color: #ced4da"
         placeholder="Pesquisar"
       />
 
-      <!-- Botão de Lupa (Submit) -->
       <button
         type="submit"
         aria-label="Pesquisar"
@@ -55,12 +46,11 @@
       </button>
     </div>
 
-    <!-- BOTÃO LIMPAR (Só aparece se houver busca) -->
     {% if query %}
     <a
       href="{% url 'user:user-list' %}"
-      class="btn btn-outline-danger rounded-circle d-flex align-items-center justify-content-center shadow-sm"
-      style="width: 30px; height: 30px; padding: 0"
+      class="btn btn-outline-danger rounded-circle d-flex align-items-center justify-content-center shadow-sm flex-shrink-0"
+      style="width: 38px; height: 38px; padding: 0"
       title="Limpar Filtro"
     >
       <span style="font-size: 1.2rem; line-height: 1">&times;</span>
@@ -68,7 +58,6 @@
     {% endif %}
   </form>
 
-  <!-- Mensagens -->
   {% if messages %}
   <div class="mb-3">
     {% for message in messages %}
@@ -99,123 +88,113 @@
   </script>
   {% endif %}
 
-  <!-- Tabela -->
   <div class="rounded-4 shadow-sm border border-light overflow-hidden">
-    <table
-      class="table table-bordered align-middle mb-0 text-center product-list"
-    >
-      <thead>
-        <tr class="cabecalho text-uppercase">
-          <th>VISUALIZAR</th>
-          <th>ID</th>
-          <th>STATUS</th>
-          <th>NOME</th>
-          <th>IDADE</th>
-          <th>CARGO/FUNÇÃO</th>
-          <th>TELEFONE</th>
-          <th>ADMISSÃO</th>
-          <th>SAÍDA</th>
-        </tr>
-      </thead>
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle mb-0 text-center product-list text-nowrap">
+        <thead>
+          <tr class="cabecalho text-uppercase">
+            <th>VISUALIZAR</th>
+            <th>ID</th>
+            <th>STATUS</th>
+            <th>NOME</th>
+            <th>IDADE</th>
+            <th>CARGO/FUNÇÃO</th>
+            <th>TELEFONE</th>
+            <th>ADMISSÃO</th>
+            <th>SAÍDA</th>
+          </tr>
+        </thead>
 
-      <tbody>
-        {% for user in users %}
-        <tr class="align-middle">
-          <!-- Visualizar -->
-          <td class="d-flex justify-content-center align-items-center">
-            <a
-              href="{% url 'user:user-profile' user.id %}"
-              class="d-inline-flex"
-              style="color: var(--cor-fonte-preta)"
-              title="Visualizar Detalhes"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                fill="currentColor"
-                class="bi bi-eye"
-                viewBox="0 0 16 16"
+        <tbody>
+          {% for user in users %}
+          <tr class="align-middle">
+            <td class="d-flex justify-content-center align-items-center border-bottom-0">
+              <a
+                href="{% url 'user:user-profile' user.id %}"
+                class="d-inline-flex p-2"
+                style="color: var(--cor-fonte-preta)"
+                title="Visualizar Detalhes"
               >
-                <path
-                  d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"
-                />
-                <path
-                  d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"
-                />
-              </svg>
-            </a>
-          </td>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  fill="currentColor"
+                  class="bi bi-eye"
+                  viewBox="0 0 16 16"
+                >
+                  <path
+                    d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"
+                  />
+                  <path
+                    d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"
+                  />
+                </svg>
+              </a>
+            </td>
 
-          <!-- ID -->
-          <td>{{ user.id|stringformat:"03d" }}</td>
+            <td>{{ user.id|stringformat:"03d" }}</td>
 
-          <!-- Status -->
-          <td class="text-uppercase text-center" style="font-size: 0.85rem">
-            {% if user.is_active %}
-            <span class="text-success fw-semibold">ATIVO</span>
-            {% else %}
-            <span class="text-danger">INATIVO</span>
-            {% endif %}
-          </td>
+            <td class="text-uppercase text-center" style="font-size: 0.85rem">
+              {% if user.is_active %}
+              <span class="text-success fw-semibold">ATIVO</span>
+              {% else %}
+              <span class="text-danger">INATIVO</span>
+              {% endif %}
+            </td>
 
-          <!-- Nome -->
-          <td class="text-center text-uppercase">
-            {{ user.first_name }} {{ user.last_name }}
-          </td>
+            <td class="text-center text-uppercase">
+              {{ user.first_name }} {{ user.last_name }}
+            </td>
 
-          <!-- Idade -->
-          <td>
-            {% if user.birth_date %} {{ user.birth_date|timesince|slice:":2" }}
-            {% else %} - {% endif %}
-          </td>
+            <td>
+              {% if user.birth_date %} {{ user.birth_date|timesince|slice:":2" }}
+              {% else %} - {% endif %}
+            </td>
 
-          <!-- Cargo -->
-          <td class="text-uppercase">{{ user.role|default:"-" }}</td>
+            <td class="text-uppercase">{{ user.role|default:"-" }}</td>
 
-          <!-- Telefone Formatado -->
-          <td>
-            {% if user.phone_number %} 
-              {% with phone_str=user.phone_number|stringformat:"s" %} 
-                {% if phone_str|length == 11 %} 
-                  ({{ phone_str|slice:":2" }}) {{phone_str|slice:"2:7" }}-{{ phone_str|slice:"7:" }} 
-                {% elif phone_str|length == 10 %} 
-                  ({{ phone_str|slice:":2" }}) {{phone_str|slice:"2:6" }}-{{ phone_str|slice:"6:" }} 
-                {% else %} 
-                  {{user.phone_number }} 
-                {% endif %} 
-              {% endwith %} 
-            {% else %} 
-              - 
-            {% endif%}
-          </td>
+            <td>
+              {% if user.phone_number %} 
+                {% with phone_str=user.phone_number|stringformat:"s" %} 
+                  {% if phone_str|length == 11 %} 
+                    ({{ phone_str|slice:":2" }}) {{phone_str|slice:"2:7" }}-{{ phone_str|slice:"7:" }} 
+                  {% elif phone_str|length == 10 %} 
+                    ({{ phone_str|slice:":2" }}) {{phone_str|slice:"2:6" }}-{{ phone_str|slice:"6:" }} 
+                  {% else %} 
+                    {{user.phone_number }} 
+                  {% endif %} 
+                {% endwith %} 
+              {% else %} 
+                - 
+              {% endif%}
+            </td>
 
-          <!-- Admissão -->
-          <td>{{ user.hire_date|date:"d/m/Y"|default:"-" }}</td>
+            <td>{{ user.hire_date|date:"d/m/Y"|default:"-" }}</td>
 
-          <!-- Saída -->
-          <td>{{ user.exit_date|date:"d/m/Y"|default:"" }}</td>
-        </tr>
-        {% empty %}
-        <tr>
-          <td
-            colspan="9"
-            class="text-center py-4"
-            style="color: var(--cor-fonte-cinza)"
-          >
-            {% if query %} Nenhum usuário encontrado para "{{ query }}".<br />
-            <a
-              href="{% url 'user:user-list' %}"
-              class="text-decoration-none fw-bold mt-2 d-inline-block"
-              style="color: var(--cor-fonte-rosa)"
-              >Limpar pesquisa</a
+            <td>{{ user.exit_date|date:"d/m/Y"|default:"" }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td
+              colspan="9"
+              class="text-center py-4 text-wrap"
+              style="color: var(--cor-fonte-cinza)"
             >
-            {% else %} Nenhum usuário cadastrado. {% endif %}
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+              {% if query %} Nenhum usuário encontrado para "{{ query }}".<br />
+              <a
+                href="{% url 'user:user-list' %}"
+                class="text-decoration-none fw-bold mt-2 d-inline-block"
+                style="color: var(--cor-fonte-rosa)"
+                >Limpar pesquisa</a
+              >
+              {% else %} Nenhum usuário cadastrado. {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 {% endblock %}
