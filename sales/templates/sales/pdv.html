@@ -717,11 +717,12 @@
         
         // Abrir Modal
         btnOpenModal.addEventListener('click', function() {
-            // Se a venda estiver vazia, avisa o usuário (opcional)
-            {% if not items %}
-                alert("Adicione itens antes de finalizar!");
+            // Validação básica antes de abrir
+            const totalVenda = parseFloat(document.getElementById('display-total-geral').innerText.replace('R$', '').replace(',', '.'));
+            if (totalVenda <= 0) {
+                alert("O valor da venda deve ser maior que zero!");
                 return;
-            {% endif %}
+            }
             paymentModal.show();
         });
 
