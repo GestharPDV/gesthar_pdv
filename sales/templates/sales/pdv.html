@@ -759,23 +759,57 @@
     });
 
     // Envia o pagamento via AJAX para não fechar o modal
-    function confirmPayment(method) {
-        const amount = document.getElementById('payment-amount-input')?.value || "{{ sale.remaining_balance|stringformat:'.2f' }}";
+    async function confirmPayment(method) {
+        const btn = event.target; 
+        const amountInput = document.getElementById('payment-amount-input');
+        const amount = amountInput?.value || "0.00";
         
+        // Loading State
+        btn.disabled = true;
+        const originalText = btn.innerText;
+        btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span> PROCESSANDO...`;
+
         const formData = new FormData();
         formData.append('method', method);
         formData.append('amount', amount);
         formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
 
-        fetch("{% url 'sales:add-payment' %}", {
-            method: 'POST',
-            body: formData
-        }).then(response => {
-            if (response.ok) {
-                // Se o pagamento for total, passa para o recibo
-                checkSaleStatusAndAdvance();
+        try {
+            const response = await fetch("{% url 'sales:add-payment' %}", {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest'}
+            });
+
+            data = await response.json()
+
+            if (response.ok && data.success) {
+                const remainingLabel = document.querySelector('#step-payment-select .h4');
+                remainingLabel.innerText = 'R$ ' + data.remaining.toFixed(2).replace('.', ',');     
+
+                // Checa se ainda falta dinheiro
+                if (data.remaining > 0) {
+                    // Atualiza a tela sem fechar o modal
+                    document.querySelector('.modal-body .h4').innerText = 'R$ ' + data.remaining.toFixed(2).replace('.', ',');
+                    amountInput.value = data.remaining.toFixed(2);
+                    alert("Pagamento parcial registrado! Falta: R$ " + data.remaining.toFixed(2));
+                    btn.disabled = false;
+                    btn.innerText = originalText;
+                } else {
+                    if (data.change > 0) {
+                        alert(`Venda Paga! TROCO: R$ ${data.change.toFixed(2)}`);
+                    }
+                    // Pagamento total concluído
+                    checkSaleStatusAndAdvance();
+                }
+            } else {
+                throw new Error(data.error || "Erro desconhecido");
             }
-        });
+        } catch (error) {
+            alert("ERRO: " + error.message);
+            btn.disabled = false;
+            btn.innerText = originalText;
+        }
     }
 
     function checkSaleStatusAndAdvance() {
