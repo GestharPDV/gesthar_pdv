@@ -792,12 +792,14 @@
     async function confirmPayment(method) {
         const btn = event.target; 
         const amountInput = document.getElementById('payment-amount-input');
+        const statusAlert = document.getElementById('payment-status-alert');
         const amount = amountInput?.value || "0.00";
         
         // Loading State
         btn.disabled = true;
         const originalText = btn.innerText;
         btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span> PROCESSANDO...`;
+        statusAlert.classList.add('d-none');
 
         const formData = new FormData();
         formData.append('method', method);
@@ -820,25 +822,24 @@
                 // Checa se ainda falta dinheiro
                 if (data.remaining > 0) {
                     // Atualiza a tela sem fechar o modal
-                    document.querySelector('.modal-body .h4').innerText = 'R$ ' + data.remaining.toFixed(2).replace('.', ',');
+                    statusAlert.innerText = `PAGAMENTO PARCIAL REGISTRADO! FALTA: R$ ${data.remaining.toFixed(2).replace('.', ',')}`;
+                    statusAlert.classList.remove('d-none');
+                    
                     amountInput.value = data.remaining.toFixed(2);
-                    alert("Pagamento parcial registrado! Falta: R$ " + data.remaining.toFixed(2));
                     btn.disabled = false;
-                    btn.innerText = originalText;
+                    btn.innerText = originalText;                
                 } else {
-                    if (data.change > 0) {
-                        alert(`Venda Paga! TROCO: R$ ${data.change.toFixed(2)}`);
-                    }
-                    // Pagamento total concluído
-                    checkSaleStatusAndAdvance();
+                    showChangeScreen(data.change);
                 }
             } else {
                 throw new Error(data.error || "Erro desconhecido");
             }
         } catch (error) {
-            alert("ERRO: " + error.message);
+            statusAlert.innerText = "ERRO: " + error.message;
+            statusAlert.classList.remove('d-none', 'alert-info');
+            statusAlert.classList.add('alert-danger');
             btn.disabled = false;
-            btn.innerText = originalText;
+            btn.innerText = originalText;        
         }
     }
 
