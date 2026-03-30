@@ -843,6 +843,39 @@
         }
     }
 
+    // Mostra a tela de Troco dentro do Pop-up
+    function showChangeScreen(changeAmount) {
+        document.getElementById('step-payment-select').style.display = 'none';
+        const stepChange = document.getElementById('step-change');
+        stepChange.classList.remove('d-none');
+        
+        const changeDisplay = document.getElementById('change-display');
+        const noChangeDisplay = document.getElementById('no-change-display');
+        
+        if (changeAmount > 0) {
+            changeDisplay.classList.remove('d-none');
+            noChangeDisplay.classList.add('d-none');
+            changeDisplay.querySelector('h1').innerText = 'R$ ' + changeAmount.toFixed(2).replace('.', ',');
+        } else {
+            changeDisplay.classList.add('d-none');
+            noChangeDisplay.classList.remove('d-none');
+        }
+
+        // Atalho de teclado para prosseguir da tela de troco
+        const handleEnter = (e) => {
+            if (e.key === 'Enter') {
+                document.removeEventListener('keydown', handleEnter);
+                goToReceipt();
+            }
+        };
+        document.addEventListener('keydown', handleEnter);
+    }
+
+    function goToReceipt() {
+        document.getElementById('step-change').classList.add('d-none');
+        document.getElementById('step-receipt').classList.remove('d-none');
+    }
+
     function checkSaleStatusAndAdvance() {
         document.getElementById('step-payment-select').style.display = 'none';
         document.getElementById('step-receipt').classList.remove('d-none');
