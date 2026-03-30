@@ -148,3 +148,9 @@ AUTH_USER_MODEL = "user.UserGesthar"
 
 LOGIN_URL = "accounts:login"
 LOGOUT_REDIRECT_URL = "accounts:login"
+
+# PagBank Sandbox
+PAGBANK_SANDBOX_BASE_URL = os.getenv(
+    "PAGBANK_SANDBOX_BASE_URL", "https://sandbox.api.pagseguro.com"
+)
+PAGBANK_API_TOKEN = os.getenv("PAGBANK_API_TOKEN") or os.getenv("api_token")
