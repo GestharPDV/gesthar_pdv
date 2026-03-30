@@ -789,10 +789,9 @@
         document.getElementById('step-success').classList.remove('d-none');
         
         // Escuta a tecla ENTER para fechar e concluir
-        document.addEventListener('keydown', function enterHandler(e) {
+        const enterFinalizer = (e) => {
             if (e.key === 'Enter') {
-                document.removeEventListener('keydown', enterHandler);
-                // Envia formulário final para o backend concluir a venda no banco
+                document.removeEventListener('keydown', enterFinalizer);
                 const finalForm = document.createElement('form');
                 finalForm.method = 'POST';
                 finalForm.action = "{% url 'sales:complete-sale' sale.pk %}";
@@ -804,7 +803,8 @@
                 document.body.appendChild(finalForm);
                 finalForm.submit();
             }
-        });
+        };
+        document.addEventListener('keydown', enterFinalizer);
     }
     </script>
 
