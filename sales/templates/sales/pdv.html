@@ -682,6 +682,104 @@
         
         // Navegação com teclado (Setas) pode ser adicionada aqui se desejar
     });
-</script>
+
+    // Troca de telas dentro do POPUP
+    document.addEventListener('DOMContentLoaded', function() {
+        const paymentModal = new bootstrap.Modal(document.getElementById('paymentModal'));
+        const btnOpenModal = document.getElementById('btnOpenPayment');
+        const detailArea = document.getElementById('payment-detail-area');
+        
+        // Abrir Modal
+        btnOpenModal.addEventListener('click', function() {
+            // Se a venda estiver vazia, avisa o usuário (opcional)
+            {% if not items %}
+                alert("Adicione itens antes de finalizar!");
+                return;
+            {% endif %}
+            paymentModal.show();
+        });
+
+        // Lógica de seleção do método
+        document.querySelectorAll('.btn-payment-option').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const method = this.dataset.method;
+                
+                // Marcar botão ativo
+                document.querySelectorAll('.btn-payment-option').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                if (method === 'PIX') {
+                    detailArea.innerHTML = `
+                        <div id="qr-code-placeholder" class="mb-3">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=PagamentoPDV" alt="QR Code">
+                        </div>
+                        <p class="fw-bold text-muted small">ESCANEIE O QR-CODE</p>
+                        <button class="btn botao-verde w-100 mt-3 py-2 fw-bold" onclick="confirmPayment('PIX')">CONFIRMAR PIX</button>
+                    `;
+                } else {
+                    detailArea.innerHTML = `
+                        <div class="p-4 rounded bg-light border border-dashed">
+                            <label class="small fw-bold text-muted mb-2 d-block">VALOR A RECEBER</label>
+                            <div class="input-group">
+                                <span class="input-group-text">R$</span>
+                                <input type="number" id="payment-amount-input" class="form-control form-control-lg fw-bold" value="{{ sale.remaining_balance|stringformat:'.2f' }}">
+                            </div>
+                            <button class="btn botao-rosa w-100 mt-4 py-3 fw-bold" onclick="confirmPayment('${method}')">CONFIRMAR PAGAMENTO</button>
+                        </div>
+                    `;
+                }
+            });
+        });
+    });
+
+    // Envia o pagamento via AJAX para não fechar o modal
+    function confirmPayment(method) {
+        const amount = document.getElementById('payment-amount-input')?.value || "{{ sale.remaining_balance|stringformat:'.2f' }}";
+        
+        const formData = new FormData();
+        formData.append('method', method);
+        formData.append('amount', amount);
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+        fetch("{% url 'sales:add-payment' %}", {
+            method: 'POST',
+            body: formData
+        }).then(response => {
+            if (response.ok) {
+                // Se o pagamento for total, passa para o recibo
+                checkSaleStatusAndAdvance();
+            }
+        });
+    }
+
+    function checkSaleStatusAndAdvance() {
+        document.getElementById('step-payment-select').style.display = 'none';
+        document.getElementById('step-receipt').classList.remove('d-none');
+    
+    }
+
+    function finishFlow(choice) {
+        document.getElementById('step-receipt').style.display = 'none';
+        document.getElementById('step-success').classList.remove('d-none');
+        
+        // Escuta a tecla ENTER para fechar e concluir
+        document.addEventListener('keydown', function enterHandler(e) {
+            if (e.key === 'Enter') {
+                document.removeEventListener('keydown', enterHandler);
+                // Envia formulário final para o backend concluir a venda no banco
+                const finalForm = document.createElement('form');
+                finalForm.method = 'POST';
+                finalForm.action = "{% url 'sales:complete-sale' sale.pk %}";
+                const csrf = document.createElement('input');
+                csrf.type = 'hidden';
+                csrf.name = 'csrfmiddlewaretoken';
+                csrf.value = '{{ csrf_token }}';
+                finalForm.appendChild(csrf);
+                document.body.appendChild(finalForm);
+                finalForm.submit();
+            }
+        });
+    }
+    </script>
 
 {% endblock %}
