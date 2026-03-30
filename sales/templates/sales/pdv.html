@@ -729,11 +729,19 @@
 
     // Troca de telas dentro do POPUP
     document.addEventListener('DOMContentLoaded', function() {
-        const paymentModal = new bootstrap.Modal(document.getElementById('paymentModal'));
-        const btnOpenModal = document.getElementById('btnOpenPayment');
+        const paymentModalElement = document.getElementById('paymentModal');
+        const paymentModal = new bootstrap.Modal(paymentModalElement);
+        const btnOpenModal = document.getElementById('btnOpenPayment');        
         const detailArea = document.getElementById('payment-detail-area');
-        
+
         // Abrir Modal
+        paymentModalElement.addEventListener('hidden.bs.modal', function () {
+            document.getElementById('step-payment-select').style.display = 'block';
+            document.getElementById('step-receipt').classList.add('d-none');
+            document.getElementById('step-success').classList.add('d-none');
+            detailArea.innerHTML = '<div class="py-5 text-muted opacity-50"><span class="material-symbols-outlined fs-1">payments</span><p>Aguardando seleção...</p></div>';
+        });
+
         btnOpenModal.addEventListener('click', function() {
             // Validação básica antes de abrir
             const totalVenda = parseFloat(document.getElementById('display-total-geral').innerText.replace('R$', '').replace(',', '.'));
