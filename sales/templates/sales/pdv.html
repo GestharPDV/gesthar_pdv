@@ -236,6 +236,46 @@
                             </tbody>
                         </table>
                     </div>
+
+                    <div class="pdv-footer-interno">
+                        <div class="row align-items-center text-center">
+                            <div class="col-md-4">
+                                <div class="d-flex flex-column align-items-center justify-content-center gap-2">
+                                    <div class="small fw-bold text-muted mb-1">MODALIDADE</div>
+                                    
+                                    <div class="d-flex gap-2 ">
+                                        <a class="btn btn-md btn-modalidade-ativa">ONLINE</a>
+                                        <a class="btn btn-md btn-modalidade-ativa">PRESENCIAL</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="small fw-bold text-muted mb-1">DESC (R$)</div>
+                                <input type="text" inputmode="numeric" class="input-footer-desc" placeholder="0,00">
+                            </div>
+                            <div class="col-md-2">
+                                <div class="small fw-bold text-muted mb-1">DESC (%)</div>
+                                <input type="text" inputmode="numeric" class="input-footer-desc" placeholder="0%">
+                            </div>
+                            <div class="col-md-2">
+                                <div class="small fw-bold text-muted mb-1">SUBTOTAL</div>
+                                <div class="fw-bold text-dark">R$ {{ sale.net_amount|floatformat:2 }}</div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="small fw-bold text-muted mb-1">TOTAL</div>
+                                <div class="h4 fw-bold mb-0" style="color: var(--cor-fonte-rosa)">R$ {{ sale.net_amount|floatformat:2 }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-end align-items-center gap-3 mt-4">
+                    <button class="btn botao-secundario px-4 py-2">ADICIONAR ENTREGA</button>
+                    <button type="button" class="btn botao-rosa px-5 py-2 fw-bold" id="btnOpenPayment">
+                        FINALIZAR VENDA
+                    </button>
+                </div>
+
                 </div>
             </div>
         </section>
