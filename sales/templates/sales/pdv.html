@@ -187,73 +187,55 @@
                             {% endif %}
                         </div>
                     </div>
-                </form>
+                </div>
 
-                    <div class="scroll-area mt-3 border rounded border-separator">
-                    <table class="table table-bordered align-middle mb-0 table-hover-custom product-list">
-                        <thead class="position-sticky top-0 cabecalho" style="z-index: 1;">
-                            <tr class="text-uppercase text-center">
-                                <th class="text-center py-2">Produto</th>
-                                <th class="text-center py-2">Qtd</th>
-                                <th class="text-center py-2">Unitário</th>
-                                <th class="text-center py-2">Desconto</th>
-                                <th class="text-center py-2">Total</th>
-                                <th class="text-center py-2" style="width:50px;"></th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            {% for item in items %}
-                            <tr style="vertical-align: middle;">
-                                <td class="ps-3 py-2 text-center">
-                                    <div class="fw-semibold">{{ item.variation.product.name }}</div>
-                                    {% if item.variation.name and item.variation.name != 'Unique' %}
-                                        <small class="text-secondary">{{ item.variation.name }}</small>
-                                    {% endif %}
-                                    <div class="text-muted" style="font-size: 0.7rem;">SKU: {{ item.variation.sku }}</div>
-                                </td>
-                                
-                                <td class="text-center fw-bold">{{ item.quantity }}</td>
-                                
-                                <td class="text-center fw-semibold" style="color: var(--cor-fonte-rosa);">R$ {{ item.unit_price|floatformat:2 }}</td>
-                                
-                                <td class="text-center">
-                                    <div class="position-relative d-inline-block" style="width:90px;">
-                                        <span class="position-absolute" style="left:8px; top:50%; transform:translateY(-50%); color: var(--cor-fonte-cinza); font-size: 0.75rem;">R$</span>
-                                        <input type="number" 
-                                               class="form-control form-control-sm text-center input-focus" 
-                                               style="width:90px; padding-left: 28px;" 
-                                               placeholder="0,00"
-                                               step="0.01"
-                                               min="0"
-                                               data-item-id="{{ item.pk }}"
-                                               data-unit-price="{{ item.unit_price }}"
-                                               data-quantity="{{ item.quantity }}"
-                                               onchange="updateItemDiscount(this)">
-                                    </div>
-                                </td>
-                                
-                                <td class="text-center fw-semibold" style="color: var(--cor-fonte-rosa);">R$ {{ item.total_price|floatformat:2 }}</td>
-                                
-                                <td class="text-center">
-                                    <form action="{% url 'sales:remove-item' item.pk %}" method="POST" class="d-inline">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-sm btn-link text-decoration-none text-secondary-custom p-1" title="Remover item">
-                                            <span class="material-symbols-outlined text-danger fs-5">delete</span>
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="6" class="text-center py-5 text-muted">
-                                    <span class="material-symbols-outlined fs-1 opacity-25">shopping_cart</span>
-                                    <p class="mt-2 small">Nenhum item adicionado à venda.</p>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                <div class="pdv-box-unificado shadow-sm">
+                    
+                    <div class="pdv-tabela-container">
+                        <table class="table table-bordered align-middle mb-0 product-list">
+                            <thead>
+                                <tr class="text-uppercase text-center">
+                                    <th class="py-2">Produto</th>
+                                    <th class="py-2">Qtd</th>
+                                    <th class="py-2">Unitário</th>
+                                    <th class="py-2">Desconto</th>
+                                    <th class="py-2">Total</th>
+                                    <th class="py-2" style="width:50px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in items %}
+                                <tr class="text-center">
+                                    <td class="text-start ps-3">
+                                        <div class="fw-semibold">{{ item.variation.product.name }}</div>
+                                        <div class="text-muted" style="font-size: 0.7rem;">SKU: {{ item.variation.sku }}</div>
+                                    </td>
+                                    <td class="fw-bold">{{ item.quantity }}</td>
+                                    <td class="fw-semibold" style="color: var(--cor-fonte-rosa);">R$ {{ item.unit_price|floatformat:2 }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center justify-content-center">
+                                            <span class="small me-1">R$</span>
+                                            <input type="number" class="form-control form-control-sm text-center" style="width: 70px;" value="0.00">
+                                        </div>
+                                    </td>
+                                    <td class="fw-bold" style="color: var(--cor-fonte-rosa);">R$ {{ item.total_price|floatformat:2 }}</td>
+                                    <td class="text-center">
+                                        <form action="{% url 'sales:remove-item' item.pk %}" method="POST" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-link text-decoration-none text-secondary-custom p-1" title="Remover item">
+                                                <span class="material-symbols-outlined text-danger fs-5">delete</span>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-5 text-muted">Nenhum item na venda.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </section>
