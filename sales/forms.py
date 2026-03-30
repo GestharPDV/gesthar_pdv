@@ -142,3 +142,20 @@ class PaymentForm(forms.ModelForm):
             ),
         }
         labels = {"method": "Forma de Pagamento", "amount": "Valor"}
+
+
+class BoletoSandboxForm(forms.Form):
+    amount = forms.DecimalField(
+        label="Valor do Boleto",
+        max_digits=12,
+        decimal_places=2,
+        min_value=0.01,
+        widget=forms.NumberInput(
+            attrs={
+                "class": "form-control form-control-sm",
+                "step": "0.01",
+                "min": "0.01",
+                "placeholder": "0,00",
+            }
+        ),
+    )

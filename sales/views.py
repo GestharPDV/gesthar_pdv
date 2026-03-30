@@ -7,9 +7,11 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, DetailView
 from django.db.models import Q
 from django.http import JsonResponse
+from django.utils.dateparse import parse_date
+from django.utils import timezone
 
 from product.models import ProductVariation
-from .models import Sale, SaleItem, CashRegister, SalePayment
+from .models import Sale, SaleItem, CashRegister, SalePayment, SaleGateway
 from .forms import (
     AddItemForm,
     CloseRegisterForm,
@@ -17,6 +19,7 @@ from .forms import (
     IdentifyCustomerForm,
     PaymentForm,
 )
+from .pagbank_service import PagBankSandboxService
 
 
 @login_required
@@ -187,8 +190,7 @@ def add_payment_view(request):
         payment = form.save(commit=False)
         payment.sale = sale
 
-        # Validação Lógica: Só permite pagar a mais se for DINHEIRO (para gerar troco)
-        # Se for cartão/pix, trava no valor restante
+        # Só permite pagar a mais se for DINHEIRO (troco).
         if (
             payment.method != SalePayment.Method.DINHEIRO
             and payment.amount > sale.remaining_balance
@@ -247,6 +249,100 @@ def complete_sale_view(request, sale_id):
             msg += f" TROCO: R$ {sale.change_amount:,.2f}"
             
         messages.success(request, msg)
+
+        selected_method = (
+            sale.payments.order_by("-created_at").first().method
+            if sale.payments.exists()
+            else None
+        )
+
+        if selected_method == SalePayment.Method.BOLETO:
+            status, response = PagBankSandboxService().criar_boleto(
+                customer=sale.customer,
+                amount=sale.net_amount,
+            )
+            if status in [200, 201]:
+                boleto_data = PagBankSandboxService.extrair_dados_boleto(response)
+                gateway_data = PagBankSandboxService.extrair_gateway_boleto(response)
+                data_vencimento = parse_date(str(gateway_data.get("data_vencimento", "")))
+                if data_vencimento is None:
+                    data_vencimento = sale.completed_at.date() if sale.completed_at else timezone.localdate()
+
+                SaleGateway.objects.update_or_create(
+                    charge_id=gateway_data.get("charge_id") or f"sale-{sale.id}-boleto",
+                    defaults={
+                        "sale": sale,
+                        "metodo": SaleGateway.Metodo.BOLETO,
+                        "provider_payment_id": gateway_data.get("provider_payment_id", ""),
+                        "barcode": gateway_data.get("barcode", ""),
+                        "linha_digitavel": gateway_data.get("linha_digitavel", ""),
+                        "url_pdf": gateway_data.get("url_pdf", ""),
+                        "qr_code_texto": "",
+                        "qr_code_base64": "",
+                        "url_qrcode": "",
+                        "data_vencimento": data_vencimento,
+                        "expirado_em": None,
+                    },
+                )
+
+                pdf_url = boleto_data.get("pdf_url")
+                if pdf_url:
+                    return redirect(pdf_url)
+
+                messages.warning(
+                    request,
+                    "Venda finalizada, boleto criado, mas sem link PDF na resposta.",
+                )
+            else:
+                error_message = (
+                    response.get("error_messages", [{}])[0].get("description")
+                    or response.get("message")
+                    or "Erro ao gerar boleto no PagBank."
+                )
+                messages.warning(request, f"Venda finalizada, mas o boleto falhou: {error_message}")
+
+        elif selected_method == SalePayment.Method.PIX:
+            status, response = PagBankSandboxService().criar_pix(
+                customer=sale.customer,
+                amount=sale.net_amount,
+            )
+            if status in [200, 201]:
+                pix_data = PagBankSandboxService.extrair_dados_pix(response)
+                gateway_data = PagBankSandboxService.extrair_gateway_pix(response)
+                data_vencimento = gateway_data.get("data_vencimento")
+
+                SaleGateway.objects.update_or_create(
+                    charge_id=gateway_data.get("charge_id") or f"sale-{sale.id}-pix",
+                    defaults={
+                        "sale": sale,
+                        "metodo": SaleGateway.Metodo.PIX,
+                        "provider_payment_id": gateway_data.get("provider_payment_id", ""),
+                        "barcode": "",
+                        "linha_digitavel": "",
+                        "url_pdf": "",
+                        "qr_code_texto": gateway_data.get("qr_code_texto", ""),
+                        "qr_code_base64": gateway_data.get("qr_code_base64", ""),
+                        "url_qrcode": gateway_data.get("url_qrcode", ""),
+                        "data_vencimento": data_vencimento,
+                        "expirado_em": gateway_data.get("expirado_em"),
+                    },
+                )
+
+                png_url = pix_data.get("png_url")
+                if png_url:
+                    return redirect(png_url)
+
+                messages.warning(
+                    request,
+                    "Venda finalizada, PIX criado, mas sem link do QR code na resposta.",
+                )
+            else:
+                error_message = (
+                    response.get("error_messages", [{}])[0].get("description")
+                    or response.get("message")
+                    or "Erro ao gerar PIX no PagBank."
+                )
+                messages.warning(request, f"Venda finalizada, mas o PIX falhou: {error_message}")
 
     except ValidationError as e:
         messages.error(request, f"Erro ao finalizar: {e.message}")

@@ -341,6 +341,7 @@ class SaleItem(models.Model):
 class SalePayment(models.Model):
     class Method(models.TextChoices):
         DINHEIRO = "DINHEIRO", "Dinheiro"
+        BOLETO = "BOLETO", "Boleto"
         CARTAO_CREDITO = "CREDITO", "Cartão de Crédito"
         CARTAO_DEBITO = "DEBITO", "Cartão de Débito"
         PIX = "PIX", "PIX"
@@ -374,3 +375,37 @@ class SalePayment(models.Model):
                 "Não é possível adicionar pagamentos a uma venda finalizada."
             )
         super().save(*args, **kwargs)
+
+
+class SaleGateway(models.Model):
+    class Metodo(models.TextChoices):
+        BOLETO = "boleto", "Boleto"
+        PIX = "pix", "PIX"
+
+    sale = models.ForeignKey(
+        Sale,
+        on_delete=models.CASCADE,
+        related_name="gateways",
+        verbose_name="Venda",
+    )
+    metodo = models.CharField(max_length=10, choices=Metodo.choices, verbose_name="Método")
+    charge_id = models.CharField(max_length=50, unique=True, verbose_name="Charge ID")
+    provider_payment_id = models.CharField(max_length=50, default="", verbose_name="Provider Payment ID")
+    barcode = models.CharField(max_length=255, default="", verbose_name="Código de Barras")
+    linha_digitavel = models.CharField(max_length=255, default="", verbose_name="Linha Digitável")
+    url_pdf = models.CharField(max_length=255, default="", verbose_name="URL do PDF")
+    qr_code_texto = models.CharField(max_length=255, default="", verbose_name="QR Code Texto")
+    qr_code_base64 = models.CharField(max_length=255, default="", verbose_name="QR Code Base64")
+    url_qrcode = models.CharField(max_length=255, default="", verbose_name="URL QR Code")
+    data_vencimento = models.DateField(verbose_name="Data de Vencimento")
+    gerado_em = models.DateTimeField(auto_now_add=True, verbose_name="Gerado Em")
+    expirado_em = models.DateTimeField(null=True, blank=True, verbose_name="Expirado Em")
+
+    class Meta:
+        db_table = "sale_salegateway"
+        verbose_name = "Gateway de Pagamento da Venda"
+        verbose_name_plural = "Gateways de Pagamento da Venda"
+        ordering = ["-gerado_em"]
+
+    def __str__(self):
+        return f"{self.get_metodo_display()} - Venda #{self.sale_id}"
