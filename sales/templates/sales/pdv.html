@@ -580,28 +580,54 @@
     
     // Função para recalcular o total da venda
     function recalculateSaleTotal() {
-        let subtotal = 0;
-        let totalDiscount = 0;
+        let subtotalVenda = 0;
         
-        // Soma todos os totais dos itens
+        // Seleciona os inputs de desconto do rodapé (ajuste as classes se necessário)
+        const inputDiscReal = document.getElementById('footer-disc-real');
+        const inputDiscPercent = document.getElementById('footer-disc-percent');
+        const displaySubtotal = document.getElementById('display-subtotal');
+        const displayTotalGeral = document.getElementById('display-total-geral');   
+
+        const discGlobalReal = parseFloat(inputDiscReal.value.replace(',', '.')) || 0;
+        const discGlobalPercent = parseFloat(inputDiscPercent.value.replace(',', '.')) || 0;
+
         document.querySelectorAll('.product-list tbody tr').forEach(row => {
-            const totalText = row.querySelector('td:nth-child(5)')?.textContent;
-            if (totalText && totalText.includes('R$')) {
-                const value = parseFloat(totalText.replace('R$', '').replace(',', '.').trim());
-                if (!isNaN(value)) {
-                    subtotal += value;
-                }
-            }
+            if (row.innerText.includes("Nenhum item")) return;
+
+            const unitPrice = parseFloat(row.querySelector('td:nth-child(3)').innerText.replace('R$', '').replace(',', '.').trim());
+            const quantity = parseInt(row.querySelector('td:nth-child(2)').innerText);
+            const discItem = parseFloat(row.querySelector('td:nth-child(4) input').value.replace(',', '.')) || 0;
             
-            // Soma os descontos individuais
-            const discountInput = row.querySelector('input[data-item-id]');
-            if (discountInput && discountInput.value) {
-                totalDiscount += parseFloat(discountInput.value) || 0;
+            let totalLinha = (unitPrice * quantity) - discItem;
+
+            // Se houver desconto global em %, reduzimos o total visível de cada item
+            if (discGlobalPercent > 0) {
+                totalLinha = totalLinha * (1 - (discGlobalPercent / 100));
             }
+
+            // Atualiza o "Total" da linha na tabela
+            row.querySelector('td:nth-child(5)').innerText = 'R$ ' + totalLinha.toFixed(2).replace('.', ',');
+            
+            subtotalVenda += (unitPrice * quantity) - discItem;
         });
-        
-        // Atualiza o subtotal exibido (já considera descontos individuais aplicados)
-        // Não precisa subtrair novamente pois já está calculado no totalCell
+
+        let totalFinal = subtotalVenda;
+        if (discGlobalReal > 0) {
+            totalFinal -= discGlobalReal;
+        } else if (discGlobalPercent > 0) {
+            totalFinal = subtotalVenda * (1 - (discGlobalPercent / 100));
+        }
+
+        if (totalFinal < 0) totalFinal = 0;
+
+        // Localiza as divs de Subtotal e Total no seu HTML
+        displaySubtotal.innerText = 'R$ ' + subtotalAcumulado.toFixed(2).replace('.', ',');
+        displayTotalGeral.innerText = 'R$ ' + totalFinal.toFixed(2).replace('.', ',');
+
+        const modalInput = document.getElementById('payment-amount-input');
+        if (modalInput) {
+            modalInput.value = totalFinal.toFixed(2);
+        }
     }
 
     // Busca de Produtos via API
