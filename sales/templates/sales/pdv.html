@@ -257,19 +257,19 @@
                             </div>
                             <div class="col-md-2">
                                 <div class="small fw-bold text-muted mb-1">DESC (R$)</div>
-                                <input type="text" inputmode="numeric" class="input-footer-desc" placeholder="0,00">
+                                <input id="footer-disc-real" type="text" inputmode="numeric" class="input-footer-desc" placeholder="0,00">
                             </div>
                             <div class="col-md-2">
                                 <div class="small fw-bold text-muted mb-1">DESC (%)</div>
-                                <input type="text" inputmode="numeric" class="input-footer-desc" placeholder="0%">
+                                <input id="footer-disc-percent" type="text" inputmode="numeric" class="input-footer-desc" placeholder="0%">
                             </div>
                             <div class="col-md-2">
                                 <div class="small fw-bold text-muted mb-1">SUBTOTAL</div>
-                                <div class="fw-bold text-dark">R$ {{ sale.net_amount|floatformat:2 }}</div>
+                                <div id="display-subtotal" class="fw-bold text-dark">R$ {{ sale.net_amount|floatformat:2 }}</div>
                             </div>
                             <div class="col-md-2">
                                 <div class="small fw-bold text-muted mb-1">TOTAL</div>
-                                <div class="h4 fw-bold mb-0" style="color: var(--cor-fonte-rosa)">R$ {{ sale.net_amount|floatformat:2 }}</div>
+                                <div id="display-total-geral" class="h4 fw-bold mb-0" style="color: var(--cor-fonte-rosa)">R$ {{ sale.net_amount|floatformat:2 }}</div>
                             </div>
                         </div>
                     </div>
