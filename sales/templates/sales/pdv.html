@@ -497,7 +497,32 @@
     document.addEventListener('DOMContentLoaded', function() {
         const searchInput = document.getElementById('search-input');
         if(searchInput) searchInput.focus();
+
+        const inputDiscReal = document.getElementById('footer-disc-real');
+        const inputDiscPercent = document.getElementById('footer-disc-percent');
+
+        if (inputDiscReal && inputDiscPercent) {
+            // Se digitar em Real, limpa Porcentagem
+            inputDiscReal.addEventListener('input', function() {
+                if (this.value > 0) inputDiscPercent.value = '';
+                recalculateSaleTotal();
+            });
+
+            // Se digitar em Porcentagem, limpa Real
+            inputDiscPercent.addEventListener('input', function() {
+                if (this.value > 0) inputDiscReal.value = '';
+                recalculateSaleTotal();
+            });
+        }
+
+        // Ouvinte para descontos nos itens da tabela (cada linha)
+        document.querySelectorAll('.product-list tbody input').forEach(input => {
+            input.addEventListener('input', function() {
+                updateItemDiscount(this);
+            });
+        });
     });
+
 
     // Atalhos de Teclado
     document.addEventListener('keydown', function(event) {
