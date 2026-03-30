@@ -20,6 +20,7 @@
   --cor-fundo-site: #f9fafb;
   --cor-fundo-cabecalho: #f7e8eb;
   --cor-fundo-linha: #ededed; 
+  --cor-fundo-rodape: #f7e8eb;
   
   /* Cores da sidebar */
   --cor-fundo-categoria: #f7e8eb;
@@ -40,6 +41,7 @@
   --fonte-titulo: 1.8rem; 
   --fonte-subtitulo: 1.2rem;
   --fonte-cabecalho: 0.9rem;
+  --fonte-rodape: 0.9rem
   --fonte-texto: 0.9rem; 
   
   /* Tamanhos da fonte do Sidebar */
@@ -98,6 +100,17 @@ th.cabecalho{
 
 }
 
+/* Rodapes das tabelas */
+.table tfoot tr.rodape th,
+.table tfoot.rodape th,
+.rodape,
+th.rodape {
+  font-size: var(--fonte-rodape);
+  font-weight: bold;
+  color: var(--cor-fonte-rosa) !important;
+  background-color: var(--cor-fundo-rodape) !important;
+}
+
 
 /* ------------------------------------ */
 /* Botões */ 
@@ -140,6 +153,14 @@ th.cabecalho{
   text-decoration: none;
 }
 
+.botao-secundario{
+  background-color: var(--cor-botao-secundario-rosa);
+  color: var(--cor-fonte-preta);
+  border-radius: var(--radius-botao);
+  border: none;
+  text-decoration: none;
+}
+
 
 /* ------------------------------------ */
 /* Formularios e Tabelas */ 
@@ -152,6 +173,61 @@ th.cabecalho{
 .card p:not(.text-success):not(.text-danger):not(.text-lucro),
 .card .fs-5:not(.text-success):not(.text-danger):not(.text-lucro) {
   color: var(--cor-fonte-preta);
+}
+
+/* Container que une Tabela e Footer em um único box com borda */
+.pdv-box-unificado {
+    display: flex;
+    flex-direction: column;
+    flex: 1;             /* Faz o box ocupar todo o espaço vertical restante */
+    min-height: 0;       /* Necessário para que o scroll interno funcione no Flexbox */
+    border: 1px solid #ddd !important;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: #fff;
+    margin-top: 1rem;
+}
+
+/* Área interna que permite o scroll apenas nos itens */
+.pdv-tabela-container {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.pdv-footer-interno {
+    flex-shrink: 0;      
+    background-color: #f2e1e4; 
+    border-top: 1px solid #ddd;
+    padding: 15px;
+}
+
+/* Header Fixo no Topo */
+.product-list thead th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: var(--cor-fundo-cabecalho) !important;
+    color: var(--cor-fonte-rosa) !important;
+    border-bottom: 1px solid #ddd !important;
+}
+
+/* Footer Fixo na Base do Box */
+.product-list tfoot {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    background-color: var(--cor-fundo-rodape) !important;
+    border-top: 2px solid #ddd !important;
+}
+
+/* Estilo limpo para os inputs de desconto do rodapé */
+.input-footer-desc {
+    border: none;
+    border-bottom: 1px solid var(--cor-fonte-cinza);
+    background: transparent;
+    width: 70px;
+    text-align: center;
+    font-weight: bold;
 }
 
 /* Força os subtítulos dentro dos cards a ocuparem toda a largura (não está funcionando perfeitamente, ajustarei depois) */
