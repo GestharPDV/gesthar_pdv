@@ -743,12 +743,15 @@
                         <button class="btn botao-verde w-100 mt-3 py-2 fw-bold" onclick="confirmPayment('PIX')">CONFIRMAR PIX</button>
                     `;
                 } else {
+                    const valorRestanteStr = document.querySelector('#step-payment-select .h4').innerText.replace('R$', '').replace(',', '.').trim();
+                    const valorCalculado = parseFloat(valorRestanteStr).toFixed(2);
+
                     detailArea.innerHTML = `
                         <div class="p-4 rounded bg-light border border-dashed">
                             <label class="small fw-bold text-muted mb-2 d-block">VALOR A RECEBER</label>
                             <div class="input-group">
                                 <span class="input-group-text">R$</span>
-                                <input type="number" id="payment-amount-input" class="form-control form-control-lg fw-bold" value="{{ sale.remaining_balance|stringformat:'.2f' }}">
+                                <input type="number" id="payment-amount-input" class="form-control form-control-lg fw-bold" value="${valorCalculado}">
                             </div>
                             <button class="btn botao-rosa w-100 mt-4 py-3 fw-bold" onclick="confirmPayment('${method}')">CONFIRMAR PAGAMENTO</button>
                         </div>
