@@ -639,7 +639,7 @@
         if (totalFinal < 0) totalFinal = 0;
 
         // Localiza as divs de Subtotal e Total no seu HTML
-        displaySubtotal.innerText = 'R$ ' + subtotalAcumulado.toFixed(2).replace('.', ',');
+        displaySubtotal.innerText = 'R$ ' + subtotalVenda.toFixed(2).replace('.', ',');
         displayTotalGeral.innerText = 'R$ ' + totalFinal.toFixed(2).replace('.', ',');
 
         const modalInput = document.getElementById('payment-amount-input');
