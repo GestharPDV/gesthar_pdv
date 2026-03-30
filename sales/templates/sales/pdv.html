@@ -318,6 +318,24 @@
                                     </div>
                                 </div>
 
+                                <div id="step-change" class="text-center d-none">
+                                    <div class="p-4 rounded-4 mb-4" style="background-color: #f8f9fa; border: 2px dashed var(--primary-color);">
+                                        <h5 class="fw-bold text-muted mb-2">VENDA PAGA!</h5>
+                                        <div id="change-display" class="d-none">
+                                            <p class="mb-1 text-muted fw-bold">TROCO A DEVOLVER:</p>
+                                            <h1 class="display-4 fw-bold" style="color: var(--primary-color);">R$ 0,00</h1>
+                                        </div>
+                                        <div id="no-change-display" class="d-none">
+                                            <h2 class="fw-bold text-success">VALOR EXATO RECEBIDO</h2>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn botao-rosa px-5 py-3 fw-bold rounded-3 w-100" onclick="goToReceipt()">
+                                        PROSSEGUIR (ENTER)
+                                    </button>
+                                </div>
+
+                                <div id="payment-status-alert" class="alert alert-info d-none mt-3 fw-bold"></div>
+
                                 <div id="step-receipt" class="text-center d-none">
                                     <h5 class="fw-bold color-rosa mb-4">IMPRIMINDO COMPROVANTE</h5>
                                     <p class="fw-bold text-muted mb-5">NECESSITA RECIBO?</p>
