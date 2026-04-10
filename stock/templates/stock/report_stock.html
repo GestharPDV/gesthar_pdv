@@ -1,0 +1,279 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Relatório de Estoque — Gesthar{% endblock %}
+
+{% block head_extra %}
+  {# Chart.js para renderização dos gráficos #}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="pr-20 pl-20">
+
+  {# ── Cabeçalho ── #}
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="titulo mb-0">RELATÓRIO DE ESTOQUE</h1>
+    <div class="d-flex gap-2">
+      {# Abre o PDF diretamente no browser (nova guia) #}
+      <a href="{% url 'stock:report-stock-pdf' %}?start_date={{ start_date }}&end_date={{ end_date }}"
+         target="_blank"
+         class="btn btn-outline-danger d-flex align-items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none"
+             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+                d="M7 21h10a2 2 0 002-2V9l-5-5H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13 3v6h6"/>
+        </svg>
+        Visualizar PDF
+      </a>
+      {# Força download do PDF #}
+      <a href="{% url 'stock:report-stock-pdf' %}?start_date={{ start_date }}&end_date={{ end_date }}&download=1"
+         class="btn btn-danger d-flex align-items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none"
+             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M7 10l5 5 5-5"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 15V3"/>
+        </svg>
+        Baixar PDF
+      </a>
+    </div>
+  </div>
+
+  {% comment %}
+     Todo o conteúdo exportável deve ficar DENTRO de #report-content.
+     O html2pdf captura exatamente esta div.
+  {% endcomment %}
+  <div id="report-content">
+
+    {# ── Formulário de Filtros ── #}
+    <form method="GET" action="{% url 'stock:report-stock' %}"
+          class="row g-3 align-items-end mb-4 p-3 rounded-3 shadow-sm border">
+      <div class="col-md-4">
+        <label for="start_date" class="form-label fw-semibold small text-uppercase text-secondary">
+          Data Inicial
+        </label>
+        <input type="date" id="start_date" name="start_date"
+               class="form-control" value="{{ start_date }}">
+      </div>
+      <div class="col-md-4">
+        <label for="end_date" class="form-label fw-semibold small text-uppercase text-secondary">
+          Data Final
+        </label>
+        <input type="date" id="end_date" name="end_date"
+               class="form-control" value="{{ end_date }}">
+      </div>
+      <div class="col-md-3">
+        <label for="category_id" class="form-label fw-semibold small text-uppercase text-secondary">
+          Categoria
+        </label>
+        <select id="category_id" name="category_id" class="form-select">
+          <option value="">Todas</option>
+          {% for cat in categories %}
+            <option value="{{ cat.pk }}"
+              {% if selected_category_id == cat.pk %}selected{% endif %}>
+              {{ cat.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-1 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+      </div>
+    </form>
+
+    {# ── Cards de Resumo ── #}
+    <div class="row g-3 mb-4">
+      <div class="col-md-6">
+        <div class="card shadow-sm border-0 rounded-3 h-100">
+          <div class="card-body d-flex flex-column justify-content-center">
+            <p class="text-secondary text-uppercase small fw-semibold mb-1">Total de Peças</p>
+            <h2 class="fw-bold mb-0" style="color: var(--cor-fonte-rosa);">
+              {{ total_pieces }}
+            </h2>
+            <p class="text-muted small mb-0">unidades em estoque</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card shadow-sm border-0 rounded-3 h-100">
+          <div class="card-body d-flex flex-column justify-content-center">
+            <p class="text-secondary text-uppercase small fw-semibold mb-1">Valor Total do Estoque</p>
+            <h2 class="fw-bold mb-0" style="color: var(--cor-fonte-rosa);">
+              R$ {{ inventory_valuation|floatformat:2 }}
+            </h2>
+            <p class="text-muted small mb-0">preço de venda × quantidade</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# ── Gráficos ── #}
+    <div class="row g-4 mb-4">
+      {# Gráfico de Pizza — Estoque por Categoria #}
+      <div class="col-md-6">
+        <div class="card shadow-sm border-0 rounded-3 h-100">
+          <div class="card-body">
+            <h6 class="text-uppercase text-secondary fw-semibold mb-3">Estoque por Categoria</h6>
+            <canvas id="categoryChart" style="max-height: 280px;"></canvas>
+          </div>
+        </div>
+      </div>
+
+      {# Gráfico de Barras — Estoque por Cor #}
+      <div class="col-md-6">
+        <div class="card shadow-sm border-0 rounded-3 h-100">
+          <div class="card-body">
+            <h6 class="text-uppercase text-secondary fw-semibold mb-3">Estoque por Cor</h6>
+            <canvas id="colorChart" style="max-height: 280px;"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# ── Tabela: Movimentações do Período ── #}
+    <div class="mb-4">
+      <h5 class="text-uppercase text-secondary fw-semibold mb-3">
+        Movimentações do Período ({{ start_date }} a {{ end_date }})
+      </h5>
+      <div class="rounded-4 shadow-sm border border-light overflow-hidden">
+        <table class="table table-bordered align-middle mb-0 text-center">
+          <thead class="cabecalho text-uppercase text-secondary">
+            <tr>
+              <th>Data</th>
+              <th>Produto</th>
+              <th>Cor</th>
+              <th>Tamanho</th>
+              <th>Tipo</th>
+              <th>Quantidade</th>
+              <th>Usuário</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for mov in movements %}
+            <tr>
+              <td>{{ mov.movement_date|date:"d/m/Y H:i" }}</td>
+              <td>{{ mov.product_variation.product.name }}</td>
+              <td>{{ mov.product_variation.color.name }}</td>
+              <td>{{ mov.product_variation.size.name }}</td>
+              <td>
+                {# Aplica cor verde para entradas e vermelha para saídas #}
+                {% if mov.movement_type in "ENTRADA AJUSTE_ENTRADA DEVOLUCAO" %}
+                  <span class="badge bg-success">{{ mov.get_movement_type_display }}</span>
+                {% else %}
+                  <span class="badge bg-danger">{{ mov.get_movement_type_display }}</span>
+                {% endif %}
+              </td>
+              <td>{{ mov.quantity }}</td>
+              <td>{{ mov.user.get_full_name|default:mov.user.username }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" class="text-center text-muted py-4">
+                Nenhuma movimentação encontrada no período.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    {# ── Tabela: Produtos com Estoque Baixo ── #}
+    <div class="mb-4">
+      <h5 class="text-uppercase fw-semibold mb-3" style="color: var(--cor-botao-principal-rosa);">
+        Variações com Estoque Baixo
+      </h5>
+      <div class="rounded-4 shadow-sm border border-light overflow-hidden">
+        <table class="table table-bordered align-middle mb-0 text-center">
+          <thead class="cabecalho text-uppercase text-secondary">
+            <tr>
+              <th>SKU</th>
+              <th>Produto</th>
+              <th>Cor</th>
+              <th>Tamanho</th>
+              <th>Categoria</th>
+              <th>Estoque Atual</th>
+              <th>Estoque Mínimo</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for var in low_stock_variations %}
+            <tr>
+              <td class="font-monospace small">{{ var.sku }}</td>
+              <td>{{ var.product.name }}</td>
+              <td>{{ var.color.name }}</td>
+              <td>{{ var.size.name }}</td>
+              <td>{{ var.product.category.name }}</td>
+              <td class="fw-bold text-danger">{{ var.stock }}</td>
+              <td>{{ var.minimum_stock }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" class="text-center text-muted py-4">
+                Nenhuma variação com estoque abaixo do mínimo.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>{# /report-content #}
+</div>
+{% endblock %}
+
+{% block scripts_extra %}
+<script>
+  // ── Dados dos gráficos injetados pelo Django (escapados com |safe) ──
+  const categoryData = {{ category_chart_json|safe }};
+  const colorData = {{ color_chart_json|safe }};
+
+  // Paleta de cores para o gráfico de pizza
+  const PALETTE = [
+    "#FF6B8A", "#FF9EB5", "#FFB3C6", "#FFC8D8",
+    "#FFDDEA", "#FF4D6D", "#C9184A", "#FF85A1",
+    "#FB6F92", "#FFB3C1",
+  ];
+
+  // ── Gráfico de Pizza: Estoque por Categoria ──
+  new Chart(document.getElementById("categoryChart"), {
+    type: "doughnut",
+    data: {
+      labels: categoryData.labels,
+      datasets: [{
+        data: categoryData.data,
+        backgroundColor: PALETTE.slice(0, categoryData.labels.length),
+        borderWidth: 1,
+      }],
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: "bottom" } },
+    },
+  });
+
+  // ── Gráfico de Barras: Estoque por Cor ──
+  new Chart(document.getElementById("colorChart"), {
+    type: "bar",
+    data: {
+      labels: colorData.labels,
+      datasets: [{
+        label: "Peças em Estoque",
+        data: colorData.data,
+        backgroundColor: "#FF6B8A",
+        borderRadius: 4,
+      }],
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: { beginAtZero: true, ticks: { precision: 0 } },
+      },
+      plugins: { legend: { display: false } },
+    },
+  });
+</script>
+{% endblock %}
