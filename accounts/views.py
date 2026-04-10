@@ -1,9 +1,11 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
-from .forms import UserGestharCreationForm, EmailAuthenticationForm
+from django.contrib import messages
+from user.form import UserGestharCreationForm
+from .forms import EmailAuthenticationForm
 
 
 def login_view(request):
@@ -37,6 +39,20 @@ def register_view(request):
         form = UserGestharCreationForm()
     return render(request, "accounts/register.html", {"form": form})
 
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def user_create_view(request):
+    """View para criar novo usuário (administrativo)"""
+    if request.method == "POST":
+        form = UserGestharCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            messages.success(request, f'Usuário "{user.get_full_name()}" cadastrado com sucesso!')
+            return redirect("user:user-list")
+    else:
+        form = UserGestharCreationForm()
+    
+    return render(request, "user/user_form.html", {"form": form, "action": "Cadastrar"})
 
 @login_required
 def password_change_view(request):

@@ -133,7 +133,7 @@ class UserGestharChangeForm(UserChangeForm):
         return cleaned_data
 
     def clean_cpf(self):
-        """Valida e limpa o campo CPF"""
+        """Valida, limpa o campo CPF e verifica duplicidade"""
         cpf = self.cleaned_data.get('cpf', '')
         cpf_limpo = re.sub(r'[^0-9]', '', cpf)
 
@@ -145,6 +145,14 @@ class UserGestharChangeForm(UserChangeForm):
 
         if not validar_cpf(cpf_limpo):
             raise ValidationError("Número de CPF inválido.")
+
+        # Verifica duplicidade no banco, ignorando o usuário atual em edição
+        qs = UserGesthar.objects.filter(cpf=cpf_limpo)
+        if self.instance and self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+            
+        if qs.exists():
+            raise ValidationError("Já existe um usuário cadastrado com este CPF.")
 
         return cpf_limpo
 
@@ -241,7 +249,7 @@ class UserGestharCreationForm(UserCreationForm):
         return cleaned_data
 
     def clean_cpf(self):
-        """Valida e limpa o campo CPF"""
+        """Valida, limpa o campo CPF e verifica duplicidade"""
         cpf = self.cleaned_data.get('cpf', '')
         cpf_limpo = re.sub(r'[^0-9]', '', cpf)
 
@@ -253,6 +261,10 @@ class UserGestharCreationForm(UserCreationForm):
 
         if not validar_cpf(cpf_limpo):
             raise ValidationError("Número de CPF inválido.")
+
+        # Verifica duplicidade no banco
+        if UserGesthar.objects.filter(cpf=cpf_limpo).exists():
+            raise ValidationError("Já existe um usuário cadastrado com este CPF.")
 
         return cpf_limpo
 
