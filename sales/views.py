@@ -180,33 +180,30 @@ def remove_item_view(request, item_id):
 def add_payment_view(request):
     sale = Sale.objects.filter(status=Sale.Status.DRAFT, user=request.user).first()
     if not sale:
-        return redirect("sales:pdv")
+        return JsonResponse({'error': 'Venda não encontrada ou já finalizada.'}, status=404)
 
     form = PaymentForm(request.POST)
     if form.is_valid():
         payment = form.save(commit=False)
         payment.sale = sale
 
-        # Validação Lógica: Só permite pagar a mais se for DINHEIRO (para gerar troco)
-        # Se for cartão/pix, trava no valor restante
-        if (
-            payment.method != SalePayment.Method.DINHEIRO
-            and payment.amount > sale.remaining_balance
-        ):
-            messages.error(
-                request,
-                f"Pagamento em {payment.get_method_display()} não pode exceder o saldo restante (R$ {sale.remaining_balance}).",
-            )
-            return redirect("sales:pdv")
+        if payment.method != SalePayment.Method.DINHEIRO and payment.amount > sale.remaining_balance:
+            return JsonResponse({
+                'error': f"Pagamentos em {payment.get_method_display()} não podem exceder o saldo de R$ {sale.remaining_balance:.2f}"
+            }, status=400)
 
         payment.save()
-        messages.success(request, f"Pagamento de R$ {payment.amount} adicionado.")
-    else:
-        for error in form.errors.values():
-            messages.error(request, error)
+        sale.calculate_totals()
 
-    return redirect("sales:pdv")
-
+        return JsonResponse({
+            'success': True,
+            'remaining': float(sale.remaining_balance),
+            'change': float(sale.change_preview),
+            'total_paid': float(sale.total_paid),
+            'method': payment.get_method_display()
+        })
+    
+    return JsonResponse({'error': "Valor ou método inválido."}, status=400)
 
 @require_POST
 @login_required

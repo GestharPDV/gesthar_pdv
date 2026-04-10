@@ -66,6 +66,12 @@
         outline: none;
     }
 
+    .input-footer-desc:focus {
+        box-shadow: 0 0 0 0.2rem rgba(255, 70, 120, 0.25) !important;
+        border-color: #ff7690 !important;
+        outline: none;
+    }
+
     /* Tabela */
     .table-hover-custom tbody tr:hover { background: #f1f1f1; }
     .table-hover-custom td { vertical-align: middle; }
@@ -135,117 +141,226 @@
 
     <div class="row g-3" style="height: calc(100vh - 120px);">
 
-        <section class="col-lg-8" style="height: 100%; overflow-y: auto;">
-            <div class="rounded p-3 h-100 d-flex flex-column border border-separator">
+        <section class="col-lg-8 h-75 w-100">
+            <div class="rounded p-3 h-100 d-flex flex-column">
 
-                <form action="{% url 'sales:add-item' %}" method="POST" id="add-item-form">
-                    {% csrf_token %}
-                    <div class="d-flex align-items-end gap-2">
-                        <div class="flex-grow-1">
-                            <label class="fs-texto fw-semibold d-block mb-1" style="color: var(--cor-fonte-preta);">CÓDIGO DE BARRAS / SKU / NOME PRODUTO</label>
-                            <div class="position-relative">
-                            <span class="material-symbols-outlined position-absolute" style="left:10px; top:50%; transform:translateY(-50%); color: var(--cor-fonte-cinza);">barcode_scanner</span>
-                            
-                            <input type="text" 
-                                name="{{ form.sku_or_barcode.name }}" 
-                                class="form-control rounded-pill bg-transparent ps-5 pe-4" 
-                                style="color: var(--cor-fonte-cinza) !important;"
-                                placeholder="Pesquisar produto ou bipar código..." 
-                                autofocus
-                                autocomplete="off"
-                                id="search-input">
-                            
-                            <div id="search-results" class="position-absolute w-100 bg-white shadow-lg rounded-3 mt-1 overflow-hidden" style="z-index: 1000; display: none; border: 1px solid var(--border-color);">
-                                </div>
-                        </div>
-                        </div>
-
-                        <div>
-                            <label class="fs-texto fw-semibold d-block mb-2" style="color: var(--cor-fonte-preta);">QTD</label>
-                            <input type="number" 
-                                name="quantity" 
-                                value="1" 
-                                min="1"
-                                class="form-control text-center rounded-pill bg-transparent" 
-                                style="width:80px; color: var(--cor-fonte-cinza) !important;">
-                        </div>
-
-                        <button type="submit" class="btn botao-verde fw-semibold px-4 py-2">
-                            ADICIONAR
-                        </button>
-                    </div>
-                </form>
-
-                    <div class="scroll-area mt-3 border rounded border-separator">
-                    <table class="table table-bordered align-middle mb-0 table-hover-custom product-list">
-                        <thead class="position-sticky top-0 cabecalho" style="z-index: 1;">
-                            <tr class="text-uppercase text-center">
-                                <th class="text-center py-2">Produto</th>
-                                <th class="text-center py-2">Qtd</th>
-                                <th class="text-center py-2">Unitário</th>
-                                <th class="text-center py-2">Desconto</th>
-                                <th class="text-center py-2">Total</th>
-                                <th class="text-center py-2" style="width:50px;"></th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            {% for item in items %}
-                            <tr style="vertical-align: middle;">
-                                <td class="ps-3 py-2 text-center">
-                                    <div class="fw-semibold">{{ item.variation.product.name }}</div>
-                                    {% if item.variation.name and item.variation.name != 'Unique' %}
-                                        <small class="text-secondary">{{ item.variation.name }}</small>
-                                    {% endif %}
-                                    <div class="text-muted" style="font-size: 0.7rem;">SKU: {{ item.variation.sku }}</div>
-                                </td>
-                                
-                                <td class="text-center fw-bold">{{ item.quantity }}</td>
-                                
-                                <td class="text-center fw-semibold" style="color: var(--cor-fonte-rosa);">R$ {{ item.unit_price|floatformat:2 }}</td>
-                                
-                                <td class="text-center">
-                                    <div class="position-relative d-inline-block" style="width:90px;">
-                                        <span class="position-absolute" style="left:8px; top:50%; transform:translateY(-50%); color: var(--cor-fonte-cinza); font-size: 0.75rem;">R$</span>
-                                        <input type="number" 
-                                               class="form-control form-control-sm text-center input-focus" 
-                                               style="width:90px; padding-left: 28px;" 
-                                               placeholder="0,00"
-                                               step="0.01"
-                                               min="0"
-                                               data-item-id="{{ item.pk }}"
-                                               data-unit-price="{{ item.unit_price }}"
-                                               data-quantity="{{ item.quantity }}"
-                                               onchange="updateItemDiscount(this)">
+                <div class="d-flex flex-row gap-2">
+                    <div class="flex-fill" style="min-width: 0; width: 50%;">
+                        <form action="{% url 'sales:add-item' %}" method="POST" id="add-item-form">
+                            {% csrf_token %}
+                            <div class="d-flex align-items-end gap-2">
+                                <div class="flex-grow-1">
+                                    <label class="fs-texto fw-semibold d-block mb-1">CÓDIGO DE BARRAS / SKU / NOME PRODUTO</label>
+                                    <div class="position-relative">
+                                        <span class="material-symbols-outlined position-absolute" style="left:10px; top:50%; transform:translateY(-50%); color: var(--cor-fonte-cinza);">barcode_scanner</span>
+                                        <input type="text" name="{{ form.sku_or_barcode.name }}" class="form-control rounded-pill bg-transparent ps-5 pe-4" placeholder="Pesquisar produto..." autofocus autocomplete="off" id="search-input">
+                                        <div id="search-results" class="position-absolute w-100 bg-white shadow-lg rounded-3 mt-1 overflow-hidden" style="z-index: 1000; display: none; border: 1px solid var(--border-color);"></div>
                                     </div>
-                                </td>
+                                </div>
+                                <div>
+                                    <label class="fs-texto fw-semibold d-block mb-2">QTD</label>
+                                    <input type="number" name="quantity" value="1" min="1" class="form-control text-center rounded-pill bg-transparent" style="width:80px;">
+                                </div>
+                                <button type="submit" class="btn botao-verde fw-semibold px-4 py-2">ADICIONAR</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="flex-fill" style="min-width: 0; width: 50%;">
+                        <div class="h-100 d-flex flex-column justify-content-end">
+                            <label class="fs-texto fw-semibold d-block mb-1">
+                                <span class="material-symbols-outlined position-relative me-1" style="top:3px; font-size: 1.2rem;">person</span>IDENTIFICAR CLIENTE
+                            </label>
+                            {% if sale.customer %}
+                                <div class="d-flex justify-content-between align-items-center bg-white rounded-pill px-3 py-2 border border-separator">
+                                    <div>
+                                        <div class="fw-semibold" style="font-size: 0.85rem;">{{ sale.customer.name }}</div>
+                                        <small class="text-muted">{{ sale.customer.cpf_cnpj }}</small>
+                                    </div>
+                                    <span class="badge bg-success">Vinculado</span>
+                                </div>
+                            {% else %}
+                                <form action="{% url 'sales:identify-customer' %}" method="POST">
+                                    {% csrf_token %}
+                                    <div class="d-flex gap-2 align-items-end">
+                                        <div class="flex-grow-1 position-relative">
+                                            <span class="material-symbols-outlined position-absolute" style="left:10px; top:50%; transform:translateY(-50%); color: var(--cor-fonte-cinza);">badge</span>
+                                            <input type="text" name="cpf_cnpj" class="form-control rounded-pill bg-transparent ps-5 pe-4" placeholder="CPF ou CNPJ...">
+                                        </div>
+                                        <button type="submit" class="btn botao-verde fw-semibold px-4 py-2"><span class="material-symbols-outlined fs-6">person_add</span></button>
+                                    </div>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pdv-box-unificado shadow-sm">
+                    
+                    <div class="pdv-tabela-container">
+                        <table class="table table-bordered align-middle mb-0 product-list">
+                            <thead>
+                                <tr class="text-uppercase text-center">
+                                    <th class="py-2">Produto</th>
+                                    <th class="py-2">Qtd</th>
+                                    <th class="py-2">Unitário</th>
+                                    <th class="py-2">Desconto</th>
+                                    <th class="py-2">Total</th>
+                                    <th class="py-2" style="width:50px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in items %}
+                                <tr class="text-center">
+                                    <td class="text-start ps-3">
+                                        <div class="fw-semibold">{{ item.variation.product.name }}</div>
+                                        <div class="text-muted" style="font-size: 0.7rem;">SKU: {{ item.variation.sku }}</div>
+                                    </td>
+                                    <td class="fw-bold">{{ item.quantity }}</td>
+                                    <td class="fw-semibold" style="color: var(--cor-fonte-rosa);">R$ {{ item.unit_price|floatformat:2 }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center justify-content-center">
+                                            <span class="small me-1">R$</span>
+                                            <input type="number" class="form-control form-control-sm text-center" style="width: 70px;" value="0.00">
+                                        </div>
+                                    </td>
+                                    <td class="fw-bold" style="color: var(--cor-fonte-rosa);">R$ {{ item.total_price|floatformat:2 }}</td>
+                                    <td class="text-center">
+                                        <form action="{% url 'sales:remove-item' item.pk %}" method="POST" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-link text-decoration-none text-secondary-custom p-1" title="Remover item">
+                                                <span class="material-symbols-outlined text-danger fs-5">delete</span>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-5 text-muted">Nenhum item na venda.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="pdv-footer-interno">
+                        <div class="row align-items-center text-center">
+                            <div class="col-md-4">
+                                <div class="d-flex flex-column align-items-center justify-content-center gap-2">
+                                    <div class="small fw-bold text-muted mb-1">MODALIDADE</div>
+                                    
+                                    <div class="d-flex gap-2 ">
+                                        <a class="btn btn-md btn-modalidade-ativa">ONLINE</a>
+                                        <a class="btn btn-md btn-modalidade-ativa">PRESENCIAL</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="small fw-bold text-muted mb-1">DESC (R$)</div>
+                                <input id="footer-disc-real" type="text" inputmode="numeric" class="input-footer-desc" placeholder="0,00">
+                            </div>
+                            <div class="col-md-2">
+                                <div class="small fw-bold text-muted mb-1">DESC (%)</div>
+                                <input id="footer-disc-percent" type="text" inputmode="numeric" class="input-footer-desc" placeholder="0%">
+                            </div>
+                            <div class="col-md-2">
+                                <div class="small fw-bold text-muted mb-1">SUBTOTAL</div>
+                                <div id="display-subtotal" class="fw-bold text-dark">R$ {{ sale.net_amount|floatformat:2 }}</div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="small fw-bold text-muted mb-1">TOTAL</div>
+                                <div id="display-total-geral" class="h4 fw-bold mb-0" style="color: var(--cor-fonte-rosa)">R$ {{ sale.net_amount|floatformat:2 }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-end align-items-center gap-3 mt-4">
+                    <button class="btn botao-secundario px-4 py-2">ADICIONAR ENTREGA</button>
+                    <button type="button" class="btn botao-rosa px-5 py-2 fw-bold" id="btnOpenPayment">
+                        FINALIZAR VENDA
+                    </button>
+                </div>
+
+                <!-- POPUP -->
+                <div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
+                            <div class="modal-body p-5">
                                 
-                                <td class="text-center fw-semibold" style="color: var(--cor-fonte-rosa);">R$ {{ item.total_price|floatformat:2 }}</td>
-                                
-                                <td class="text-center">
-                                    <form action="{% url 'sales:remove-item' item.pk %}" method="POST" class="d-inline">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-sm btn-link text-decoration-none text-secondary-custom p-1" title="Remover item">
-                                            <span class="material-symbols-outlined text-danger fs-5">delete</span>
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="6" class="text-center py-5 text-muted">
-                                    <span class="material-symbols-outlined fs-1 opacity-25">shopping_cart</span>
-                                    <p class="mt-2 small">Nenhum item adicionado à venda.</p>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                                <div id="step-payment-select">
+                                    <h5 class="text-center fw-bold text-muted mb-5">SELECIONE A FORMA DE PAGAMENTO</h5>
+                                    <div class="row align-items-center">
+                                        <div class="col-md-5 d-flex flex-column gap-3">
+                                            {% for code, name in payment_form.fields.method.choices %}
+                                                {% if code %}
+                                                <button type="button" class="btn btn-payment-option py-3 fw-bold w-100" data-method="{{ code }}">
+                                                    {{ name|upper }}
+                                                </button>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                        <div class="col-md-7 text-center border-start ps-5">
+                                            <div id="payment-detail-area">
+                                                <div class="py-5 text-muted opacity-50">
+                                                    <span class="material-symbols-outlined fs-1">payments</span>
+                                                    <p>Aguardando seleção...</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-5 pt-4 border-top d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <span class="text-muted small d-block">RESTANTE</span>
+                                            <span class="h4 fw-bold mb-0">R$ {{ sale.remaining_balance|floatformat:2 }}</span>
+                                        </div>
+                                        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">CANCELAR</button>
+                                    </div>
+                                </div>
+
+                                <div id="step-change" class="text-center d-none">
+                                    <div class="p-4 rounded-4 mb-4" style="background-color: #f8f9fa; border: 2px dashed var(--primary-color);">
+                                        <h5 class="fw-bold text-muted mb-2">VENDA PAGA!</h5>
+                                        <div id="change-display" class="d-none">
+                                            <p class="mb-1 text-muted fw-bold">TROCO A DEVOLVER:</p>
+                                            <h1 class="display-4 fw-bold" style="color: var(--primary-color);">R$ 0,00</h1>
+                                        </div>
+                                        <div id="no-change-display" class="d-none">
+                                            <h2 class="fw-bold text-success">VALOR EXATO RECEBIDO</h2>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn botao-rosa px-5 py-3 fw-bold rounded-3 w-100" onclick="goToReceipt()">
+                                        PROSSEGUIR (ENTER)
+                                    </button>
+                                </div>
+
+                                <div id="payment-status-alert" class="alert alert-info d-none mt-3 fw-bold"></div>
+
+                                <div id="step-receipt" class="text-center d-none">
+                                    <h5 class="fw-bold color-rosa mb-4">IMPRIMINDO COMPROVANTE</h5>
+                                    <p class="fw-bold text-muted mb-5">NECESSITA RECIBO?</p>
+                                    <div class="d-flex justify-content-center gap-3">
+                                        <button class="btn btn-success px-5 py-3 fw-bold rounded-3" onclick="finishFlow('sim')">SIM</button>
+                                        <button class="btn btn-danger px-5 py-3 fw-bold rounded-3" onclick="finishFlow('nao')">NÃO</button>
+                                        <button class="btn btn-warning px-5 py-3 fw-bold rounded-3" onclick="finishFlow('email')">POR E-MAIL</button>
+                                    </div>
+                                </div>
+
+                                <div id="step-success" class="text-center d-none">
+                                    <div class="p-5 rounded-4" style="background-color: #d1f7d1;">
+                                        <h2 class="fw-bold text-success mb-3">COMPRA FINALIZADA COM SUCESSO!</h2>
+                                        <p class="text-success fw-bold">PRESSIONE ENTER</p>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <section class="col-lg-4" style="height: 100%; overflow-y: auto;">
+        {% comment %} <section class="col-lg-4" style="height: 100%; overflow-y: auto;">
             <div class="rounded p-2 d-flex flex-column border border-separator" style="min-height: 100%;">
 
                 <h3 class="fw-bold pb-2 mb-2 border-bottom border-separator d-flex align-items-center gap-2" style="color: var(--cor-fonte-rosa); font-size: 1.2rem;">
@@ -390,7 +505,7 @@
 
                 </div>
             </div>
-        </section>
+        </section> {% endcomment %}
 
     </div>
 </main>
@@ -400,7 +515,32 @@
     document.addEventListener('DOMContentLoaded', function() {
         const searchInput = document.getElementById('search-input');
         if(searchInput) searchInput.focus();
+
+        const inputDiscReal = document.getElementById('footer-disc-real');
+        const inputDiscPercent = document.getElementById('footer-disc-percent');
+
+        if (inputDiscReal && inputDiscPercent) {
+            // Se digitar em Real, limpa Porcentagem
+            inputDiscReal.addEventListener('input', function() {
+                if (this.value > 0) inputDiscPercent.value = '';
+                recalculateSaleTotal();
+            });
+
+            // Se digitar em Porcentagem, limpa Real
+            inputDiscPercent.addEventListener('input', function() {
+                if (this.value > 0) inputDiscReal.value = '';
+                recalculateSaleTotal();
+            });
+        }
+
+        // Ouvinte para descontos nos itens da tabela (cada linha)
+        document.querySelectorAll('.product-list tbody input').forEach(input => {
+            input.addEventListener('input', function() {
+                updateItemDiscount(this);
+            });
+        });
     });
+
 
     // Atalhos de Teclado
     document.addEventListener('keydown', function(event) {
@@ -458,28 +598,54 @@
     
     // Função para recalcular o total da venda
     function recalculateSaleTotal() {
-        let subtotal = 0;
-        let totalDiscount = 0;
+        let subtotalVenda = 0;
         
-        // Soma todos os totais dos itens
+        // Seleciona os inputs de desconto do rodapé (ajuste as classes se necessário)
+        const inputDiscReal = document.getElementById('footer-disc-real');
+        const inputDiscPercent = document.getElementById('footer-disc-percent');
+        const displaySubtotal = document.getElementById('display-subtotal');
+        const displayTotalGeral = document.getElementById('display-total-geral');   
+
+        const discGlobalReal = parseFloat(inputDiscReal.value.replace(',', '.')) || 0;
+        const discGlobalPercent = parseFloat(inputDiscPercent.value.replace(',', '.')) || 0;
+
         document.querySelectorAll('.product-list tbody tr').forEach(row => {
-            const totalText = row.querySelector('td:nth-child(5)')?.textContent;
-            if (totalText && totalText.includes('R$')) {
-                const value = parseFloat(totalText.replace('R$', '').replace(',', '.').trim());
-                if (!isNaN(value)) {
-                    subtotal += value;
-                }
-            }
+            if (row.innerText.includes("Nenhum item")) return;
+
+            const unitPrice = parseFloat(row.querySelector('td:nth-child(3)').innerText.replace('R$', '').replace(',', '.').trim());
+            const quantity = parseInt(row.querySelector('td:nth-child(2)').innerText);
+            const discItem = parseFloat(row.querySelector('td:nth-child(4) input').value.replace(',', '.')) || 0;
             
-            // Soma os descontos individuais
-            const discountInput = row.querySelector('input[data-item-id]');
-            if (discountInput && discountInput.value) {
-                totalDiscount += parseFloat(discountInput.value) || 0;
+            let totalLinha = (unitPrice * quantity) - discItem;
+
+            // Se houver desconto global em %, reduzimos o total visível de cada item
+            if (discGlobalPercent > 0) {
+                totalLinha = totalLinha * (1 - (discGlobalPercent / 100));
             }
+
+            // Atualiza o "Total" da linha na tabela
+            row.querySelector('td:nth-child(5)').innerText = 'R$ ' + totalLinha.toFixed(2).replace('.', ',');
+            
+            subtotalVenda += (unitPrice * quantity) - discItem;
         });
-        
-        // Atualiza o subtotal exibido (já considera descontos individuais aplicados)
-        // Não precisa subtrair novamente pois já está calculado no totalCell
+
+        let totalFinal = subtotalVenda;
+        if (discGlobalReal > 0) {
+            totalFinal -= discGlobalReal;
+        } else if (discGlobalPercent > 0) {
+            totalFinal = subtotalVenda * (1 - (discGlobalPercent / 100));
+        }
+
+        if (totalFinal < 0) totalFinal = 0;
+
+        // Localiza as divs de Subtotal e Total no seu HTML
+        displaySubtotal.innerText = 'R$ ' + subtotalVenda.toFixed(2).replace('.', ',');
+        displayTotalGeral.innerText = 'R$ ' + totalFinal.toFixed(2).replace('.', ',');
+
+        const modalInput = document.getElementById('payment-amount-input');
+        if (modalInput) {
+            modalInput.value = totalFinal.toFixed(2);
+        }
     }
 
     // Busca de Produtos via API
@@ -560,6 +726,184 @@
         
         // Navegação com teclado (Setas) pode ser adicionada aqui se desejar
     });
-</script>
+
+    // Troca de telas dentro do POPUP
+    document.addEventListener('DOMContentLoaded', function() {
+        const paymentModalElement = document.getElementById('paymentModal');
+        const paymentModal = new bootstrap.Modal(paymentModalElement);
+        const btnOpenModal = document.getElementById('btnOpenPayment');        
+        const detailArea = document.getElementById('payment-detail-area');
+
+        // Abrir Modal
+        paymentModalElement.addEventListener('hidden.bs.modal', function () {
+            document.getElementById('step-payment-select').style.display = 'block';
+            document.getElementById('step-receipt').classList.add('d-none');
+            document.getElementById('step-success').classList.add('d-none');
+            detailArea.innerHTML = '<div class="py-5 text-muted opacity-50"><span class="material-symbols-outlined fs-1">payments</span><p>Aguardando seleção...</p></div>';
+        });
+
+        btnOpenModal.addEventListener('click', function() {
+            // Validação básica antes de abrir
+            const totalVenda = parseFloat(document.getElementById('display-total-geral').innerText.replace('R$', '').replace(',', '.'));
+            if (totalVenda <= 0) {
+                alert("O valor da venda deve ser maior que zero!");
+                return;
+            }
+            paymentModal.show();
+        });
+
+        // Lógica de seleção do método
+        document.querySelectorAll('.btn-payment-option').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const method = this.dataset.method;
+                
+                // Marcar botão ativo
+                document.querySelectorAll('.btn-payment-option').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                if (method === 'PIX') {
+                    detailArea.innerHTML = `
+                        <div id="qr-code-placeholder" class="mb-3">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=PagamentoPDV" alt="QR Code">
+                        </div>
+                        <p class="fw-bold text-muted small">ESCANEIE O QR-CODE</p>
+                        <button class="btn botao-verde w-100 mt-3 py-2 fw-bold" onclick="confirmPayment('PIX')">CONFIRMAR PIX</button>
+                    `;
+                } else {
+                    const valorRestanteStr = document.querySelector('#step-payment-select .h4').innerText.replace('R$', '').replace(',', '.').trim();
+                    const valorCalculado = parseFloat(valorRestanteStr).toFixed(2);
+
+                    detailArea.innerHTML = `
+                        <div class="p-4 rounded bg-light border border-dashed">
+                            <label class="small fw-bold text-muted mb-2 d-block">VALOR A RECEBER</label>
+                            <div class="input-group">
+                                <span class="input-group-text">R$</span>
+                                <input type="number" id="payment-amount-input" class="form-control form-control-lg fw-bold" value="${valorCalculado}">
+                            </div>
+                            <button class="btn botao-rosa w-100 mt-4 py-3 fw-bold" onclick="confirmPayment('${method}')">CONFIRMAR PAGAMENTO</button>
+                        </div>
+                    `;
+                }
+            });
+        });
+    });
+
+    // Envia o pagamento via AJAX para não fechar o modal
+    async function confirmPayment(method) {
+        const btn = event.target; 
+        const amountInput = document.getElementById('payment-amount-input');
+        const statusAlert = document.getElementById('payment-status-alert');
+        const amount = amountInput?.value || "0.00";
+        
+        // Loading State
+        btn.disabled = true;
+        const originalText = btn.innerText;
+        btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span> PROCESSANDO...`;
+        statusAlert.classList.add('d-none');
+
+        const formData = new FormData();
+        formData.append('method', method);
+        formData.append('amount', amount);
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+        try {
+            const response = await fetch("{% url 'sales:add-payment' %}", {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest'}
+            });
+
+            data = await response.json()
+
+            if (response.ok && data.success) {
+                const remainingLabel = document.querySelector('#step-payment-select .h4');
+                remainingLabel.innerText = 'R$ ' + data.remaining.toFixed(2).replace('.', ',');     
+
+                // Checa se ainda falta dinheiro
+                if (data.remaining > 0) {
+                    // Atualiza a tela sem fechar o modal
+                    statusAlert.innerText = `PAGAMENTO PARCIAL REGISTRADO! FALTA: R$ ${data.remaining.toFixed(2).replace('.', ',')}`;
+                    statusAlert.classList.remove('d-none');
+                    
+                    amountInput.value = data.remaining.toFixed(2);
+                    btn.disabled = false;
+                    btn.innerText = originalText;                
+                } else {
+                    showChangeScreen(data.change);
+                }
+            } else {
+                throw new Error(data.error || "Erro desconhecido");
+            }
+        } catch (error) {
+            statusAlert.innerText = "ERRO: " + error.message;
+            statusAlert.classList.remove('d-none', 'alert-info');
+            statusAlert.classList.add('alert-danger');
+            btn.disabled = false;
+            btn.innerText = originalText;        
+        }
+    }
+
+    // Mostra a tela de Troco dentro do Pop-up
+    function showChangeScreen(changeAmount) {
+        document.getElementById('step-payment-select').style.display = 'none';
+        const stepChange = document.getElementById('step-change');
+        stepChange.classList.remove('d-none');
+        
+        const changeDisplay = document.getElementById('change-display');
+        const noChangeDisplay = document.getElementById('no-change-display');
+        
+        if (changeAmount > 0) {
+            changeDisplay.classList.remove('d-none');
+            noChangeDisplay.classList.add('d-none');
+            changeDisplay.querySelector('h1').innerText = 'R$ ' + changeAmount.toFixed(2).replace('.', ',');
+        } else {
+            changeDisplay.classList.add('d-none');
+            noChangeDisplay.classList.remove('d-none');
+        }
+
+        // Atalho de teclado para prosseguir da tela de troco
+        const handleEnter = (e) => {
+            if (e.key === 'Enter') {
+                document.removeEventListener('keydown', handleEnter);
+                goToReceipt();
+            }
+        };
+        document.addEventListener('keydown', handleEnter);
+    }
+
+    function goToReceipt() {
+        document.getElementById('step-change').classList.add('d-none');
+        document.getElementById('step-receipt').classList.remove('d-none');
+    }
+
+    function checkSaleStatusAndAdvance() {
+        document.getElementById('step-payment-select').style.display = 'none';
+        document.getElementById('step-receipt').classList.remove('d-none');
+    
+    }
+
+    function finishFlow(choice) {
+        document.getElementById('step-receipt').style.display = 'none';
+        document.getElementById('step-success').classList.remove('d-none');
+        
+        // Escuta a tecla ENTER para fechar e concluir
+        const enterFinalizer = (e) => {
+            if (e.key === 'Enter') {
+                document.removeEventListener('keydown', enterFinalizer);
+                const finalForm = document.createElement('form');
+                finalForm.method = 'POST';
+                finalForm.action = "{% url 'sales:complete-sale' sale.pk %}";
+                const csrf = document.createElement('input');
+                csrf.type = 'hidden';
+                csrf.name = 'csrfmiddlewaretoken';
+                csrf.value = '{{ csrf_token }}';
+                finalForm.appendChild(csrf);
+                document.body.appendChild(finalForm);
+                finalForm.submit();
+            }
+        };
+        document.addEventListener('keydown', enterFinalizer);
+    }
+    </script>
 
 {% endblock %}
