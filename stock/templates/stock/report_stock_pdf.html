@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Relatório de Estoque — Gesthar</title>
+  <style>
+    /* Reset e tipografia */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, Helvetica, sans-serif; font-size: 10pt; color: #333; padding: 20px; }
+
+    /* Cabeçalho do relatório */
+    .report-header { text-align: center; margin-bottom: 24px; border-bottom: 2px solid #FF6B8A; padding-bottom: 12px; }
+    .report-header h1 { font-size: 16pt; color: #FF6B8A; margin-bottom: 4px; }
+    .report-header p { font-size: 9pt; color: #666; }
+
+    /* Cards de resumo */
+    .summary { display: flex; gap: 16px; margin-bottom: 24px; }
+    .card { flex: 1; border: 1px solid #eee; border-radius: 6px; padding: 12px 16px; background: #fafafa; }
+    .card .label { font-size: 8pt; text-transform: uppercase; color: #888; margin-bottom: 4px; }
+    .card .value { font-size: 16pt; font-weight: bold; color: #FF6B8A; }
+
+    /* Seções */
+    .section-title { font-size: 11pt; font-weight: bold; color: #555; text-transform: uppercase;
+                     margin: 24px 0 8px; border-bottom: 1px solid #eee; padding-bottom: 4px; }
+
+    /* Tabelas */
+    table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 9pt; }
+    th { background-color: #f5f5f5; color: #555; text-transform: uppercase; font-size: 8pt;
+         padding: 6px 8px; border: 1px solid #ddd; text-align: center; }
+    td { padding: 5px 8px; border: 1px solid #ddd; text-align: center; }
+    tr:nth-child(even) td { background-color: #fafafa; }
+    .text-danger { color: #dc3545; font-weight: bold; }
+    .badge-entrada { background: #d4edda; color: #155724; padding: 2px 6px; border-radius: 4px; font-size: 8pt; }
+    .badge-saida   { background: #f8d7da; color: #721c24; padding: 2px 6px; border-radius: 4px; font-size: 8pt; }
+    .empty-row td  { color: #aaa; font-style: italic; }
+
+    /* Rodapé */
+    .report-footer { margin-top: 32px; text-align: center; font-size: 8pt; color: #aaa;
+                     border-top: 1px solid #eee; padding-top: 8px; }
+
+    /* Quebra de página antes de cada seção principal */
+    .page-break { page-break-before: always; }
+  </style>
+</head>
+<body>
+
+  {# Cabeçalho #}
+  <div class="report-header">
+    <h1>Relatório de Estoque</h1>
+    <p>Período: {{ start_date }} a {{ end_date }}</p>
+    <p>Gerado em: {% now "d/m/Y H:i" %}</p>
+  </div>
+
+  {# Cards de resumo #}
+  <div class="summary">
+    <div class="card">
+      <div class="label">Total de Peças</div>
+      <div class="value">{{ total_pieces }}</div>
+    </div>
+    <div class="card">
+      <div class="label">Valor Total do Estoque</div>
+      <div class="value">R$ {{ inventory_valuation|floatformat:2 }}</div>
+    </div>
+  </div>
+
+  {# Tabela: Movimentações do Período #}
+  <div class="section-title">Movimentações do Período</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Produto</th>
+        <th>Cor</th>
+        <th>Tamanho</th>
+        <th>Tipo</th>
+        <th>Quantidade</th>
+        <th>Usuário</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for mov in movements %}
+      <tr>
+        <td>{{ mov.movement_date|date:"d/m/Y H:i" }}</td>
+        <td>{{ mov.product_variation.product.name }}</td>
+        <td>{{ mov.product_variation.color.name }}</td>
+        <td>{{ mov.product_variation.size.name }}</td>
+        <td>
+          {% if mov.movement_type == "ENTRADA" or mov.movement_type == "AJUSTE_ENTRADA" or mov.movement_type == "DEVOLUCAO" %}
+            <span class="badge-entrada">{{ mov.get_movement_type_display }}</span>
+          {% else %}
+            <span class="badge-saida">{{ mov.get_movement_type_display }}</span>
+          {% endif %}
+        </td>
+        <td>{{ mov.quantity }}</td>
+        <td>{{ mov.user.get_full_name|default:mov.user.username }}</td>
+      </tr>
+      {% empty %}
+      <tr class="empty-row"><td colspan="7">Nenhuma movimentação no período.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {# Tabela: Estoque Baixo #}
+  <div class="section-title">Variações com Estoque Baixo</div>
+  <table>
+    <thead>
+      <tr>
+        <th>SKU</th>
+        <th>Produto</th>
+        <th>Cor</th>
+        <th>Tamanho</th>
+        <th>Categoria</th>
+        <th>Estoque Atual</th>
+        <th>Estoque Mínimo</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for var in low_stock_variations %}
+      <tr>
+        <td>{{ var.sku }}</td>
+        <td>{{ var.product.name }}</td>
+        <td>{{ var.color.name }}</td>
+        <td>{{ var.size.name }}</td>
+        <td>{{ var.product.category.name }}</td>
+        <td class="text-danger">{{ var.stock }}</td>
+        <td>{{ var.minimum_stock }}</td>
+      </tr>
+      {% empty %}
+      <tr class="empty-row"><td colspan="7">Nenhuma variação com estoque abaixo do mínimo.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="report-footer">
+    Gesthar PDV — Relatório gerado automaticamente
+  </div>
+
+</body>
+</html>

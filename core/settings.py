@@ -147,4 +147,12 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "user.UserGesthar"
 
 LOGIN_URL = "accounts:login"
+LOGIN_REDIRECT_URL = "base:home"
 LOGOUT_REDIRECT_URL = "accounts:login"
+
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+# Em produção (DEBUG=False) força cookies seguros via HTTPS
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True

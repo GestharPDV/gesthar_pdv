@@ -162,6 +162,7 @@ def add_item_view(request):
 
 
 @require_POST
+@login_required
 def remove_item_view(request, item_id):
     """Remove item do carrinho"""
     item = get_object_or_404(
