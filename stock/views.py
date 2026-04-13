@@ -6,8 +6,6 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.views.generic import TemplateView, View
 
-from weasyprint import HTML
-
 from . import services
 
 
@@ -90,6 +88,16 @@ class StockReportPDFView(LoginRequiredMixin, View):
     """
 
     def get(self, request, *args, **kwargs):
+        try:
+            from weasyprint import HTML
+        except (ImportError, OSError):
+            return HttpResponse(
+                "Exportação em PDF não está disponível neste ambiente. "
+                "Instale as dependências do WeasyPrint (GTK/Pango).",
+                status=501,
+                content_type="text/plain; charset=utf-8",
+            )
+
         context = _build_report_context(request)
 
         # Renderiza o template dedicado ao PDF (sem sidebar, sem botões)

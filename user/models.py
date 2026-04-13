@@ -1,9 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.conf import settings
 
-# Devido à customização para usar o email como identificador único,
-# é necessário criar um gerenciador de usuário customizado para lidar com a criação
-# de usuários e superusuários.
+
 class CustomUserManager(BaseUserManager):
     """
     Gerenciador de usuário customizado onde o e-mail é o identificador único
@@ -29,6 +28,7 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
+        extra_fields.setdefault("role", "ADMIN")
 
         if extra_fields.get("is_staff") is not True:
             raise ValueError("Superusuário precisa ter is_staff=True.")
@@ -39,11 +39,12 @@ class CustomUserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 
-''''Modelo de usuário customizado no django'''
 class UserGesthar(AbstractUser):
-    # O campo 'username' é opcional para a proposta do sistema
-    # Como se trata de um campo herdado e obrigatório, ele é mantido
-    # mas configurado para permitir valores nulos e em branco.
+
+    class Role(models.TextChoices):
+        ADMIN = 'ADMIN', 'Administrador'
+        VENDEDOR = 'VENDEDOR', 'Vendedor'
+
     username = models.CharField(
         max_length=150,
         unique=False,
@@ -63,7 +64,10 @@ class UserGesthar(AbstractUser):
         blank=True, verbose_name="Data de Nascimento", null=True
     )
     role = models.CharField(
-        max_length=100, verbose_name="Cargo/Função", blank=True, null=True
+        max_length=20,
+        choices=Role.choices,
+        default=Role.VENDEDOR,
+        verbose_name="Perfil de Acesso",
     )
     notes = models.TextField(
         verbose_name="Observações", blank=True, null=True
@@ -72,11 +76,9 @@ class UserGesthar(AbstractUser):
         blank=True, verbose_name="Data de Saída", null=True
     )
 
-    # Definindo o campo de autenticação para ser o email
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
-    # Definindo o gerenciador customizado
     objects = CustomUserManager()
 
     class Meta:
@@ -85,12 +87,36 @@ class UserGesthar(AbstractUser):
 
     def __str__(self):
         return self.get_full_name() or self.username or self.email or f"Usuário #{self.pk}"
-    
+
     def get_full_name(self):
-        """Retorna o nome completo do usuário, com fallback para email"""
         full_name = super().get_full_name().strip()
         if full_name:
             return full_name
         if self.username:
             return self.username
         return self.email.split('@')[0] if self.email else f"Usuário #{self.pk}"
+
+    @property
+    def is_admin(self):
+        return self.role == self.Role.ADMIN
+
+
+class UserActionLog(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='action_logs',
+        verbose_name='Usuário',
+    )
+    action = models.CharField(max_length=255, verbose_name='Ação')
+    timestamp = models.DateTimeField(auto_now_add=True, verbose_name='Data/Hora')
+
+    class Meta:
+        verbose_name = 'Log de Atividade'
+        verbose_name_plural = 'Logs de Atividade'
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"{self.user} — {self.action} ({self.timestamp:%d/%m/%Y %H:%M})"

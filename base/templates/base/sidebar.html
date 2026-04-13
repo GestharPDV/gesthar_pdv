@@ -327,6 +327,7 @@
         <a href="{% url 'stock:report-stock' %}" class="d-block p-2 link-sidebar text-decoration-none small"
           >ESTOQUE</a
         >
+        {% if user.role == 'ADMIN' or user.is_superuser %}
         <a href="#" class="d-block p-2 link-sidebar text-decoration-none small"
           >FINANCEIRO</a
         >
@@ -336,9 +337,11 @@
         <a href="#" class="d-block p-2 link-sidebar text-decoration-none small"
           >DIVERGÊNCIAS</a
         >
+        {% endif %}
       </div>
     </div>
 
+    {% if user.role == 'ADMIN' or user.is_superuser %}
     <div class="mb-2">
       <a
         class="w-100 d-flex align-items-center justify-content-between p-2 fw-semibold link-sidebar collapsed text-decoration-none rounded"
@@ -396,6 +399,7 @@
         >
       </div>
     </div>
+    {% endif %}
   </nav>
 
   <div class="p-3 mt-auto text-center border-top">
