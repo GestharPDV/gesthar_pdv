@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "stock",
     "sales",
     "base",
+    "notifications",
 ]
 
 MIDDLEWARE = [
@@ -69,13 +70,14 @@ ROOT_URLCONF = "core.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "base"],
+        "DIRS": [BASE_DIR / "base", BASE_DIR / "notifications" / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "notifications.context_processors.notifications",
             ],
         },
     },

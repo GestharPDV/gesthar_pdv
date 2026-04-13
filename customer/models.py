@@ -1,5 +1,10 @@
+from datetime import date, timedelta
 from django.db import models
+from django.core.exceptions import ValidationError
 from .validators import validate_cpf_cnpj
+
+_GESTACAO_DIAS = 280       # 40 semanas = 280 dias
+_MAX_SEMANAS_VALIDAS = 42  # limite clínico para DPP válida
 
 
 class Customer(models.Model):
@@ -35,6 +40,47 @@ class Customer(models.Model):
 
     def __str__(self):
         return self.name
+
+    # ------------------------------------------------------------------
+    # Lógica gestacional
+    # ------------------------------------------------------------------
+
+    @property
+    def current_weeks(self):
+        """Semana gestacional atual. None se não houver DPP cadastrada."""
+        if not self.baby_due_date:
+            return None
+        inicio_gestacao = self.baby_due_date - timedelta(days=_GESTACAO_DIAS)
+        dias = (date.today() - inicio_gestacao).days
+        return max(dias // 7, 0)
+
+    @property
+    def gestational_stage(self):
+        """'Gestante', 'Pós-parto' ou None."""
+        if not self.baby_due_date:
+            return None
+        return 'Pós-parto' if date.today() > self.baby_due_date else 'Gestante'
+
+    def clean(self):
+        super().clean()
+        if self.baby_due_date:
+            hoje = date.today()
+            limite_passado = hoje - timedelta(weeks=_MAX_SEMANAS_VALIDAS)
+            limite_futuro  = hoje + timedelta(weeks=_MAX_SEMANAS_VALIDAS)
+            if self.baby_due_date < limite_passado:
+                raise ValidationError({
+                    'baby_due_date': (
+                        f'Data prevista do parto não pode ser mais de '
+                        f'{_MAX_SEMANAS_VALIDAS} semanas no passado.'
+                    )
+                })
+            if self.baby_due_date > limite_futuro:
+                raise ValidationError({
+                    'baby_due_date': (
+                        f'Data prevista do parto não pode ser mais de '
+                        f'{_MAX_SEMANAS_VALIDAS} semanas no futuro.'
+                    )
+                })
 
     def get_purchase_history(self):
         """
