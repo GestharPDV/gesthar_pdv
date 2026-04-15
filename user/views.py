@@ -66,6 +66,7 @@ def profile_edit_view(request, pk):
     user = get_object_or_404(UserGesthar, pk=pk)
 
     if request.method == "POST":
+        original_role = user.role
         form = UserGestharChangeForm(request.POST, instance=user)
         if form.is_valid():
             is_active = form.cleaned_data.get('is_active')
@@ -79,9 +80,9 @@ def profile_edit_view(request, pk):
                 )
             # Impede rebaixar o último admin
             elif (
-                user.role == UserGesthar.Role.ADMIN
+                original_role == UserGesthar.Role.ADMIN
                 and new_role != UserGesthar.Role.ADMIN
-                and _is_last_admin(user)
+                and UserGesthar.objects.filter(role=UserGesthar.Role.ADMIN, is_active=True).count() <= 1
             ):
                 form.add_error(
                     'role',

@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth import get_user_model
-from user.form import EmailAuthenticationForm
+from accounts.forms import EmailAuthenticationForm
 
 User = get_user_model()
 
@@ -26,7 +26,7 @@ class LoginViewTests(TestCase):
         """Teste se a página de login carrega corretamente via GET"""
         response = self.client.get(self.login_url)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'user/login_page.html')
+        self.assertTemplateUsed(response, 'accounts/login_page.html')
     
     def test_login_page_contem_formulario(self):
         """Teste se a página de login contém o formulário"""

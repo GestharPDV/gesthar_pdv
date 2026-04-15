@@ -14,7 +14,7 @@ class StockReportViewTest(TestCase):
     def setUpTestData(cls):
         # Usuário autenticado necessário (LoginRequiredMixin)
         cls.user = UserGesthar.objects.create_user(
-            username="tester",
+            email="tester@test.com",
             password="testpass123",
         )
 
@@ -36,7 +36,7 @@ class StockReportViewTest(TestCase):
         )
 
     def setUp(self):
-        self.client.login(username="tester", password="testpass123")
+        self.client.force_login(self.user)
 
     # ------------------------------------------------------------------
     # Testes da View
