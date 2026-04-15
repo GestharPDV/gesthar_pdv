@@ -1,6 +1,10 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import check_password
 from django.db import IntegrityError
+
+from user.models import UserGesthar
+from user.tests.test_permissions import make_user
 
 User = get_user_model()
 
@@ -106,4 +110,31 @@ class UserGestharModelTests(TestCase):
     def test_required_fields_configurado(self):
         """Teste se REQUIRED_FIELDS está vazio"""
         self.assertEqual(User.REQUIRED_FIELDS, [])
+
+
+class UserModelTests(TestCase):
+    """Testes de integridade do modelo UserGesthar."""
+
+    def test_senha_nao_salva_em_texto_plano(self):
+        """A senha deve ser armazenada como hash, nunca em texto plano."""
+        user = make_user('hash@test.com', password='MinhaSenha@Segura')
+        user.refresh_from_db()
+        self.assertNotEqual(user.password, 'MinhaSenha@Segura')
+        self.assertTrue(check_password('MinhaSenha@Segura', user.password))
+
+    def test_role_default_e_vendedor(self):
+        """O perfil padrão de um novo usuário deve ser VENDEDOR."""
+        user = UserGesthar.objects.create_user(
+            email='default@test.com',
+            password='Senha@123',
+            cpf='52998224725',
+        )
+        self.assertEqual(user.role, UserGesthar.Role.VENDEDOR)
+
+    def test_is_admin_property(self):
+        """A property is_admin deve retornar True apenas para ADMIN."""
+        admin = make_user('adm2@test.com', role=UserGesthar.Role.ADMIN)
+        vendedor = make_user('vend2@test.com', role=UserGesthar.Role.VENDEDOR)
+        self.assertTrue(admin.is_admin)
+        self.assertFalse(vendedor.is_admin)
 
