@@ -15,8 +15,15 @@ from .models import (
     Size,
 )
 
-# Classes do Tailwind CSS para estilização dos campos do formulário
-TAILWIND_CLASSES = "w-full border border-gray-300 rounded-lg py-2 px-4 bg-white focus:outline-none focus:ring-2 focus:ring-rose-400"
+def _apply_bootstrap_classes(fields):
+    for field in fields.values():
+        widget = field.widget.__class__.__name__
+        if widget == "CheckboxInput":
+            continue
+        if "Select" in widget:
+            field.widget.attrs["class"] = "form-select"
+        else:
+            field.widget.attrs["class"] = "form-control"
 
 
 # Formulário para o modelo Product
@@ -36,16 +43,8 @@ class ProductForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
         self.fields["category"].queryset = Category.objects.filter(is_active=True)
-
-        for field_name, field in self.fields.items():
-            # Pulamos checkboxes, pois eles são estilizados de forma diferente no HTML
-            if field.widget.__class__.__name__ == "CheckboxInput":
-                continue
-
-            # Aplicamos as classes do Tailwind a todos os outros
-            field.widget.attrs["class"] = TAILWIND_CLASSES
+        _apply_bootstrap_classes(self.fields)
 
 
 class ProductSupplierForm(ModelForm):
@@ -55,15 +54,8 @@ class ProductSupplierForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        # Lógica de Negócio
         self.fields["supplier"].queryset = Supplier.objects.filter(is_active=True)
-
-        # Lógica de Estilização
-        for field_name, field in self.fields.items():
-            if field.widget.__class__.__name__ == "CheckboxInput":
-                continue
-            field.widget.attrs["class"] = TAILWIND_CLASSES
+        _apply_bootstrap_classes(self.fields)
 
 
 class ProductVariationForm(ModelForm):
@@ -73,16 +65,9 @@ class ProductVariationForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        # Lógica de Negócio
         self.fields["color"].queryset = Color.objects.all()
         self.fields["size"].queryset = Size.objects.filter(is_active=True)
-
-        # Lógica de Estilização
-        for field_name, field in self.fields.items():
-            if field.widget.__class__.__name__ == "CheckboxInput":
-                continue
-            field.widget.attrs["class"] = TAILWIND_CLASSES
+        _apply_bootstrap_classes(self.fields)
 
 
 class BaseProductVariationInlineFormSet(BaseInlineFormSet):
