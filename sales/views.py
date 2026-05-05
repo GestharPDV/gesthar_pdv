@@ -1,12 +1,18 @@
+import json
+from datetime import date
+
 from django.forms import ValidationError
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import ListView, DetailView
+from django.views.generic import ListView, DetailView, TemplateView
 from django.db.models import Q
 from django.http import JsonResponse
+
+from user.permissions import AdminRequiredMixin
+from . import services
 
 from product.models import ProductVariation
 from .models import Sale, SaleItem, CashRegister, SalePayment
@@ -379,5 +385,86 @@ def apply_discount_view(request):
         
     except (ValueError, TypeError):
         messages.error(request, "Valor de desconto inválido.")
-    
+
     return redirect("sales:pdv")
+
+
+METHOD_DISPLAY = {
+    "DINHEIRO": "Dinheiro",
+    "CREDITO": "Cartão de Crédito",
+    "DEBITO": "Cartão de Débito",
+    "PIX": "PIX",
+    "OUTROS": "Outros",
+}
+
+
+class SalesReportView(LoginRequiredMixin, AdminRequiredMixin, TemplateView):
+    template_name = "sales/report_sales.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        today = date.today()
+        start_str = self.request.GET.get("start_date", today.replace(day=1).isoformat())
+        end_str = self.request.GET.get("end_date", today.isoformat())
+
+        try:
+            start_date = date.fromisoformat(start_str)
+            end_date = date.fromisoformat(end_str)
+        except ValueError:
+            start_date = today.replace(day=1)
+            end_date = today
+
+        if end_date < start_date:
+            context.update(
+                {
+                    "date_error": "A data final não pode ser anterior à data inicial.",
+                    "start_date": start_str,
+                    "end_date": end_str,
+                    "total_revenue": 0,
+                    "total_discounts": 0,
+                    "completed_sales_count": 0,
+                    "top_items": [],
+                    "payment_chart_json": "{}",
+                    "user_chart_json": "{}",
+                }
+            )
+            return context
+
+        total_revenue = services.get_total_revenue(start_date, end_date)
+        total_discounts = services.get_total_discounts(start_date, end_date)
+        completed_sales_count = Sale.objects.filter(
+            status=Sale.Status.COMPLETED,
+            completed_at__date__gte=start_date,
+            completed_at__date__lte=end_date,
+        ).count()
+
+        payment_qs = services.get_revenue_by_payment_method(start_date, end_date)
+        payment_chart = {
+            "labels": [METHOD_DISPLAY.get(p["method"], p["method"]) for p in payment_qs],
+            "values": [float(p["total"]) for p in payment_qs],
+        }
+
+        user_qs = services.get_sales_by_user(start_date, end_date)
+        user_chart = {"labels": [], "values": []}
+        for u in user_qs:
+            name = (
+                f"{u['user__first_name']} {u['user__last_name']}".strip()
+                or u["user__email"]
+            )
+            user_chart["labels"].append(name)
+            user_chart["values"].append(float(u["total_revenue"]))
+
+        context.update(
+            {
+                "total_revenue": total_revenue,
+                "total_discounts": total_discounts,
+                "completed_sales_count": completed_sales_count,
+                "top_items": services.get_top_selling_items(start_date, end_date),
+                "start_date": start_date.isoformat(),
+                "end_date": end_date.isoformat(),
+                "payment_chart_json": json.dumps(payment_chart),
+                "user_chart_json": json.dumps(user_chart),
+            }
+        )
+        return context
