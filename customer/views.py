@@ -2,10 +2,12 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import Q, Sum, Avg
 from django.contrib.auth.mixins import LoginRequiredMixin
+from decimal import Decimal
 from .models import Customer, Address
 from .forms import CustomerForm, AddressFormSet
+from sales.models import Sale
 
 
 class CustomerListView(LoginRequiredMixin, ListView):
@@ -47,17 +49,22 @@ class CustomerDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        customer = self.get_object()
-        
-        # Adiciona informações de histórico (placeholder)
-        context['purchase_history'] = customer.get_purchase_history()
-        context['total_spent'] = customer.get_total_spent()
-        context['purchase_frequency'] = customer.get_purchase_frequency()
-        context['favorite_products'] = customer.get_favorite_products()
-        
-        # Adiciona endereços
+        customer = self.object
+
+        completed_purchases = customer.purchases.filter(
+            status=Sale.Status.COMPLETED
+        ).order_by('-created_at')
+
+        context['purchase_history'] = completed_purchases
+        context['total_purchases'] = completed_purchases.count()
+        context['total_spent'] = (
+            completed_purchases.aggregate(total=Sum('net_amount'))['total'] or Decimal('0.00')
+        )
+        context['monthly_average'] = (
+            completed_purchases.aggregate(media=Avg('net_amount'))['media'] or Decimal('0.00')
+        )
         context['addresses'] = customer.addresses.all()
-        
+
         return context
 
 

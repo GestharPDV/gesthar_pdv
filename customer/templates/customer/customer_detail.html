@@ -9,7 +9,7 @@
     <div class="d-flex gap-2">
       <a href="{% url 'customer:customer_update' customer.pk %}" class="botao-amarelo p-2">Editar Cliente</a>
       <a href="{% url 'customer:customer_delete' customer.pk %}" class="botao-vermelho p-2">Excluir Cliente</a>
-      <a href="{% url 'customer:customer_list' %}" class="botao-rosa p-2">Voltar</a>
+      <a href="#" onclick="goBackOrList(event, '{% url 'customer:customer_list' %}')" class="botao-rosa p-2">Voltar</a>
     </div>
   </div>
 
@@ -115,11 +115,11 @@
           </div>
           <div class="mb-3">
             <p class="fs-texto text-secondary mb-1">Total de Compras</p>
-            <p class="h4 fw-bold">{{ purchase_frequency.total_purchases }}</p>
+            <p class="h4 fw-bold">{{ total_purchases }}</p>
           </div>
           <div>
-            <p class="fs-texto text-secondary mb-1">Média Mensal</p>
-            <p class="h4 fw-bold">{{ purchase_frequency.average_per_month|floatformat:1 }}</p>
+            <p class="fs-texto text-secondary mb-1">Ticket Médio</p>
+            <p class="h4 fw-bold">R$ {{ monthly_average|floatformat:2 }}</p>
           </div>
         </div>
       </div>
@@ -139,35 +139,43 @@
   <div class="border border-separator rounded mb-4">
     <h2 class="subtitulo mb-0">Histórico de Compras</h2>
     <div class="p-3">
-      {% if purchase_history %}
-        <div class="table-responsive">
-          <table class="table table-bordered align-middle mb-0">
-            <thead class="table-light">
-              <tr class="text-uppercase text-secondary">
-                <th>Data</th>
-                <th>Produtos</th>
-                <th class="text-end">Valor Total</th>
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle mb-0">
+          <thead class="table-light">
+            <tr class="text-uppercase text-secondary">
+              <th>Data</th>
+              <th>Código</th>
+              <th>Status</th>
+              <th class="text-end">Valor Total</th>
+              <th class="text-center">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for sale in purchase_history %}
+              <tr>
+                <td>{{ sale.created_at|date:"d/m/Y H:i" }}</td>
+                <td>#{{ sale.id }}</td>
+                <td><span class="badge bg-success">{{ sale.get_status_display }}</span></td>
+                <td class="text-end text-rose">R$ {{ sale.net_amount|floatformat:2 }}</td>
+                <td class="text-center">
+                  <a href="{% url 'sales:sale-detail' sale.id %}" title="Ver detalhes">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  </a>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {% for sale in purchase_history %}
-                <tr>
-                  <td>{{ sale.date|date:"d/m/Y" }}</td>
-                  <td>{{ sale.items_count }} item(s)</td>
-                  <td class="text-end text-rose">R$ {{ sale.total|floatformat:2 }}</td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      {% else %}
-        <div class="text-center py-4">
-          <svg class="mx-auto mb-3" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-          <p class="text-muted">Histórico de compras será exibido após integração com o módulo de PDV/Vendas.</p>
-        </div>
-      {% endif %}
+            {% empty %}
+              <tr>
+                <td colspan="5" class="text-center text-muted fst-italic py-4">
+                  Este cliente ainda não possui compras concluídas.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 

@@ -4,7 +4,7 @@
 {% block title %}PDV - Frente de Caixa{% endblock %}
 
 {# Remove padding padrão se necessário para tela cheia #}
-{% block main_class %}p-0 overflow-hidden bg-light{% endblock %}
+{% block main_class %}p-0 overflow-hidden{% endblock %}
 
 {% block content %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,6 +22,19 @@
         --text-secondary: #806066;
         --border-color: #e5e5e5;
     }
+
+    [data-bs-theme="dark"] {
+        --bg-body: #121212;
+        --bg-card: #1e1e1e;
+        --text-main: #e4e4e4;
+        --text-secondary: #aaaaaa;
+        --border-color: #444444;
+    }
+
+    [data-bs-theme="dark"] .table-hover-custom tbody tr:hover { background: #2c2c2c; }
+    [data-bs-theme="dark"] #search-results { background-color: var(--bg-card) !important; }
+    [data-bs-theme="dark"] #step-change .rounded-4 { background-color: #1e1e1e !important; }
+    [data-bs-theme="dark"] #step-success .rounded-4 { background-color: #1a3a1a !important; }
 
     body {
         font-family: 'Inter', sans-serif;
@@ -150,7 +163,7 @@
                                 <span class="material-symbols-outlined position-relative me-1" style="top:3px; font-size: 1.2rem;">person</span>IDENTIFICAR CLIENTE
                             </label>
                             {% if sale.customer %}
-                                <div class="d-flex justify-content-between align-items-center bg-white rounded-pill px-3 py-2 border border-separator">
+                                <div class="d-flex justify-content-between align-items-center rounded-pill px-3 py-2 border border-separator">
                                     <div>
                                         <div class="fw-semibold" style="font-size: 0.85rem;">{{ sale.customer.name }}</div>
                                         <small class="text-muted">{{ sale.customer.cpf_cnpj }}</small>
@@ -199,7 +212,11 @@
                                     <td>
                                         <div class="d-flex align-items-center justify-content-center">
                                             <span class="small me-1">R$</span>
-                                            <input type="number" class="form-control form-control-sm text-center" style="width: 70px;" value="0.00">
+                                            <input type="number" class="form-control form-control-sm text-center item-discount-input" style="width: 70px;"
+                                                   value="{{ item.discount|floatformat:2 }}"
+                                                   data-unit-price="{{ item.unit_price }}"
+                                                   data-quantity="{{ item.quantity }}"
+                                                   min="0" step="0.01">
                                         </div>
                                     </td>
                                     <td class="fw-bold" style="color: var(--cor-fonte-rosa);">R$ {{ item.total_price|floatformat:2 }}</td>
@@ -243,7 +260,7 @@
                             </div>
                             <div class="col-md-2">
                                 <div class="small fw-bold text-muted mb-1">SUBTOTAL</div>
-                                <div id="display-subtotal" class="fw-bold text-dark">R$ {{ sale.net_amount|floatformat:2 }}</div>
+                                <div id="display-subtotal" class="fw-bold text-body">R$ {{ sale.net_amount|floatformat:2 }}</div>
                             </div>
                             <div class="col-md-2">
                                 <div class="small fw-bold text-muted mb-1">TOTAL</div>
@@ -290,7 +307,7 @@
                                     <div class="mt-5 pt-4 border-top d-flex justify-content-between align-items-center">
                                         <div>
                                             <span class="text-muted small d-block">RESTANTE</span>
-                                            <span class="h4 fw-bold mb-0">R$ {{ sale.remaining_balance|floatformat:2 }}</span>
+                                            <span class="h4 fw-bold mb-0" id="modal-remaining-balance">R$ {{ sale.remaining_balance|floatformat:2 }}</span>
                                         </div>
                                         <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">CANCELAR</button>
                                     </div>
@@ -497,22 +514,29 @@
         const inputDiscReal = document.getElementById('footer-disc-real');
         const inputDiscPercent = document.getElementById('footer-disc-percent');
 
+        let discountDebounce;
+
+        function scheduleDiscountSave() {
+            clearTimeout(discountDebounce);
+            discountDebounce = setTimeout(saveDiscountToBackend, 600);
+        }
+
         if (inputDiscReal && inputDiscPercent) {
-            // Se digitar em Real, limpa Porcentagem
             inputDiscReal.addEventListener('input', function() {
                 if (this.value > 0) inputDiscPercent.value = '';
                 recalculateSaleTotal();
+                scheduleDiscountSave();
             });
 
-            // Se digitar em Porcentagem, limpa Real
             inputDiscPercent.addEventListener('input', function() {
                 if (this.value > 0) inputDiscReal.value = '';
                 recalculateSaleTotal();
+                scheduleDiscountSave();
             });
         }
 
         // Ouvinte para descontos nos itens da tabela (cada linha)
-        document.querySelectorAll('.product-list tbody input').forEach(input => {
+        document.querySelectorAll('.product-list tbody .item-discount-input').forEach(input => {
             input.addEventListener('input', function() {
                 updateItemDiscount(this);
             });
@@ -538,28 +562,83 @@
         }
     });
 
+    // Auto-ocultar alertas após 3 segundos
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.alert-dismissible');
+            alerts.forEach(function(alert) {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 3000); // 3000ms = 3 segundos
+    });
+
+    // Calcula o desconto absoluto atual dos inputs do footer
+    function getCurrentDiscountAbsolute() {
+        const inputDiscReal = document.getElementById('footer-disc-real');
+        const inputDiscPercent = document.getElementById('footer-disc-percent');
+        const discReal = parseFloat(inputDiscReal.value.replace(',', '.')) || 0;
+        const discPercent = parseFloat(inputDiscPercent.value.replace(',', '.')) || 0;
+
+        if (discReal > 0) return discReal;
+
+        if (discPercent > 0) {
+            // Soma os brutos dos itens para converter % em absoluto
+            let brutSum = 0;
+            document.querySelectorAll('.product-list tbody tr').forEach(row => {
+                if (row.querySelector('td:nth-child(2)') === null) return;
+                const unitPrice = parseFloat(row.querySelector('td:nth-child(3)').innerText.replace('R$', '').replace(',', '.').trim()) || 0;
+                const quantity = parseInt(row.querySelector('td:nth-child(2)').innerText) || 0;
+                brutSum += unitPrice * quantity;
+            });
+            return brutSum * (discPercent / 100);
+        }
+        return 0;
+    }
+
+    // Salva o desconto atual no backend via AJAX
+    async function saveDiscountToBackend() {
+        const discountAbsolute = getCurrentDiscountAbsolute();
+        const formData = new FormData();
+        formData.append('discount_amount', discountAbsolute.toFixed(2));
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+        try {
+            const response = await fetch("{% url 'sales:apply-discount' %}", {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const data = await response.json();
+            if (response.ok && data.success) {
+                // Atualiza o RESTANTE no modal com o valor recalculado pelo backend
+                const modalRemaining = document.getElementById('modal-remaining-balance');
+                if (modalRemaining) {
+                    modalRemaining.innerText = 'R$ ' + data.remaining_balance.toFixed(2).replace('.', ',');
+                }
+            }
+        } catch (e) {
+            // silencioso — erro será detectado na abertura do modal
+        }
+    }
+
     // Função para atualizar desconto individual do item
     function updateItemDiscount(input) {
-        const itemId = input.dataset.itemId;
-        const discountValue = parseFloat(input.value) || 0;
-        const unitPrice = parseFloat(input.dataset.unitPrice);
-        const quantity = parseFloat(input.dataset.quantity);
-        
-        // Valida se o desconto não excede o valor total do item
+        const discountValue = parseFloat(input.value.replace(',', '.')) || 0;
+        const unitPrice = parseFloat(input.dataset.unitPrice) || 0;
+        const quantity = parseInt(input.dataset.quantity) || 1;
+
         const itemTotal = unitPrice * quantity;
         if (discountValue > itemTotal) {
             alert('O desconto não pode ser maior que o valor total do item!');
-            input.value = '';
+            input.value = (0).toFixed(2);
             return;
         }
-        
-        // Aqui você pode fazer uma requisição AJAX para atualizar no backend
-        // Por enquanto, apenas atualiza visualmente
+
         const totalCell = input.closest('tr').querySelector('td:nth-child(5)');
-        const newTotal = itemTotal - discountValue;
-        totalCell.textContent = 'R$ ' + newTotal.toFixed(2);
-        
-        // Recalcula o total da venda
+        const newTotal = Math.max(itemTotal - discountValue, 0);
+        totalCell.innerText = 'R$ ' + newTotal.toFixed(2).replace('.', ',');
+
         recalculateSaleTotal();
     }
     
@@ -655,7 +734,7 @@
                                 li.style.cursor = 'pointer';
                                 li.innerHTML = `
                                     <div>
-                                        <div class="fw-semibold text-dark">${item.label}</div>
+                                        <div class="fw-semibold text-body">${item.label}</div>
                                         <small class="text-muted">SKU: ${item.value}</small>
                                     </div>
                                     <span class="fw-bold text-success">R$ ${item.price.toFixed(2)}</span>
@@ -709,13 +788,39 @@
             detailArea.innerHTML = '<div class="py-5 text-muted opacity-50"><span class="material-symbols-outlined fs-1">payments</span><p>Aguardando seleção...</p></div>';
         });
 
-        btnOpenModal.addEventListener('click', function() {
-            // Validação básica antes de abrir
+        btnOpenModal.addEventListener('click', async function() {
             const totalVenda = parseFloat(document.getElementById('display-total-geral').innerText.replace('R$', '').replace(',', '.'));
             if (totalVenda <= 0) {
                 alert("O valor da venda deve ser maior que zero!");
                 return;
             }
+
+            // Garante que o desconto do footer esteja salvo no backend antes de abrir o modal
+            const discountAbsolute = getCurrentDiscountAbsolute();
+            if (discountAbsolute > 0) {
+                const formData = new FormData();
+                formData.append('discount_amount', discountAbsolute.toFixed(2));
+                formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+                try {
+                    const response = await fetch("{% url 'sales:apply-discount' %}", {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    const data = await response.json();
+                    if (!response.ok || !data.success) {
+                        alert('Erro ao aplicar desconto: ' + (data.error || 'Erro desconhecido'));
+                        return;
+                    }
+                    // Atualiza o RESTANTE no modal com o valor calculado pelo backend
+                    document.getElementById('modal-remaining-balance').innerText = 'R$ ' + data.remaining_balance.toFixed(2).replace('.', ',');
+                } catch (e) {
+                    alert('Erro ao comunicar com o servidor. Tente novamente.');
+                    return;
+                }
+            }
+
             paymentModal.show();
         });
 
@@ -723,10 +828,12 @@
         document.querySelectorAll('.btn-payment-option').forEach(btn => {
             btn.addEventListener('click', function() {
                 const method = this.dataset.method;
-                
-                // Marcar botão ativo
+
                 document.querySelectorAll('.btn-payment-option').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
+
+                const valorRestanteStr = document.getElementById('modal-remaining-balance').innerText.replace('R$', '').replace(',', '.').trim();
+                const valorCalculado = parseFloat(valorRestanteStr).toFixed(2);
 
                 if (method === 'PIX') {
                     detailArea.innerHTML = `
@@ -734,18 +841,16 @@
                             <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=PagamentoPDV" alt="QR Code">
                         </div>
                         <p class="fw-bold text-muted small">ESCANEIE O QR-CODE</p>
+                        <input type="hidden" id="payment-amount-input" value="${valorCalculado}">
                         <button class="btn botao-verde w-100 mt-3 py-2 fw-bold" onclick="confirmPayment('PIX')">CONFIRMAR PIX</button>
                     `;
                 } else {
-                    const valorRestanteStr = document.querySelector('#step-payment-select .h4').innerText.replace('R$', '').replace(',', '.').trim();
-                    const valorCalculado = parseFloat(valorRestanteStr).toFixed(2);
-
                     detailArea.innerHTML = `
-                        <div class="p-4 rounded bg-light border border-dashed">
+                        <div class="p-4 rounded border border-dashed" style="background-color: var(--bg-card);">
                             <label class="small fw-bold text-muted mb-2 d-block">VALOR A RECEBER</label>
                             <div class="input-group">
                                 <span class="input-group-text">R$</span>
-                                <input type="number" id="payment-amount-input" class="form-control form-control-lg fw-bold" value="${valorCalculado}">
+                                <input type="number" id="payment-amount-input" class="form-control form-control-lg fw-bold" value="${valorCalculado}" min="0.01" step="0.01">
                             </div>
                             <button class="btn botao-rosa w-100 mt-4 py-3 fw-bold" onclick="confirmPayment('${method}')">CONFIRMAR PAGAMENTO</button>
                         </div>
