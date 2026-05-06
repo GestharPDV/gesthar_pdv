@@ -1,3 +1,5 @@
+from decimal import Decimal, InvalidOperation
+
 from django.forms import ValidationError
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
@@ -353,31 +355,54 @@ def search_products_api(request):
 @login_required
 def apply_discount_view(request):
     """Aplica desconto no total da venda"""
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
     sale = Sale.objects.filter(status=Sale.Status.DRAFT, user=request.user).first()
     if not sale:
+        if is_ajax:
+            return JsonResponse({'error': 'Nenhuma venda em andamento.'}, status=404)
         messages.error(request, "Nenhuma venda em andamento.")
         return redirect("sales:pdv")
-    
-    discount_str = request.POST.get('discount_amount', '0')
-    
+
+    discount_str = request.POST.get('discount_amount', '0').replace(',', '.').strip()
+
     try:
-        discount = float(discount_str) if discount_str else 0
-        
-        if discount < 0:
-            messages.error(request, "O desconto não pode ser negativo.")
+        discount = Decimal(discount_str) if discount_str else Decimal('0')
+
+        if discount < Decimal('0'):
+            msg = "O desconto não pode ser negativo."
+            if is_ajax:
+                return JsonResponse({'error': msg}, status=400)
+            messages.error(request, msg)
             return redirect("sales:pdv")
-        
-        if discount > float(sale.gross_amount):
-            messages.error(request, "O desconto não pode ser maior que o valor total da venda.")
+
+        if discount > sale.gross_amount:
+            msg = "O desconto não pode ser maior que o valor total da venda."
+            if is_ajax:
+                return JsonResponse({'error': msg}, status=400)
+            messages.error(request, msg)
             return redirect("sales:pdv")
-        
+
         sale.discount_amount = discount
         sale.save(update_fields=['discount_amount'])
         sale.calculate_totals()
-        
+        sale.refresh_from_db()
+
+        if is_ajax:
+            return JsonResponse({
+                'success': True,
+                'gross_amount': float(sale.gross_amount),
+                'discount_amount': float(sale.discount_amount),
+                'net_amount': float(sale.net_amount),
+                'remaining_balance': float(sale.remaining_balance),
+            })
+
         messages.success(request, f"Desconto de R$ {discount:.2f} aplicado com sucesso!")
-        
-    except (ValueError, TypeError):
-        messages.error(request, "Valor de desconto inválido.")
-    
+
+    except (ValueError, TypeError, InvalidOperation):
+        msg = "Valor de desconto inválido."
+        if is_ajax:
+            return JsonResponse({'error': msg}, status=400)
+        messages.error(request, msg)
+
     return redirect("sales:pdv")
