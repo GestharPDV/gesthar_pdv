@@ -22,6 +22,10 @@
             overflow: hidden; /* Remove barra de rolagem da janela inteira */
         }
     </style>
+    <script>
+        const storedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-bs-theme', storedTheme);
+    </script>
     {% block head_extra %}{% endblock %}
 </head>
 
@@ -54,6 +58,12 @@
           window.location.href = fallbackUrl;
         }
       }
+        function toggleDarkMode() {
+            const htmlEl = document.documentElement;
+            const newTheme = htmlEl.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+            htmlEl.setAttribute('data-bs-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
     </script>
     {% block scripts_extra %}{% endblock %}
 </body>
