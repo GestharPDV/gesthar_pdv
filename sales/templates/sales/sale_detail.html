@@ -5,7 +5,7 @@
 <div class="pr-20 pl-20">
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="titulo">VENDA #{{ sale.id|stringformat:"04d" }}</h1>
-    <a href="{% url 'sales:sale-list' %}" class="botao-rosa p-2 text-decoration-none">Voltar</a>
+    <a href="#" onclick="goBackOrList(event, '{% url 'sales:sale-list' %}')" class="botao-rosa p-2 text-decoration-none">Voltar</a>
   </div>
 
   <div class="row mb-4">

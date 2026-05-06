@@ -50,6 +50,14 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+      function goBackOrList(event, fallbackUrl) {
+        event.preventDefault();
+        if (window.history.length > 1 && document.referrer.indexOf(window.location.host) !== -1) {
+          window.history.back();
+        } else {
+          window.location.href = fallbackUrl;
+        }
+      }
         function toggleDarkMode() {
             const htmlEl = document.documentElement;
             const newTheme = htmlEl.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
