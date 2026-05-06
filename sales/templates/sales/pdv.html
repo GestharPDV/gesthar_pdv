@@ -4,7 +4,7 @@
 {% block title %}PDV - Frente de Caixa{% endblock %}
 
 {# Remove padding padrão se necessário para tela cheia #}
-{% block main_class %}p-0 overflow-hidden bg-light{% endblock %}
+{% block main_class %}p-0 overflow-hidden{% endblock %}
 
 {% block content %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,6 +22,19 @@
         --text-secondary: #806066;
         --border-color: #e5e5e5;
     }
+
+    [data-bs-theme="dark"] {
+        --bg-body: #121212;
+        --bg-card: #1e1e1e;
+        --text-main: #e4e4e4;
+        --text-secondary: #aaaaaa;
+        --border-color: #444444;
+    }
+
+    [data-bs-theme="dark"] .table-hover-custom tbody tr:hover { background: #2c2c2c; }
+    [data-bs-theme="dark"] #search-results { background-color: var(--bg-card) !important; }
+    [data-bs-theme="dark"] #step-change .rounded-4 { background-color: #1e1e1e !important; }
+    [data-bs-theme="dark"] #step-success .rounded-4 { background-color: #1a3a1a !important; }
 
     body {
         font-family: 'Inter', sans-serif;
@@ -172,7 +185,7 @@
                                 <span class="material-symbols-outlined position-relative me-1" style="top:3px; font-size: 1.2rem;">person</span>IDENTIFICAR CLIENTE
                             </label>
                             {% if sale.customer %}
-                                <div class="d-flex justify-content-between align-items-center bg-white rounded-pill px-3 py-2 border border-separator">
+                                <div class="d-flex justify-content-between align-items-center rounded-pill px-3 py-2 border border-separator">
                                     <div>
                                         <div class="fw-semibold" style="font-size: 0.85rem;">{{ sale.customer.name }}</div>
                                         <small class="text-muted">{{ sale.customer.cpf_cnpj }}</small>
@@ -269,7 +282,7 @@
                             </div>
                             <div class="col-md-2">
                                 <div class="small fw-bold text-muted mb-1">SUBTOTAL</div>
-                                <div id="display-subtotal" class="fw-bold text-dark">R$ {{ sale.net_amount|floatformat:2 }}</div>
+                                <div id="display-subtotal" class="fw-bold text-body">R$ {{ sale.net_amount|floatformat:2 }}</div>
                             </div>
                             <div class="col-md-2">
                                 <div class="small fw-bold text-muted mb-1">TOTAL</div>
@@ -743,7 +756,7 @@
                                 li.style.cursor = 'pointer';
                                 li.innerHTML = `
                                     <div>
-                                        <div class="fw-semibold text-dark">${item.label}</div>
+                                        <div class="fw-semibold text-body">${item.label}</div>
                                         <small class="text-muted">SKU: ${item.value}</small>
                                     </div>
                                     <span class="fw-bold text-success">R$ ${item.price.toFixed(2)}</span>
@@ -855,7 +868,7 @@
                     `;
                 } else {
                     detailArea.innerHTML = `
-                        <div class="p-4 rounded bg-light border border-dashed">
+                        <div class="p-4 rounded border border-dashed" style="background-color: var(--bg-card);">
                             <label class="small fw-bold text-muted mb-2 d-block">VALOR A RECEBER</label>
                             <div class="input-group">
                                 <span class="input-group-text">R$</span>
