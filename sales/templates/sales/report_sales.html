@@ -141,23 +141,23 @@
     </div>
     <div class="card-body p-0">
       {% if top_items %}
-      <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-          <thead class="table-light">
+      <div class="p-3 table-responsive">
+        <table class="table table-bordered align-middle text-center mb-0">
+          <thead class="cabecalho text-uppercase">
             <tr>
-              <th class="ps-3">#</th>
-              <th>Produto</th>
-              <th class="text-end">Qtd. Vendida</th>
-              <th class="text-end pe-3">Receita</th>
+              <th scope="col">#</th>
+              <th scope="col">Produto</th>
+              <th scope="col">Qtd. Vendida</th>
+              <th scope="col">Receita</th>
             </tr>
           </thead>
           <tbody>
             {% for item in top_items %}
             <tr>
-              <td class="ps-3 text-muted small">{{ forloop.counter }}</td>
-              <td class="fw-semibold">{{ item.product_name_snapshot }}</td>
-              <td class="text-end">{{ item.total_quantity }}</td>
-              <td class="text-end pe-3">R$ {{ item.total_revenue|floatformat:2 }}</td>
+              <td>{{ forloop.counter }}</td>
+              <td>{{ item.product_name_snapshot }}</td>
+              <td>{{ item.total_quantity }}</td>
+              <td>R$ {{ item.total_revenue|floatformat:2 }}</td>
             </tr>
             {% endfor %}
           </tbody>
