@@ -12,7 +12,7 @@
         {% csrf_token %}
         <button type="submit" class="botao-vermelho p-2">Excluir Produto</button>
       </form>
-      <a href="{% url 'product:product-list' %}" class="botao-rosa p-2 text-decoration-none">Voltar</a>
+      <a href="#" onclick="goBackOrList(event, '{% url 'product:product-list' %}')" class="botao-rosa p-2 text-decoration-none">Voltar</a>
     </div>
   </div>
 
