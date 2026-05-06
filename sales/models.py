@@ -167,7 +167,7 @@ class Sale(SoftDeleteModel):
 
         discount = self.discount_amount
         if not isinstance(discount, Decimal):
-            discount = Decimal(str("0.00"))
+            discount = Decimal(str(discount or "0"))
 
         self.gross_amount = total_items
         self.net_amount = total_items - discount
