@@ -1,0 +1,101 @@
+/* Variáveis de cor específicas do PDV */
+:root {
+    --primary-color: #FF4678;
+    --primary-hover: #e03565;
+    --bg-body: #f8f8f8;
+    --bg-card: #ffffff;
+    --text-main: #555555;
+    --text-secondary: #806066;
+    --border-color: #e5e5e5;
+}
+
+[data-bs-theme="dark"] {
+    --bg-body: #121212;
+    --bg-card: #1e1e1e;
+    --text-main: #e4e4e4;
+    --text-secondary: #aaaaaa;
+    --border-color: #444444;
+}
+
+/* Dark mode: elementos específicos do modal */
+[data-bs-theme="dark"] .table-hover-custom tbody tr:hover { background: #2c2c2c; }
+[data-bs-theme="dark"] #search-results { background-color: var(--bg-card) !important; }
+[data-bs-theme="dark"] #step-change .rounded-4 { background-color: #1e1e1e !important; }
+[data-bs-theme="dark"] #step-success .rounded-4 { background-color: #1a3a1a !important; }
+
+/* PDV usa fonte Inter no lugar da Montserrat global */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Utilitários visuais */
+.bg-card { background: var(--bg-card); }
+.border-separator { border-color: var(--border-color) !important; }
+.text-secondary-custom { color: var(--text-secondary); }
+.shadow-subtle { box-shadow: 0 2px 4px rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.04); }
+
+/* Botão primário personalizado */
+.btn-primary-custom {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+    transition: all 0.2s;
+}
+.btn-primary-custom:hover {
+    background: var(--primary-hover);
+    border-color: var(--primary-hover);
+    color: white;
+}
+
+/* Foco rosa nos inputs */
+.input-focus:focus {
+    box-shadow: 0 0 0 2px rgba(255, 70, 120, 0.2) !important;
+    border-color: var(--primary-color) !important;
+    outline: none;
+}
+
+.form-control:focus {
+    box-shadow: 0 0 0 0.2rem rgba(255, 70, 120, 0.25) !important;
+    border-color: #ff7690 !important;
+    outline: none;
+}
+
+.input-footer-desc:focus {
+    box-shadow: 0 0 0 0.2rem rgba(255, 70, 120, 0.25) !important;
+    border-color: #ff7690 !important;
+    outline: none;
+}
+
+/* Tabela com hover */
+.table-hover-custom tbody tr:hover { background: #f1f1f1; }
+.table-hover-custom td { vertical-align: middle; }
+
+/* Material Symbols */
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Área com scroll interno */
+.scroll-area {
+    overflow-y: auto;
+    max-height: calc(100vh - 280px);
+    flex: 1;
+}
+
+.scroll-area::-webkit-scrollbar { width: 6px; }
+.scroll-area::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 10px; }
+
+/* Botões de modalidade (online/presencial) */
+.btn-modalidade-ativa {
+    background-color: var(--cor-botao-secundario-rosa);
+    color: var(--cor-fonte-preta);
+    border: 1px solid var(--border-color);
+    font-size: 0.75rem;
+    font-weight: 600;
+}
