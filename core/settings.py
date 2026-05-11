@@ -17,6 +17,7 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+load_dotenv()
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -25,9 +26,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-oeg=j03p*vavs$)=^#it)4%&u=wcq3+vf0u7v=i+6q1^6_mwd_"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG =  os.getenv('DEBUG')
+DEBUG = os.getenv('DEBUG')
 
-ALLOWED_HOSTS = ["pdv.gesthar.com.br", "localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["pdv.gesthar.com.br", "localhost", "127.0.0.1", "192.168.0.17", "192.168.137.75"]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://pdv.gesthar.com.br",
@@ -85,8 +86,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "core.wsgi.application"
 
-load_dotenv();
-
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
@@ -101,6 +100,16 @@ DATABASES = {
     }
 }
 
+
+# E-mail (SMTP Gmail)
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 465))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'False') == 'True'
+EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'True') == 'True'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
