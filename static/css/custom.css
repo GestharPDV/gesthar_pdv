@@ -349,6 +349,16 @@ a[aria-expanded="false"] .chev {
 
 
 /* ------------------------------------ */
+/* Caixa de Pagamentos (sale_detail) */
+/* ------------------------------------ */
+
+.caixa-pagamentos {
+  background-color: var(--cor-fundo-cabecalho);
+  border: 1px solid var(--cor-fundo-linha);
+}
+
+
+/* ------------------------------------ */
 /* Login */
 /* ------------------------------------ */
 

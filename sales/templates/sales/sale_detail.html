@@ -66,7 +66,7 @@
             <span class="h5 fw-bold text-success">R$ {{ sale.net_amount|floatformat:2 }}</span>
           </div>
           
-          <div class="mt-4 p-2 bg-light rounded border">
+          <div class="mt-4 p-2 rounded caixa-pagamentos">
             <small class="d-block fw-bold text-muted mb-2">PAGAMENTOS:</small>
             {% for pay in sale.payments.all %}
             <div class="d-flex justify-content-between small">
