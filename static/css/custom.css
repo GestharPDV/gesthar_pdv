@@ -346,3 +346,21 @@ a[aria-expanded="false"] .chev {
   color: #842029 !important;
   border-color: #f5c2c7 !important;
 }
+
+
+/* ------------------------------------ */
+/* Login */
+/* ------------------------------------ */
+
+.login-card-custom {
+  background-color: color-mix(in srgb, var(--cor-fundo-site) 82%, transparent);
+}
+
+[data-bs-theme="dark"] .login-card-custom {
+  background-color: color-mix(in srgb, var(--cor-fundo-cabecalho) 82%, transparent);
+  border: 1px solid var(--cor-fundo-linha) !important;
+}
+
+[data-bs-theme="dark"] .login-card-custom label {
+  color: var(--cor-fonte-preta);
+}
