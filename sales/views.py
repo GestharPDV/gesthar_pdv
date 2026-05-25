@@ -463,6 +463,7 @@ def mp_simulate_view(request):
             headers={
                 'Authorization': f'Bearer {access_token}',
                 'Content-Type': 'application/json',
+                'X-Test-Scope': 'sandbox',
             },
             json=payload,
             timeout=10,
@@ -472,7 +473,11 @@ def mp_simulate_view(request):
         return JsonResponse({'error': str(e)}, status=500)
 
     if resp.status_code not in (200, 201):
-        return JsonResponse({'error': 'MP API retornou erro', 'details': data}, status=resp.status_code)
+        mp_message = data.get('message') or data.get('error') or str(data)
+        return JsonResponse(
+            {'error': f'MP API ({resp.status_code}): {mp_message}', 'details': data},
+            status=resp.status_code,
+        )
 
     return JsonResponse({'success': True, 'result': data})
 

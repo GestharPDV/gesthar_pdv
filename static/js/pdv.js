@@ -739,10 +739,10 @@
             const data = await resp.json();
 
             if (!resp.ok) {
-                throw new Error(data.error || 'Erro ao simular');
+                throw new Error(data.error || JSON.stringify(data.details) || 'Erro ao simular');
             }
             if (statusAlert) {
-                statusAlert.innerText = 'Simulação enviada. Aguardando confirmação via polling...';
+                statusAlert.innerText = 'Simulação enviada. Aguardando polling confirmar...';
             }
         } catch (err) {
             if (statusAlert) {
