@@ -13,6 +13,7 @@
     let mpAmount = 0;
     let mpPollInterval = null;
     let mpPayerCosts = [];
+    let mpBaseAmount = 0;
 
     document.addEventListener('DOMContentLoaded', function () {
         initSearchFocus();
@@ -266,6 +267,8 @@
             mpOrderId = null;
             mpMethod = null;
             mpAmount = 0;
+            mpPayerCosts = [];
+            mpBaseAmount = 0;
         });
 
         btnOpenModal.addEventListener('click', async function () {
@@ -369,15 +372,22 @@
                     if (isCredit) {
                         mpPayerCosts = [];
                         const amtInput = document.getElementById('payment-amount-input');
-                        loadMpInstallments(parseFloat(amtInput.value) || 0);
+                        mpBaseAmount = parseFloat(amtInput.value) || 0;
+                        loadMpInstallments(mpBaseAmount);
 
                         amtInput.addEventListener('input', () => {
-                            renderInstallmentOptions(parseFloat(amtInput.value) || 0);
+                            mpBaseAmount = parseFloat(amtInput.value) || 0;
+                            renderInstallmentOptions(mpBaseAmount);
+                        });
+
+                        document.getElementById('mp-installments').addEventListener('change', () => {
+                            updateAmountFromInstallment();
                         });
 
                         document.querySelectorAll('input[name="mp-fee-payer"]').forEach(radio => {
                             radio.addEventListener('change', () => {
-                                renderInstallmentOptions(parseFloat(amtInput.value) || 0);
+                                renderInstallmentOptions(mpBaseAmount);
+                                updateAmountFromInstallment();
                             });
                         });
                     }
@@ -686,6 +696,23 @@
         }
 
         renderInstallmentOptions(amount);
+        updateAmountFromInstallment();
+    }
+
+    function updateAmountFromInstallment() {
+        const select = document.getElementById('mp-installments');
+        const amtInput = document.getElementById('payment-amount-input');
+        if (!select || !amtInput || mpPayerCosts.length === 0) return;
+
+        const n = parseInt(select.value);
+        const buyerPaysFee = document.querySelector('input[name="mp-fee-payer"]:checked')?.value === 'true';
+        const pc = mpPayerCosts.find(p => p.installments === n);
+
+        if (!buyerPaysFee || !pc || pc.installment_rate === 0) {
+            amtInput.value = mpBaseAmount.toFixed(2);
+        } else {
+            amtInput.value = (mpBaseAmount * (1 + pc.installment_rate / 100)).toFixed(2);
+        }
     }
 
     function renderInstallmentOptions(amount) {
