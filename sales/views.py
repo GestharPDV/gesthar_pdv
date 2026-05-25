@@ -386,8 +386,12 @@ def cancel_mp_order_view(request):
     except Exception:
         return JsonResponse({'error': 'Resposta inválida do Mercado Pago', 'raw': resp.text}, status=502)
 
-    if resp.status_code not in (200,201):
-        return JsonResponse({'error': 'MP API retornou erro', 'details': data}, status=resp.status_code)
+    if resp.status_code not in (200, 201):
+        mp_message = data.get('message') or data.get('error') or str(data)
+        return JsonResponse(
+            {'error': f'MP API ({resp.status_code}): {mp_message}', 'details': data},
+            status=resp.status_code,
+        )
 
     GatewayPayment.objects.filter(order_id=order_id).update(
         status=data.get('status', ''),
@@ -450,16 +454,7 @@ def mp_simulate_view(request):
     status = request.POST.get('status', 'processed')
     payment_method_type = request.POST.get('payment_method_type', 'credit_card')
 
-    payload = {
-        'status': status,
-        'transactions': {
-            'payments': [{
-                'payment_method_type': payment_method_type,
-                'payment_method_id': 'visa',
-                'installments': 1,
-            }]
-        }
-    }
+    payload = {'status': status}
 
     try:
         resp = requests.post(

@@ -359,7 +359,7 @@
                                 PAGAMENTO CONCLUÍDO NO TERMINAL
                             </button>
                             <button class="btn btn-warning w-100 py-2 fw-bold mt-1" id="btn-mp-simulate" style="display:none;" onclick="simulateMpApproval()">
-                                ⚡ SIMULAR APROVAÇÃO (TESTE)
+                                SIMULAR APROVAÇÃO (TESTE)
                             </button>
                         </div>
                     `;
