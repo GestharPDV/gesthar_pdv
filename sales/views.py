@@ -307,12 +307,12 @@ def create_mp_order_view(request):
         'config': {
             'point': {
                 'terminal_id': terminal_id,
-                'print_on_terminal': 'receipt'
+                'print_on_terminal': 'seller_ticket'
             },
             'payment_method': {
                 'default_type': 'credit_card',
                 'default_installments': installments,
-                'installments_cost': 'customer'
+                'installments_cost': 'seller'
             }
         },
         'description': f'Venda PDV #{sale.pk}'
