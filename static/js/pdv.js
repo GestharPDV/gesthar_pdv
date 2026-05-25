@@ -324,7 +324,14 @@
                             <option value="4">4x</option>
                             <option value="5">5x</option>
                             <option value="6">6x</option>
-                        </select>` : '';
+                        </select>
+                        <label class="small fw-bold text-muted mb-2 d-block">QUEM PAGA A TAXA DO PARCELAMENTO?</label>
+                        <div class="btn-group w-100 mb-3" role="group">
+                            <input type="radio" class="btn-check" name="mp-fee-payer" id="mp-fee-seller" value="false" checked>
+                            <label class="btn btn-outline-secondary" for="mp-fee-seller">Vendedor</label>
+                            <input type="radio" class="btn-check" name="mp-fee-payer" id="mp-fee-buyer" value="true">
+                            <label class="btn btn-outline-info" for="mp-fee-buyer">Cliente</label>
+                        </div>` : '';
 
                     detailArea.innerHTML = `
                         <div class="p-4 rounded bg-light border border-2 border-info">
@@ -418,6 +425,7 @@
 
             const installments = document.getElementById('mp-installments')?.value || '1';
             const expiration = document.getElementById('mp-expiration')?.value || 'PT16M';
+            const buyerPaysFee = document.querySelector('input[name="mp-fee-payer"]:checked')?.value === 'true';
 
             statusAlert.innerText = 'Enviando para o terminal...';
             statusAlert.classList.remove('d-none', 'alert-danger', 'alert-success');
@@ -428,6 +436,7 @@
             formData.append('sale_id', config.salePk);
             formData.append('installments', installments);
             formData.append('expiration_time', expiration);
+            formData.append('buyer_pays_fee', buyerPaysFee ? 'true' : 'false');
             formData.append('csrfmiddlewaretoken', getCsrf());
 
             try {
@@ -603,8 +612,10 @@
                 mpOrderId = null; mpMethod = null; mpAmount = 0;
                 const btnCancel = document.getElementById('btn-cancel-order');
                 const btnContinue = document.getElementById('btn-mp-continue');
+                const btnSimulate = document.getElementById('btn-mp-simulate');
                 if (btnCancel) btnCancel.disabled = true;
                 if (btnContinue) btnContinue.style.display = 'none';
+                if (btnSimulate) btnSimulate.style.display = 'none';
             } else {
                 showChangeScreen(data.change || 0);
             }
@@ -645,8 +656,10 @@
                 mpOrderId = null; mpMethod = null; mpAmount = 0;
                 const btnCancel = document.getElementById('btn-cancel-order');
                 const btnContinue = document.getElementById('btn-mp-continue');
+                const btnSimulate = document.getElementById('btn-mp-simulate');
                 if (btnCancel) btnCancel.disabled = true;
                 if (btnContinue) btnContinue.style.display = 'none';
+                if (btnSimulate) btnSimulate.style.display = 'none';
             } else {
                 throw new Error(data.error || 'Erro ao cancelar order');
             }

@@ -424,6 +424,28 @@ class GatewayPayment(models.Model):
         blank=True,
         verbose_name="Valor",
     )
+    fee_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        verbose_name="Taxa do Gateway",
+    )
+    payment_method_id = models.CharField(
+        max_length=40,
+        blank=True,
+        verbose_name="Bandeira",
+    )
+    installments = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        verbose_name="Parcelas",
+    )
+    buyer_pays_fee = models.BooleanField(
+        null=True,
+        blank=True,
+        verbose_name="Cliente paga taxa",
+    )
     status = models.CharField(
         max_length=40,
         blank=True,

@@ -235,6 +235,7 @@ def create_mp_order_view(request):
     terminal_id = request.POST.get('terminal_id') or os.environ.get('TERMINAL_ID')
     expiration_time = request.POST.get('expiration_time') or 'PT16M'
     installments = int(request.POST.get('installments', 1))
+    buyer_pays_fee = request.POST.get('buyer_pays_fee') == 'true'
 
     if sale_id:
         sale = get_object_or_404(Sale, pk=sale_id, user=request.user)
@@ -312,7 +313,7 @@ def create_mp_order_view(request):
             'payment_method': {
                 'default_type': 'credit_card',
                 'default_installments': installments,
-                'installments_cost': 'seller'
+                'installments_cost': 'buyer' if buyer_pays_fee else 'seller'
             }
         },
         'description': f'Venda PDV #{sale.pk}'
@@ -347,6 +348,8 @@ def create_mp_order_view(request):
             'external_reference': data.get('external_reference', ''),
             'terminal_id': point_config.get('terminal_id', ''),
             'amount': Decimal(str(mp_payment.get('amount', amount))).quantize(Decimal('0.01')),
+            'buyer_pays_fee': buyer_pays_fee,
+            'installments': installments if installments > 1 else None,
             'status': data.get('status', ''),
             'status_detail': data.get('status_detail', ''),
             'raw_payload': data,
@@ -424,11 +427,26 @@ def mp_order_status_view(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
-    GatewayPayment.objects.filter(order_id=order_id).update(
-        status=data.get('status', ''),
-        status_detail=data.get('status_detail', ''),
-        raw_payload=data,
-    )
+    updates = {
+        'status': data.get('status', ''),
+        'status_detail': data.get('status_detail', ''),
+        'raw_payload': data,
+    }
+
+    if data.get('status') in ('processed', 'paid'):
+        mp_payment = (data.get('transactions', {}).get('payments') or [{}])[0]
+        pm = mp_payment.get('payment_method', {})
+        fee_list = mp_payment.get('fee_details') or []
+        total_fee = sum(float(f.get('amount', 0)) for f in fee_list)
+
+        if pm.get('id'):
+            updates['payment_method_id'] = pm['id']
+        if pm.get('installments'):
+            updates['installments'] = int(pm['installments'])
+        if total_fee:
+            updates['fee_amount'] = Decimal(str(total_fee)).quantize(Decimal('0.01'))
+
+    GatewayPayment.objects.filter(order_id=order_id).update(**updates)
 
     return JsonResponse({
         'status': data.get('status', ''),
