@@ -30,4 +30,8 @@ urlpatterns = [
     # Mercado Pago Point
     path('mp/create-order/', views.create_mp_order_view, name='mp-create-order'),
     path('mp/cancel-order/', views.cancel_mp_order_view, name='mp-cancel-order'),
+    path('mp/order-status/', views.mp_order_status_view, name='mp-order-status'),
+    path('mp/simulate/', views.mp_simulate_view, name='mp-simulate'),
+    path('mp/terminals/', views.mp_terminals_view, name='mp-terminals'),
+    path('mp/webhook/', views.mp_webhook_view, name='mp-webhook'),
 ]

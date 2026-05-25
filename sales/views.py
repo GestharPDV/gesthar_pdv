@@ -1,10 +1,15 @@
 from decimal import Decimal, InvalidOperation
 import json
+import os
+import uuid
 from datetime import date
 
+import requests
+from django.conf import settings
 from django.forms import ValidationError
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -12,11 +17,6 @@ from django.views.generic import ListView, DetailView, TemplateView
 from django.db.models import Q
 from django.http import JsonResponse
 from django.utils import timezone
-import os
-import uuid
-import requests
-import json
-from decimal import Decimal, InvalidOperation
 
 from user.permissions import AdminRequiredMixin
 from . import services
@@ -393,6 +393,144 @@ def cancel_mp_order_view(request):
     )
 
     return JsonResponse({'success': True, 'order': data})
+
+
+@login_required
+def mp_order_status_view(request):
+    """Consulta o status de uma order no MP e atualiza o registro local."""
+    order_id = request.GET.get('order_id')
+    if not order_id:
+        return JsonResponse({'error': 'order_id é obrigatório'}, status=400)
+
+    access_token = os.environ.get('ACCESS_TOKEN')
+    if not access_token:
+        return JsonResponse({'error': 'ACCESS_TOKEN não configurado.'}, status=500)
+
+    try:
+        resp = requests.get(
+            f'https://api.mercadopago.com/v1/orders/{order_id}',
+            headers={'Authorization': f'Bearer {access_token}'},
+            timeout=10,
+        )
+        data = resp.json()
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+    GatewayPayment.objects.filter(order_id=order_id).update(
+        status=data.get('status', ''),
+        status_detail=data.get('status_detail', ''),
+        raw_payload=data,
+    )
+
+    return JsonResponse({
+        'status': data.get('status', ''),
+        'status_detail': data.get('status_detail', ''),
+    })
+
+
+@require_POST
+@login_required
+def mp_simulate_view(request):
+    """Simula o status de uma order no MP (apenas em modo DEBUG/teste)."""
+    if not settings.DEBUG:
+        return JsonResponse({'error': 'Disponível apenas em ambiente de desenvolvimento.'}, status=403)
+
+    order_id = request.POST.get('order_id')
+    if not order_id:
+        return JsonResponse({'error': 'order_id é obrigatório'}, status=400)
+
+    access_token = os.environ.get('ACCESS_TOKEN')
+    if not access_token:
+        return JsonResponse({'error': 'ACCESS_TOKEN não configurado.'}, status=500)
+
+    status = request.POST.get('status', 'processed')
+    payment_method_type = request.POST.get('payment_method_type', 'credit_card')
+
+    payload = {
+        'status': status,
+        'transactions': {
+            'payments': [{
+                'payment_method_type': payment_method_type,
+                'payment_method_id': 'visa',
+                'installments': 1,
+            }]
+        }
+    }
+
+    try:
+        resp = requests.post(
+            f'https://api.mercadopago.com/v1/orders/{order_id}/events',
+            headers={
+                'Authorization': f'Bearer {access_token}',
+                'Content-Type': 'application/json',
+            },
+            json=payload,
+            timeout=10,
+        )
+        data = resp.json()
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+    if resp.status_code not in (200, 201):
+        return JsonResponse({'error': 'MP API retornou erro', 'details': data}, status=resp.status_code)
+
+    return JsonResponse({'success': True, 'result': data})
+
+
+@login_required
+def mp_terminals_view(request):
+    """Lista os terminais Point vinculados à conta."""
+    access_token = os.environ.get('ACCESS_TOKEN')
+    if not access_token:
+        return JsonResponse({'error': 'ACCESS_TOKEN não configurado.'}, status=500)
+
+    try:
+        resp = requests.get(
+            'https://api.mercadopago.com/terminals/v1/list',
+            headers={'Authorization': f'Bearer {access_token}'},
+            timeout=10,
+        )
+        data = resp.json()
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse(data, safe=False)
+
+
+@csrf_exempt
+def mp_webhook_view(request):
+    """Recebe notificações do Mercado Pago e atualiza o GatewayPayment."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    try:
+        payload = json.loads(request.body)
+    except Exception:
+        return JsonResponse({'error': 'JSON inválido'}, status=400)
+
+    topic = payload.get('type') or request.GET.get('topic', '')
+
+    if topic == 'orders_v2':
+        resource_id = payload.get('data', {}).get('id')
+        access_token = os.environ.get('ACCESS_TOKEN')
+        if resource_id and access_token:
+            try:
+                resp = requests.get(
+                    f'https://api.mercadopago.com/v1/orders/{resource_id}',
+                    headers={'Authorization': f'Bearer {access_token}'},
+                    timeout=10,
+                )
+                order_data = resp.json()
+                GatewayPayment.objects.filter(order_id=resource_id).update(
+                    status=order_data.get('status', ''),
+                    status_detail=order_data.get('status_detail', ''),
+                    raw_payload=order_data,
+                )
+            except Exception:
+                pass
+
+    return JsonResponse({'received': True})
+
 
 @require_POST
 @login_required

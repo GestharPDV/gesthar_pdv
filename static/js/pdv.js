@@ -11,6 +11,7 @@
     let mpOrderId = null;
     let mpMethod = null;
     let mpAmount = 0;
+    let mpPollInterval = null;
 
     document.addEventListener('DOMContentLoaded', function () {
         initSearchFocus();
@@ -260,6 +261,7 @@
             document.getElementById('step-receipt').classList.add('d-none');
             document.getElementById('step-success').classList.add('d-none');
             detailArea.innerHTML = '<div class="py-5 text-muted opacity-50"><span class="material-symbols-outlined fs-1">payments</span><p>Aguardando seleção...</p></div>';
+            stopMpPolling();
             mpOrderId = null;
             mpMethod = null;
             mpAmount = 0;
@@ -356,6 +358,9 @@
                             <button class="btn btn-success w-100 py-2 fw-bold" id="btn-mp-continue" style="display:none;" onclick="proceedMercadoPagoFlow()">
                                 PAGAMENTO CONCLUÍDO NO TERMINAL
                             </button>
+                            <button class="btn btn-warning w-100 py-2 fw-bold mt-1" id="btn-mp-simulate" style="display:none;" onclick="simulateMpApproval()">
+                                ⚡ SIMULAR APROVAÇÃO (TESTE)
+                            </button>
                         </div>
                     `;
 
@@ -441,8 +446,12 @@
 
                     const btnCancel = document.getElementById('btn-cancel-order');
                     const btnContinue = document.getElementById('btn-mp-continue');
+                    const btnSimulate = document.getElementById('btn-mp-simulate');
                     if (btnCancel) btnCancel.disabled = false;
                     if (btnContinue) btnContinue.style.display = 'block';
+                    if (btnSimulate) btnSimulate.style.display = 'block';
+
+                    startMpPolling();
 
                     let msg = `✓ ORDER ${mpOrderId} ENVIADA. Aguarde na maquininha.`;
                     if (baseMethod === 'CREDITO') {
@@ -567,6 +576,7 @@
             alert('Nenhum pagamento MP pendente.');
             return;
         }
+        stopMpPolling();
 
         const statusAlert = document.getElementById('payment-status-alert');
         const formData = new FormData();
@@ -610,6 +620,7 @@
     async function cancelMercadoPagoOrder() {
         if (!mpOrderId) { alert('Nenhuma order ativa.'); return; }
         if (!confirm(`Cancelar a order ${mpOrderId}?`)) return;
+        stopMpPolling();
 
         const statusAlert = document.getElementById('payment-status-alert');
         statusAlert.innerText = 'Cancelando order...';
@@ -655,11 +666,99 @@
         });
     }
 
+    // ---- Mercado Pago: polling de status ----
+
+    function startMpPolling() {
+        stopMpPolling();
+        mpPollInterval = setInterval(async () => {
+            if (!mpOrderId) { stopMpPolling(); return; }
+            try {
+                const resp = await fetch(`${config.mpOrderStatusUrl}?order_id=${mpOrderId}`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const data = await resp.json();
+                const status = data.status;
+                const statusAlert = document.getElementById('payment-status-alert');
+
+                if (status === 'paid' || status === 'processed') {
+                    stopMpPolling();
+                    if (statusAlert) {
+                        statusAlert.innerText = `✓ PAGAMENTO APROVADO! Registrando...`;
+                        statusAlert.classList.remove('d-none', 'alert-warning', 'alert-danger');
+                        statusAlert.classList.add('alert-success');
+                    }
+                    await proceedMercadoPagoFlow();
+                } else if (['failed', 'canceled', 'expired'].includes(status)) {
+                    stopMpPolling();
+                    if (statusAlert) {
+                        statusAlert.innerText = `✗ Pagamento ${status}. Tente novamente.`;
+                        statusAlert.classList.remove('d-none', 'alert-warning', 'alert-success');
+                        statusAlert.classList.add('alert-danger');
+                    }
+                    const btnCancel = document.getElementById('btn-cancel-order');
+                    const btnContinue = document.getElementById('btn-mp-continue');
+                    const btnSimulate = document.getElementById('btn-mp-simulate');
+                    if (btnCancel) btnCancel.disabled = true;
+                    if (btnContinue) btnContinue.style.display = 'none';
+                    if (btnSimulate) btnSimulate.style.display = 'none';
+                    mpOrderId = null; mpMethod = null; mpAmount = 0;
+                }
+            } catch (_) { /* silencioso durante polling */ }
+        }, 4000);
+    }
+
+    function stopMpPolling() {
+        if (mpPollInterval) {
+            clearInterval(mpPollInterval);
+            mpPollInterval = null;
+        }
+    }
+
+    // ---- Mercado Pago: simulação de aprovação (apenas em teste) ----
+
+    async function simulateMpApproval(status = 'processed') {
+        if (!mpOrderId) { alert('Nenhuma order ativa para simular.'); return; }
+
+        const statusAlert = document.getElementById('payment-status-alert');
+        if (statusAlert) {
+            statusAlert.innerText = 'Simulando aprovação...';
+            statusAlert.classList.remove('d-none', 'alert-danger', 'alert-success');
+            statusAlert.classList.add('alert-warning');
+        }
+
+        const formData = new FormData();
+        formData.append('order_id', mpOrderId);
+        formData.append('status', status);
+        formData.append('csrfmiddlewaretoken', getCsrf());
+
+        try {
+            const resp = await fetch(config.mpSimulateUrl, {
+                method: 'POST', body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const data = await resp.json();
+
+            if (!resp.ok) {
+                throw new Error(data.error || 'Erro ao simular');
+            }
+            if (statusAlert) {
+                statusAlert.innerText = 'Simulação enviada. Aguardando confirmação via polling...';
+            }
+        } catch (err) {
+            if (statusAlert) {
+                statusAlert.innerText = 'ERRO na simulação: ' + err.message;
+                statusAlert.classList.remove('alert-warning');
+                statusAlert.classList.add('alert-danger');
+            }
+        }
+    }
+
     // Expõe funções chamadas por onclick inline no HTML
     window.confirmPayment = confirmPayment;
     window.goToReceipt = goToReceipt;
     window.finishFlow = finishFlow;
     window.proceedMercadoPagoFlow = proceedMercadoPagoFlow;
     window.cancelMercadoPagoOrder = cancelMercadoPagoOrder;
+    window.simulateMpApproval = simulateMpApproval;
 
 })();
