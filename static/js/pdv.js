@@ -461,7 +461,7 @@
                     statusAlert.classList.remove('alert-warning');
                     statusAlert.classList.add('alert-success');
                 } else {
-                    throw new Error(data.error || 'Erro ao criar order MP');
+                    throw new Error(data.error || JSON.stringify(data.details) || 'Erro ao criar order MP');
                 }
             } catch (err) {
                 statusAlert.innerText = 'ERRO: ' + err.message;

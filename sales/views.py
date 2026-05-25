@@ -328,8 +328,12 @@ def create_mp_order_view(request):
     except Exception:
         return JsonResponse({'error': 'Resposta inválida do Mercado Pago', 'raw': resp.text}, status=502)
 
-    if resp.status_code not in (200,201):
-        return JsonResponse({'error': 'MP API retornou erro', 'details': data}, status=resp.status_code)
+    if resp.status_code not in (200, 201):
+        mp_message = data.get('message') or data.get('error') or str(data)
+        return JsonResponse(
+            {'error': f'MP API ({resp.status_code}): {mp_message}', 'details': data},
+            status=resp.status_code,
+        )
 
     mp_payment = (data.get('transactions', {}).get('payments') or [{}])[0]
     point_config = data.get('config', {}).get('point', {})
