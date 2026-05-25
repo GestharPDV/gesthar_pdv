@@ -23,6 +23,7 @@
     data-complete-sale-url="{% url 'sales:complete-sale' sale.pk %}"
     data-mp-create-order-url="{% url 'sales:mp-create-order' %}"
     data-mp-cancel-order-url="{% url 'sales:mp-cancel-order' %}"
+    data-sale-pk="{{ sale.pk }}"
     data-csrf-token="{{ csrf_token }}">
 </div>
 
