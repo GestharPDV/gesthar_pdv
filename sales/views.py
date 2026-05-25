@@ -500,6 +500,48 @@ def mp_simulate_view(request):
 
 
 @login_required
+def mp_installments_view(request):
+    """Consulta opções de parcelamento com juros reais via MP API."""
+    amount = request.GET.get('amount')
+    if not amount:
+        return JsonResponse({'error': 'amount é obrigatório'}, status=400)
+
+    access_token = os.environ.get('ACCESS_TOKEN')
+    if not access_token:
+        return JsonResponse({'error': 'ACCESS_TOKEN não configurado.'}, status=500)
+
+    try:
+        resp = requests.get(
+            'https://api.mercadopago.com/v1/payment_methods/installments',
+            headers={'Authorization': f'Bearer {access_token}'},
+            params={'amount': amount, 'payment_method_id': 'visa'},
+            timeout=10,
+        )
+        data = resp.json()
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+    if resp.status_code != 200:
+        mp_message = data.get('message') or data.get('error') or str(data)
+        return JsonResponse({'error': f'MP API ({resp.status_code}): {mp_message}'}, status=resp.status_code)
+
+    payer_costs = []
+    if data and isinstance(data, list) and data[0].get('payer_costs'):
+        payer_costs = [
+            {
+                'installments': pc['installments'],
+                'installment_rate': pc['installment_rate'],
+                'installment_amount': float(pc['installment_amount']),
+                'total_amount': float(pc['total_amount']),
+            }
+            for pc in data[0]['payer_costs']
+            if pc['installments'] <= 6
+        ]
+
+    return JsonResponse({'payer_costs': payer_costs})
+
+
+@login_required
 def mp_terminals_view(request):
     """Lista os terminais Point vinculados à conta."""
     access_token = os.environ.get('ACCESS_TOKEN')

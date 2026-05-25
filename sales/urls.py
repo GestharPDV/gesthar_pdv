@@ -34,4 +34,5 @@ urlpatterns = [
     path('mp/simulate/', views.mp_simulate_view, name='mp-simulate'),
     path('mp/terminals/', views.mp_terminals_view, name='mp-terminals'),
     path('mp/webhook/', views.mp_webhook_view, name='mp-webhook'),
+    path('mp/installments/', views.mp_installments_view, name='mp-installments'),
 ]

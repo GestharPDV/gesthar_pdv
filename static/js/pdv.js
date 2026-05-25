@@ -12,6 +12,7 @@
     let mpMethod = null;
     let mpAmount = 0;
     let mpPollInterval = null;
+    let mpPayerCosts = [];
 
     document.addEventListener('DOMContentLoaded', function () {
         initSearchFocus();
@@ -315,23 +316,6 @@
 
                 if (isMp) {
                     const isCredit = baseMethod === 'CREDITO';
-                    const installmentsHtml = isCredit ? `
-                        <label class="small fw-bold text-muted mb-2 d-block">PARCELAS</label>
-                        <select id="mp-installments" class="form-select form-select-lg mb-3">
-                            <option value="1">1x à vista</option>
-                            <option value="2">2x</option>
-                            <option value="3">3x</option>
-                            <option value="4">4x</option>
-                            <option value="5">5x</option>
-                            <option value="6">6x</option>
-                        </select>
-                        <label class="small fw-bold text-muted mb-2 d-block">QUEM PAGA A TAXA DO PARCELAMENTO?</label>
-                        <div class="btn-group w-100 mb-3" role="group">
-                            <input type="radio" class="btn-check" name="mp-fee-payer" id="mp-fee-seller" value="false" checked>
-                            <label class="btn btn-outline-secondary" for="mp-fee-seller">Vendedor</label>
-                            <input type="radio" class="btn-check" name="mp-fee-payer" id="mp-fee-buyer" value="true">
-                            <label class="btn btn-outline-info" for="mp-fee-buyer">Cliente</label>
-                        </div>` : '';
 
                     detailArea.innerHTML = `
                         <div class="p-4 rounded bg-light border border-2 border-info">
@@ -344,7 +328,18 @@
                                 <span class="input-group-text">R$</span>
                                 <input type="number" id="payment-amount-input" class="form-control form-control-lg fw-bold" value="${valorCalculado}" min="0.01" step="0.01">
                             </div>
-                            ${installmentsHtml}
+                            ${isCredit ? `
+                            <label class="small fw-bold text-muted mb-2 d-block">PARCELAS</label>
+                            <select id="mp-installments" class="form-select form-select-lg mb-3">
+                                <option>Carregando...</option>
+                            </select>
+                            <label class="small fw-bold text-muted mb-2 d-block">QUEM PAGA A TAXA DO PARCELAMENTO?</label>
+                            <div class="btn-group w-100 mb-3" role="group">
+                                <input type="radio" class="btn-check" name="mp-fee-payer" id="mp-fee-seller" value="false" checked>
+                                <label class="btn btn-outline-secondary" for="mp-fee-seller">Vendedor</label>
+                                <input type="radio" class="btn-check" name="mp-fee-payer" id="mp-fee-buyer" value="true">
+                                <label class="btn btn-outline-info" for="mp-fee-buyer">Cliente</label>
+                            </div>` : ''}
                             <label class="small fw-bold text-muted mb-2 d-block">TEMPO DE EXPIRAÇÃO</label>
                             <select id="mp-expiration" class="form-select form-select-lg mb-3">
                                 <option value="PT1M">1 minuto</option>
@@ -372,14 +367,19 @@
                     `;
 
                     if (isCredit) {
-                        setTimeout(() => {
-                            const amtInput = document.getElementById('payment-amount-input');
-                            const instSelect = document.getElementById('mp-installments');
-                            if (amtInput && instSelect) {
-                                updateInstallmentsDisplay(parseFloat(amtInput.value) || 0);
-                                amtInput.addEventListener('input', () => updateInstallmentsDisplay(parseFloat(amtInput.value) || 0));
-                            }
-                        }, 100);
+                        mpPayerCosts = [];
+                        const amtInput = document.getElementById('payment-amount-input');
+                        loadMpInstallments(parseFloat(amtInput.value) || 0);
+
+                        amtInput.addEventListener('input', () => {
+                            renderInstallmentOptions(parseFloat(amtInput.value) || 0);
+                        });
+
+                        document.querySelectorAll('input[name="mp-fee-payer"]').forEach(radio => {
+                            radio.addEventListener('change', () => {
+                                renderInstallmentOptions(parseFloat(amtInput.value) || 0);
+                            });
+                        });
                     }
 
                 } else if (method === 'PIX') {
@@ -670,12 +670,65 @@
         }
     }
 
-    function updateInstallmentsDisplay(amount) {
+    async function loadMpInstallments(amount) {
         const select = document.getElementById('mp-installments');
         if (!select) return;
-        Array.from(select.options).forEach(opt => {
-            const n = parseInt(opt.value);
-            opt.text = n === 1 ? '1x à vista' : `${n}x (R$ ${(amount / n).toFixed(2)} cada)`;
+
+        try {
+            const resp = await fetch(
+                `${config.mpInstallmentsUrl}?amount=${amount.toFixed(2)}`,
+                { headers: { 'X-Requested-With': 'XMLHttpRequest' } }
+            );
+            const data = await resp.json();
+            mpPayerCosts = data.payer_costs || [];
+        } catch (_) {
+            mpPayerCosts = [];
+        }
+
+        renderInstallmentOptions(amount);
+    }
+
+    function renderInstallmentOptions(amount) {
+        const select = document.getElementById('mp-installments');
+        if (!select) return;
+
+        const buyerPaysFee = document.querySelector('input[name="mp-fee-payer"]:checked')?.value === 'true';
+
+        if (mpPayerCosts.length === 0) {
+            select.innerHTML = '';
+            for (let n = 1; n <= 6; n++) {
+                const opt = document.createElement('option');
+                opt.value = n;
+                opt.text = n === 1 ? `1x de R$ ${amount.toFixed(2)} (sem juros)` : `${n}x de R$ ${(amount / n).toFixed(2)}`;
+                select.appendChild(opt);
+            }
+            return;
+        }
+
+        select.innerHTML = '';
+        mpPayerCosts.forEach(pc => {
+            const n = pc.installments;
+            const rate = pc.installment_rate;
+            const opt = document.createElement('option');
+            opt.value = n;
+
+            if (buyerPaysFee) {
+                const total = amount * (1 + rate / 100);
+                const perInstall = total / n;
+                if (n === 1 || rate === 0) {
+                    opt.text = `${n}x de R$ ${(amount / n).toFixed(2)} (sem juros)`;
+                } else {
+                    opt.text = `${n}x de R$ ${perInstall.toFixed(2)} → total R$ ${total.toFixed(2)} (juros ${rate}%)`;
+                }
+            } else {
+                if (n === 1 || rate === 0) {
+                    opt.text = `${n}x de R$ ${(amount / n).toFixed(2)} (sem juros)`;
+                } else {
+                    opt.text = `${n}x de R$ ${(amount / n).toFixed(2)} (taxa ${rate}% pelo vendedor)`;
+                }
+            }
+
+            select.appendChild(opt);
         });
     }
 
