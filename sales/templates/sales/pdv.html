@@ -21,6 +21,8 @@
     data-apply-discount-url="{% url 'sales:apply-discount' %}"
     data-add-payment-url="{% url 'sales:add-payment' %}"
     data-complete-sale-url="{% url 'sales:complete-sale' sale.pk %}"
+    data-mp-create-order-url="{% url 'sales:mp-create-order' %}"
+    data-mp-cancel-order-url="{% url 'sales:mp-cancel-order' %}"
     data-csrf-token="{{ csrf_token }}">
 </div>
 

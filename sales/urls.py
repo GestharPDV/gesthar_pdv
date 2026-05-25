@@ -27,4 +27,7 @@ urlpatterns = [
     path('detail/<int:pk>/', views.SaleDetailView.as_view(), name='sale-detail'),
     path('api/search-products/', views.search_products_api, name='api-search-products'),
     path('relatorios/vendas/', views.SalesReportView.as_view(), name='report-sales'),
+    # Mercado Pago Point
+    path('mp/create-order/', views.create_mp_order_view, name='mp-create-order'),
+    path('mp/cancel-order/', views.cancel_mp_order_view, name='mp-cancel-order'),
 ]

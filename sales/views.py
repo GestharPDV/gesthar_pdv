@@ -11,12 +11,18 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, DetailView, TemplateView
 from django.db.models import Q
 from django.http import JsonResponse
+from django.utils import timezone
+import os
+import uuid
+import requests
+import json
+from decimal import Decimal, InvalidOperation
 
 from user.permissions import AdminRequiredMixin
 from . import services
 
 from product.models import ProductVariation
-from .models import Sale, SaleItem, CashRegister, SalePayment
+from .models import Sale, SaleItem, CashRegister, SalePayment, GatewayPayment
 from .forms import (
     AddItemForm,
     CloseRegisterForm,
@@ -212,6 +218,181 @@ def add_payment_view(request):
         })
     
     return JsonResponse({'error': "Valor ou método inválido."}, status=400)
+
+
+@require_POST
+@login_required
+def create_mp_order_view(request):
+    """Cria uma order no Mercado Pago Point para a venda atual.
+
+    Espera receber via POST:
+    - sale_id (opcional): id da venda; se ausente, usa a venda em rascunho do usuário
+    - terminal_id (opcional): id completo do terminal (ex: NEWLAND_N950__...); se ausente, tenta usar env TERMINAL_ID
+    - expiration_time (opcional): string ISO-8601 period (ex: PT16M)
+    - installments (opcional): número de parcelas (1-6); padrão: 1
+    """
+    sale_id = request.POST.get('sale_id')
+    terminal_id = request.POST.get('terminal_id') or os.environ.get('TERMINAL_ID')
+    expiration_time = request.POST.get('expiration_time') or 'PT16M'
+    installments = int(request.POST.get('installments', 1))
+
+    if sale_id:
+        sale = get_object_or_404(Sale, pk=sale_id, user=request.user)
+    else:
+        sale = Sale.objects.filter(status=Sale.Status.DRAFT, user=request.user).first()
+
+    if not sale:
+        return JsonResponse({'error': 'Venda não encontrada.'}, status=404)
+
+    sale.calculate_totals()
+
+    amount_raw = request.POST.get('amount')
+    amount_decimal = sale.remaining_balance if sale.remaining_balance > 0 else sale.net_amount
+
+    if amount_raw:
+        try:
+            amount_decimal = Decimal(str(amount_raw).replace(',', '.'))
+        except (InvalidOperation, TypeError, ValueError):
+            return JsonResponse({'error': 'Valor de amount inválido.'}, status=400)
+
+    if amount_decimal <= 0:
+        return JsonResponse({'error': 'Valor da venda inválido.'}, status=400)
+
+    if not sale.items.exists():
+        return JsonResponse({'error': 'Venda sem itens não pode gerar order.'}, status=400)
+
+    amount = float(amount_decimal)
+
+    access_token = os.environ.get('ACCESS_TOKEN')
+    if not access_token:
+        return JsonResponse({'error': 'ACCESS_TOKEN não configurado no ambiente.'}, status=500)
+
+    if not terminal_id:
+        return JsonResponse({'error': 'terminal_id não informado (ou TERMINAL_ID não está em env).'}, status=400)
+
+    # Validar expiration_time
+    valid_expiration_times = ['PT30S', 'PT1M', 'PT5M', 'PT10M', 'PT16M', 'PT30M', 'PT1H', 'PT2H', 'PT3H']
+    if expiration_time not in valid_expiration_times:
+        return JsonResponse({
+            'error': f'expiration_time inválido. Valores válidos: {", ".join(valid_expiration_times)}'
+        }, status=400)
+
+    # Validar installments (1 a 6)
+    if not (1 <= installments <= 6):
+        return JsonResponse({
+            'error': f'installments deve estar entre 1 e 6. Recebido: {installments}'
+        }, status=400)
+
+    # Validar external_reference (máx 64 caracteres, apenas letras, números, -, _)
+    external_ref = f'sale_{sale.pk}'
+    if len(external_ref) > 64:
+        return JsonResponse({
+            'error': f'external_reference excede 64 caracteres: {len(external_ref)}'
+        }, status=400)
+
+    url = 'https://api.mercadopago.com/v1/orders'
+    headers = {
+        'Authorization': f'Bearer {access_token}',
+        'Content-Type': 'application/json',
+        'X-Idempotency-Key': str(uuid.uuid4())
+    }
+
+    payload = {
+        'type': 'point',
+        'external_reference': external_ref,
+        'expiration_time': expiration_time,
+        'transactions': {
+            'payments': [ { 'amount': f"{amount:.2f}" } ]
+        },
+        'config': {
+            'point': {
+                'terminal_id': terminal_id,
+                'print_on_terminal': 'receipt'
+            },
+            'payment_method': {
+                'default_type': 'credit_card',
+                'default_installments': installments,
+                'installments_cost': 'customer'
+            }
+        },
+        'description': f'Venda PDV #{sale.pk}'
+    }
+
+    try:
+        resp = requests.post(url, headers=headers, data=json.dumps(payload), timeout=10)
+    except Exception as e:
+        return JsonResponse({'error': 'Erro ao conectar Mercado Pago: ' + str(e)}, status=500)
+
+    try:
+        data = resp.json()
+    except Exception:
+        return JsonResponse({'error': 'Resposta inválida do Mercado Pago', 'raw': resp.text}, status=502)
+
+    if resp.status_code not in (200,201):
+        return JsonResponse({'error': 'MP API retornou erro', 'details': data}, status=resp.status_code)
+
+    mp_payment = (data.get('transactions', {}).get('payments') or [{}])[0]
+    point_config = data.get('config', {}).get('point', {})
+
+    GatewayPayment.objects.update_or_create(
+        order_id=data.get('id', ''),
+        defaults={
+            'sale': sale,
+            'provider': GatewayPayment.Provider.MERCADO_PAGO,
+            'payment_id': mp_payment.get('id', ''),
+            'external_reference': data.get('external_reference', ''),
+            'terminal_id': point_config.get('terminal_id', ''),
+            'amount': Decimal(str(mp_payment.get('amount', amount))).quantize(Decimal('0.01')),
+            'status': data.get('status', ''),
+            'status_detail': data.get('status_detail', ''),
+            'raw_payload': data,
+        },
+    )
+
+    # Retorna a resposta da API para uso no frontend e logs
+    return JsonResponse({'success': True, 'order': data})
+
+
+@require_POST
+@login_required
+def cancel_mp_order_view(request):
+    """Cancela uma order do Mercado Pago via API. Recebe `order_id` em POST."""
+    order_id = request.POST.get('order_id')
+    if not order_id:
+        return JsonResponse({'error': 'order_id é obrigatório'}, status=400)
+
+    access_token = os.environ.get('ACCESS_TOKEN')
+    if not access_token:
+        return JsonResponse({'error': 'ACCESS_TOKEN não configurado no ambiente.'}, status=500)
+
+    url = f'https://api.mercadopago.com/v1/orders/{order_id}/cancel'
+    headers = {
+        'Authorization': f'Bearer {access_token}',
+        'Content-Type': 'application/json',
+        'X-Idempotency-Key': str(uuid.uuid4())
+    }
+
+    try:
+        resp = requests.post(url, headers=headers, timeout=10)
+    except Exception as e:
+        return JsonResponse({'error': 'Erro ao conectar Mercado Pago: ' + str(e)}, status=500)
+
+    try:
+        data = resp.json()
+    except Exception:
+        return JsonResponse({'error': 'Resposta inválida do Mercado Pago', 'raw': resp.text}, status=502)
+
+    if resp.status_code not in (200,201):
+        return JsonResponse({'error': 'MP API retornou erro', 'details': data}, status=resp.status_code)
+
+    GatewayPayment.objects.filter(order_id=order_id).update(
+        status=data.get('status', ''),
+        status_detail=data.get('status_detail', ''),
+        raw_payload=data,
+        canceled_at=timezone.now(),
+    )
+
+    return JsonResponse({'success': True, 'order': data})
 
 @require_POST
 @login_required
