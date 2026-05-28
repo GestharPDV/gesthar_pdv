@@ -27,4 +27,7 @@ urlpatterns = [
     path('detail/<int:pk>/', views.SaleDetailView.as_view(), name='sale-detail'),
     path('api/search-products/', views.search_products_api, name='api-search-products'),
     path('relatorios/vendas/', views.SalesReportView.as_view(), name='report-sales'),
+    path('relatorios/vendas/pdf/', views.SalesReportPDFView.as_view(), name='report-sales-pdf'),
+    path('relatorios/financeiro/', views.FinancialDashboardView.as_view(), name='financial-dashboard'),
+    path('relatorios/financeiro/pdf/', views.FinancialDashboardPDFView.as_view(), name='financial-dashboard-pdf'),
 ]

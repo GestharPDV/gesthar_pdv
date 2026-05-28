@@ -8,9 +8,10 @@ from django.contrib import messages
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import ListView, DetailView, TemplateView
+from django.views.generic import ListView, DetailView, TemplateView, View
 from django.db.models import Q
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
+from django.template.loader import render_to_string
 
 from user.permissions import AdminRequiredMixin
 from . import services
@@ -419,73 +420,227 @@ METHOD_DISPLAY = {
 }
 
 
+# ---------------------------------------------------------------------------
+# Helpers de contexto — reutilizados pelas views HTML e PDF
+# ---------------------------------------------------------------------------
+
+def _build_sales_report_context(request) -> dict:
+    today = date.today()
+    start_str = request.GET.get("start_date", today.replace(day=1).isoformat())
+    end_str = request.GET.get("end_date", today.isoformat())
+
+    try:
+        start_date = date.fromisoformat(start_str)
+        end_date = date.fromisoformat(end_str)
+    except ValueError:
+        start_date = today.replace(day=1)
+        end_date = today
+
+    if end_date < start_date:
+        return {
+            "date_error": "A data final não pode ser anterior à data inicial.",
+            "start_date": start_str,
+            "end_date": end_str,
+            "total_revenue": 0,
+            "total_discounts": 0,
+            "completed_sales_count": 0,
+            "top_items": [],
+            "payment_chart_json": "{}",
+            "user_chart_json": "{}",
+        }
+
+    total_revenue = services.get_total_revenue(start_date, end_date)
+    total_discounts = services.get_total_discounts(start_date, end_date)
+    completed_sales_count = Sale.objects.filter(
+        status=Sale.Status.COMPLETED,
+        completed_at__date__gte=start_date,
+        completed_at__date__lte=end_date,
+    ).count()
+
+    payment_qs = services.get_revenue_by_payment_method(start_date, end_date)
+    payment_chart = {
+        "labels": [METHOD_DISPLAY.get(p["method"], p["method"]) for p in payment_qs],
+        "values": [float(p["total"]) for p in payment_qs],
+    }
+
+    user_qs = services.get_sales_by_user(start_date, end_date)
+    user_chart = {"labels": [], "values": []}
+    for u in user_qs:
+        name = (
+            f"{u['user__first_name']} {u['user__last_name']}".strip()
+            or u["user__email"]
+        )
+        user_chart["labels"].append(name)
+        user_chart["values"].append(float(u["total_revenue"]))
+
+    return {
+        "total_revenue": total_revenue,
+        "total_discounts": total_discounts,
+        "completed_sales_count": completed_sales_count,
+        "top_items": services.get_top_selling_items(start_date, end_date),
+        "start_date": start_date.isoformat(),
+        "end_date": end_date.isoformat(),
+        "payment_chart_json": json.dumps(payment_chart),
+        "user_chart_json": json.dumps(user_chart),
+    }
+
+
+def _build_financial_context(request) -> dict:
+    today = date.today()
+    start_str = request.GET.get("start_date", today.replace(day=1).isoformat())
+    end_str = request.GET.get("end_date", today.isoformat())
+
+    capital_imobilizado = services.get_capital_imobilizado()
+    stockout_alerts = services.get_stockout_risk_list()
+
+    try:
+        start_date = date.fromisoformat(start_str)
+        end_date = date.fromisoformat(end_str)
+    except ValueError:
+        start_date = today.replace(day=1)
+        end_date = today
+
+    if end_date < start_date:
+        return {
+            "date_error": "A data final não pode ser anterior à data inicial.",
+            "start_date": start_str,
+            "end_date": end_str,
+            "gross_revenue": 0,
+            "net_revenue": 0,
+            "total_discounts": 0,
+            "cmv": 0,
+            "gross_profit": 0,
+            "profit_margin": 0,
+            "average_ticket": 0,
+            "gmroi": 0,
+            "capital_imobilizado": capital_imobilizado,
+            "stockout_alerts": stockout_alerts,
+            "abc_curve": [],
+            "payment_methods_json": "{}",
+            "sales_evolution_json": "{}",
+        }
+
+    indicators = services.get_financial_indicators(start_date, end_date)
+    average_ticket = services.get_average_ticket(start_date, end_date)
+    gmroi = services.get_gmroi(start_date, end_date)
+
+    payment_qs = services.get_revenue_by_payment_method(start_date, end_date)
+    payment_chart = {
+        "labels": [METHOD_DISPLAY.get(p["method"], p["method"]) for p in payment_qs],
+        "values": [float(p["total"]) for p in payment_qs],
+    }
+
+    evolution_qs = services.get_sales_evolution(start_date, end_date)
+    sales_evolution = {
+        "labels": [str(d["sale_date"]) for d in evolution_qs],
+        "values": [float(d["daily_revenue"]) for d in evolution_qs],
+    }
+
+    abc_data = []
+    for item in services.get_abc_curve(start_date, end_date):
+        avg_cost = item["avg_unit_cost"] or 0
+        total_cost = avg_cost * item["total_quantity"]
+        total_revenue = item["total_revenue"] or 0
+        profit = total_revenue - total_cost
+        margin_pct = (profit / total_revenue * 100) if total_revenue > 0 else 0
+        abc_data.append({
+            "product_id": item["variation__product"],
+            "name": item["variation__product__name"],
+            "total_quantity": item["total_quantity"],
+            "total_revenue": total_revenue,
+            "profit_margin": margin_pct,
+        })
+
+    if abc_data:
+        product_ids = [it["product_id"] for it in abc_data]
+        coverage_map = services.get_bulk_stock_coverage(product_ids)
+        for it in abc_data:
+            cov = coverage_map.get(it["product_id"], {})
+            it["days_coverage"] = cov.get("days_coverage")
+            it["current_stock"] = cov.get("current_stock", 0)
+
+    return {
+        "start_date": start_date.isoformat(),
+        "end_date": end_date.isoformat(),
+        "gross_revenue": indicators["gross_revenue"],
+        "net_revenue": indicators["net_revenue"],
+        "total_discounts": indicators["total_discounts"],
+        "cmv": indicators["cmv"],
+        "gross_profit": indicators["gross_profit"],
+        "profit_margin": indicators["profit_margin"],
+        "average_ticket": average_ticket,
+        "gmroi": gmroi,
+        "capital_imobilizado": capital_imobilizado,
+        "stockout_alerts": stockout_alerts,
+        "abc_curve": abc_data,
+        "payment_methods_json": json.dumps(payment_chart),
+        "sales_evolution_json": json.dumps(sales_evolution),
+    }
+
+
+# ---------------------------------------------------------------------------
+# Views HTML
+# ---------------------------------------------------------------------------
+
+class FinancialDashboardView(LoginRequiredMixin, AdminRequiredMixin, TemplateView):
+    template_name = "sales/report_financial.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(_build_financial_context(self.request))
+        return context
+
+
 class SalesReportView(LoginRequiredMixin, AdminRequiredMixin, TemplateView):
     template_name = "sales/report_sales.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        today = date.today()
-        start_str = self.request.GET.get("start_date", today.replace(day=1).isoformat())
-        end_str = self.request.GET.get("end_date", today.isoformat())
-
-        try:
-            start_date = date.fromisoformat(start_str)
-            end_date = date.fromisoformat(end_str)
-        except ValueError:
-            start_date = today.replace(day=1)
-            end_date = today
-
-        if end_date < start_date:
-            context.update(
-                {
-                    "date_error": "A data final não pode ser anterior à data inicial.",
-                    "start_date": start_str,
-                    "end_date": end_str,
-                    "total_revenue": 0,
-                    "total_discounts": 0,
-                    "completed_sales_count": 0,
-                    "top_items": [],
-                    "payment_chart_json": "{}",
-                    "user_chart_json": "{}",
-                }
-            )
-            return context
-
-        total_revenue = services.get_total_revenue(start_date, end_date)
-        total_discounts = services.get_total_discounts(start_date, end_date)
-        completed_sales_count = Sale.objects.filter(
-            status=Sale.Status.COMPLETED,
-            completed_at__date__gte=start_date,
-            completed_at__date__lte=end_date,
-        ).count()
-
-        payment_qs = services.get_revenue_by_payment_method(start_date, end_date)
-        payment_chart = {
-            "labels": [METHOD_DISPLAY.get(p["method"], p["method"]) for p in payment_qs],
-            "values": [float(p["total"]) for p in payment_qs],
-        }
-
-        user_qs = services.get_sales_by_user(start_date, end_date)
-        user_chart = {"labels": [], "values": []}
-        for u in user_qs:
-            name = (
-                f"{u['user__first_name']} {u['user__last_name']}".strip()
-                or u["user__email"]
-            )
-            user_chart["labels"].append(name)
-            user_chart["values"].append(float(u["total_revenue"]))
-
-        context.update(
-            {
-                "total_revenue": total_revenue,
-                "total_discounts": total_discounts,
-                "completed_sales_count": completed_sales_count,
-                "top_items": services.get_top_selling_items(start_date, end_date),
-                "start_date": start_date.isoformat(),
-                "end_date": end_date.isoformat(),
-                "payment_chart_json": json.dumps(payment_chart),
-                "user_chart_json": json.dumps(user_chart),
-            }
-        )
+        context.update(_build_sales_report_context(self.request))
         return context
+
+
+# ---------------------------------------------------------------------------
+# Views PDF — geram o arquivo no servidor via WeasyPrint
+# ---------------------------------------------------------------------------
+
+def _weasyprint_response(html_string, request, filename, force_download):
+    try:
+        from weasyprint import HTML
+        pdf_file = HTML(string=html_string, base_url=request.build_absolute_uri("/")).write_pdf()
+        disposition = "attachment" if force_download else "inline"
+        response = HttpResponse(pdf_file, content_type="application/pdf")
+        response["Content-Disposition"] = f'{disposition}; filename="{filename}"'
+        return response
+    except (ImportError, OSError):
+        # Fallback: entrega o HTML para impressão nativa do browser.
+        # Com ?download=1 dispara window.print() automaticamente — o browser
+        # oferece "Salvar como PDF" sem nenhuma dependência de sistema.
+        if force_download:
+            html_string = html_string.replace(
+                "</body>",
+                "<script>window.addEventListener('load',function(){window.print();});</script></body>",
+            )
+        return HttpResponse(html_string, content_type="text/html; charset=utf-8")
+
+
+class SalesReportPDFView(LoginRequiredMixin, AdminRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        context = _build_sales_report_context(request)
+        html_string = render_to_string("sales/report_sales_pdf.html", context, request=request)
+        return _weasyprint_response(
+            html_string, request,
+            filename="relatorio_vendas.pdf",
+            force_download=request.GET.get("download") == "1",
+        )
+
+
+class FinancialDashboardPDFView(LoginRequiredMixin, AdminRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        context = _build_financial_context(request)
+        html_string = render_to_string("sales/report_financial_pdf.html", context, request=request)
+        return _weasyprint_response(
+            html_string, request,
+            filename="relatorio_financeiro.pdf",
+            force_download=request.GET.get("download") == "1",
+        )
