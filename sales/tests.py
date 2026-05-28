@@ -15,7 +15,7 @@ Inclui:
   - GetStockCoverageAndTurnoverTest – services.get_stock_coverage_and_turnover
   - GetBulkStockCoverageTest    – services.get_bulk_stock_coverage
   - GetStockoutRiskListTest     – services.get_stockout_risk_list
-  - FinancialDashboardViewTest  – FinancialDashboardView
+  - ReportFinancialViewTest     – ReportFinancialView
 
 Estrutura de dados de referência (dashboard financeiro)
 --------------------------------------------------------
@@ -960,14 +960,14 @@ class GetStockoutRiskListTest(TestCase):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 10. FinancialDashboardView (acesso, contexto, valores)
+# 10. ReportFinancialView (acesso, contexto, valores)
 # ─────────────────────────────────────────────────────────────────────────────
 
-class FinancialDashboardViewTest(BaseFinancialTestCase):
+class ReportFinancialViewTest(BaseFinancialTestCase):
 
     def setUp(self):
         self.client = Client()
-        self.url = reverse("sales:financial-dashboard")
+        self.url = reverse("sales:report-financial")
 
     def test_usuario_nao_autenticado_e_redirecionado(self):
         response = self.client.get(self.url)

@@ -582,7 +582,7 @@ def _build_financial_context(request) -> dict:
 # Views HTML
 # ---------------------------------------------------------------------------
 
-class FinancialDashboardView(LoginRequiredMixin, AdminRequiredMixin, TemplateView):
+class ReportFinancialView(LoginRequiredMixin, AdminRequiredMixin, TemplateView):
     template_name = "sales/report_financial.html"
 
     def get_context_data(self, **kwargs):
@@ -635,7 +635,7 @@ class SalesReportPDFView(LoginRequiredMixin, AdminRequiredMixin, View):
         )
 
 
-class FinancialDashboardPDFView(LoginRequiredMixin, AdminRequiredMixin, View):
+class ReportFinancialPDFView(LoginRequiredMixin, AdminRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         context = _build_financial_context(request)
         html_string = render_to_string("sales/report_financial_pdf.html", context, request=request)
