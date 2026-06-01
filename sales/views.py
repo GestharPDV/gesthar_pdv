@@ -259,6 +259,11 @@ def create_mp_order_view(request):
     if amount_decimal <= 0:
         return JsonResponse({'error': 'Valor da venda inválido.'}, status=400)
 
+    if amount_decimal > sale.remaining_balance:
+        return JsonResponse({
+            'error': f'O valor não pode exceder o saldo restante de R$ {sale.remaining_balance:.2f}'
+        }, status=400)
+
     if not sale.items.exists():
         return JsonResponse({'error': 'Venda sem itens não pode gerar order.'}, status=400)
 

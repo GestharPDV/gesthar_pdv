@@ -329,7 +329,7 @@
                             <label class="small fw-bold text-muted mb-2 d-block">VALOR A RECEBER</label>
                             <div class="input-group mb-3">
                                 <span class="input-group-text">R$</span>
-                                <input type="number" id="payment-amount-input" class="form-control form-control-lg fw-bold" value="${valorCalculado}" min="0.01" step="0.01">
+                                <input type="number" id="payment-amount-input" class="form-control form-control-lg fw-bold" value="${valorCalculado}" min="0.01" max="${valorCalculado}" step="0.01">
                             </div>
                             ${isCredit ? `
                             <label class="small fw-bold text-muted mb-2 d-block">PARCELAS</label>
@@ -380,14 +380,9 @@
                             renderInstallmentOptions(mpBaseAmount);
                         });
 
-                        document.getElementById('mp-installments').addEventListener('change', () => {
-                            updateAmountFromInstallment();
-                        });
-
-                        document.querySelectorAll('input[name="mp-fee-payer"]').forEach(radio => {
+                                        document.querySelectorAll('input[name="mp-fee-payer"]').forEach(radio => {
                             radio.addEventListener('change', () => {
                                 renderInstallmentOptions(mpBaseAmount);
-                                updateAmountFromInstallment();
                             });
                         });
                     }
@@ -696,23 +691,6 @@
         }
 
         renderInstallmentOptions(amount);
-        updateAmountFromInstallment();
-    }
-
-    function updateAmountFromInstallment() {
-        const select = document.getElementById('mp-installments');
-        const amtInput = document.getElementById('payment-amount-input');
-        if (!select || !amtInput || mpPayerCosts.length === 0) return;
-
-        const n = parseInt(select.value);
-        const buyerPaysFee = document.querySelector('input[name="mp-fee-payer"]:checked')?.value === 'true';
-        const pc = mpPayerCosts.find(p => p.installments === n);
-
-        if (!buyerPaysFee || !pc || pc.installment_rate === 0) {
-            amtInput.value = mpBaseAmount.toFixed(2);
-        } else {
-            amtInput.value = (mpBaseAmount * (1 + pc.installment_rate / 100)).toFixed(2);
-        }
     }
 
     function renderInstallmentOptions(amount) {
