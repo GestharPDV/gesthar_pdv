@@ -1,0 +1,82 @@
+<div class="pdv-box-unificado shadow-sm">
+
+    <div class="pdv-tabela-container">
+        <table class="table table-bordered align-middle mb-0 product-list">
+            <thead>
+                <tr class="text-uppercase text-center">
+                    <th class="py-2">Produto</th>
+                    <th class="py-2">Qtd</th>
+                    <th class="py-2">Unitário</th>
+                    <th class="py-2">Desconto</th>
+                    <th class="py-2">Total</th>
+                    <th class="py-2" style="width:50px;"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr class="text-center">
+                    <td class="text-start ps-3">
+                        <div class="fw-semibold">{{ item.variation.product.name }}</div>
+                        <div class="text-muted" style="font-size: 0.7rem;">SKU: {{ item.variation.sku }}</div>
+                    </td>
+                    <td class="fw-bold">{{ item.quantity }}</td>
+                    <td class="fw-semibold" style="color: var(--cor-fonte-rosa);">R$ {{ item.unit_price|floatformat:2 }}</td>
+                    <td>
+                        <div class="d-flex align-items-center justify-content-center">
+                            <span class="small me-1">R$</span>
+                            <input type="number" class="form-control form-control-sm text-center item-discount-input" style="width: 70px;"
+                                   value="{{ item.discount|floatformat:2 }}"
+                                   data-unit-price="{{ item.unit_price }}"
+                                   data-quantity="{{ item.quantity }}"
+                                   min="0" step="0.01">
+                        </div>
+                    </td>
+                    <td class="fw-bold" style="color: var(--cor-fonte-rosa);">R$ {{ item.total_price|floatformat:2 }}</td>
+                    <td class="text-center">
+                        <form action="{% url 'sales:remove-item' item.pk %}" method="POST" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-link text-decoration-none text-secondary-custom p-1" title="Remover item">
+                                <span class="material-symbols-outlined text-danger fs-5">delete</span>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-5 text-muted">Nenhum item na venda.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pdv-footer-interno">
+        <div class="row align-items-center text-center">
+            <div class="col-md-4">
+                <div class="d-flex flex-column align-items-center justify-content-center gap-2">
+                    <div class="small fw-bold text-muted mb-1">MODALIDADE</div>
+                    <div class="d-flex gap-2">
+                        <a class="btn btn-md btn-modalidade-ativa">ONLINE</a>
+                        <a class="btn btn-md btn-modalidade-ativa">PRESENCIAL</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="small fw-bold text-muted mb-1">DESC (R$)</div>
+                <input id="footer-disc-real" type="text" inputmode="numeric" class="input-footer-desc" placeholder="0,00">
+            </div>
+            <div class="col-md-2">
+                <div class="small fw-bold text-muted mb-1">DESC (%)</div>
+                <input id="footer-disc-percent" type="text" inputmode="numeric" class="input-footer-desc" placeholder="0%">
+            </div>
+            <div class="col-md-2">
+                <div class="small fw-bold text-muted mb-1">SUBTOTAL</div>
+                <div id="display-subtotal" class="fw-bold text-body">R$ {{ sale.net_amount|floatformat:2 }}</div>
+            </div>
+            <div class="col-md-2">
+                <div class="small fw-bold text-muted mb-1">TOTAL</div>
+                <div id="display-total-geral" class="h4 fw-bold mb-0" style="color: var(--cor-fonte-rosa)">R$ {{ sale.net_amount|floatformat:2 }}</div>
+            </div>
+        </div>
+    </div>
+</div>
