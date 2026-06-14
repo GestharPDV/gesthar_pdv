@@ -241,7 +241,7 @@ th.rodape {
   text-transform: uppercase;
 }
 
-/* Remove dor de fundo e bordas dos cards */
+/* Remove cor de fundo e bordas dos cards */
 .address-card {
   background: transparent !important;
   border: none !important;

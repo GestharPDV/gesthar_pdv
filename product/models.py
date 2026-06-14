@@ -166,6 +166,12 @@ class Product(StandardizeNameMixin, models.Model):
     suppliers = models.ManyToManyField(
         Supplier, through="ProductSupplier", related_name="products"
     )
+    cover_image = models.ImageField(
+        upload_to="products/covers/",
+        blank=True,
+        null=True,
+        verbose_name="Imagem de Capa",
+    )
     is_active = models.BooleanField(default=True, verbose_name="Ativo")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Criado em")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Atualizado em")
@@ -188,6 +194,30 @@ class Product(StandardizeNameMixin, models.Model):
                     "category": "Não é possível associar o produto a uma categoria inativa."
                 }
             )
+
+
+class ProductImage(models.Model):
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name="images", verbose_name="Produto"
+    )
+    image = models.ImageField(upload_to="products/images/", verbose_name="Imagem")
+    order = models.PositiveIntegerField(default=1, verbose_name="Ordem")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Criado em")
+
+    class Meta:
+        verbose_name = "Imagem do Produto"
+        verbose_name_plural = "Imagens do Produto"
+        ordering = ["order"]
+
+    def clean(self):
+        super().clean()
+        if self.pk is None:
+            count = ProductImage.objects.filter(product=self.product).count()
+            if count >= 3:
+                raise ValidationError("Um produto pode ter no máximo 3 imagens.")
+
+    def __str__(self):
+        return f"{self.product.name} - Imagem {self.order}"
 
 
 class ProductSupplier(models.Model):
