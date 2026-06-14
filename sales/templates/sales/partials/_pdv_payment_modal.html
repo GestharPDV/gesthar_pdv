@@ -1,0 +1,81 @@
+<div class="d-flex justify-content-end align-items-center gap-3 mt-4">
+    <button class="btn botao-secundario px-4 py-2">ADICIONAR ENTREGA</button>
+    <button type="button" class="btn botao-rosa px-5 py-2 fw-bold" id="btnOpenPayment">
+        FINALIZAR VENDA
+    </button>
+</div>
+
+<div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
+            <div class="modal-body p-5">
+
+                <div id="step-payment-select">
+                    <h5 class="text-center fw-bold text-muted mb-5">SELECIONE A FORMA DE PAGAMENTO</h5>
+                    <div class="row align-items-center">
+                        <div class="col-md-5 d-flex flex-column gap-3">
+                            {% for code, name in payment_form.fields.method.choices %}
+                                {% if code %}
+                                <button type="button" class="btn btn-payment-option py-3 fw-bold w-100" data-method="{{ code }}">
+                                    {{ name|upper }}
+                                </button>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-7 text-center border-start ps-5">
+                            <div id="payment-detail-area">
+                                <div class="py-5 text-muted opacity-50">
+                                    <span class="material-symbols-outlined fs-1">payments</span>
+                                    <p>Aguardando seleção...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-5 pt-4 border-top d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted small d-block">RESTANTE</span>
+                            <span class="h4 fw-bold mb-0" id="modal-remaining-balance">R$ {{ sale.remaining_balance|floatformat:2 }}</span>
+                        </div>
+                        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">CANCELAR</button>
+                    </div>
+                </div>
+
+                <div id="step-change" class="text-center d-none">
+                    <div class="p-4 rounded-4 mb-4" style="background-color: #f8f9fa; border: 2px dashed var(--primary-color);">
+                        <h5 class="fw-bold text-muted mb-2">VENDA PAGA!</h5>
+                        <div id="change-display" class="d-none">
+                            <p class="mb-1 text-muted fw-bold">TROCO A DEVOLVER:</p>
+                            <h1 class="display-4 fw-bold" style="color: var(--primary-color);">R$ 0,00</h1>
+                        </div>
+                        <div id="no-change-display" class="d-none">
+                            <h2 class="fw-bold text-success">VALOR EXATO RECEBIDO</h2>
+                        </div>
+                    </div>
+                    <button type="button" class="btn botao-rosa px-5 py-3 fw-bold rounded-3 w-100" onclick="goToReceipt()">
+                        PROSSEGUIR (ENTER)
+                    </button>
+                </div>
+
+                <div id="payment-status-alert" class="alert alert-info d-none mt-3 fw-bold"></div>
+
+                <div id="step-receipt" class="text-center d-none">
+                    <h5 class="fw-bold color-rosa mb-4">IMPRIMINDO COMPROVANTE</h5>
+                    <p class="fw-bold text-muted mb-5">NECESSITA RECIBO?</p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <button class="btn btn-success px-5 py-3 fw-bold rounded-3" onclick="finishFlow('sim')">SIM</button>
+                        <button class="btn btn-danger px-5 py-3 fw-bold rounded-3" onclick="finishFlow('nao')">NÃO</button>
+                        <button class="btn btn-warning px-5 py-3 fw-bold rounded-3" onclick="finishFlow('email')">POR E-MAIL</button>
+                    </div>
+                </div>
+
+                <div id="step-success" class="text-center d-none">
+                    <div class="p-5 rounded-4" style="background-color: #d1f7d1;">
+                        <h2 class="fw-bold text-success mb-3">COMPRA FINALIZADA COM SUCESSO!</h2>
+                        <p class="text-success fw-bold">PRESSIONE ENTER</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
