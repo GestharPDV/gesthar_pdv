@@ -2,46 +2,33 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>Relatório de Estoque — Gesthar</title>
+  <title>Relatório de Vendas — Gesthar</title>
   <style>
-    /* Reset e tipografia */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: Arial, Helvetica, sans-serif; font-size: 10pt; color: #333; padding: 20px; }
 
-    /* Cabeçalho do relatório */
     .report-header { text-align: center; margin-bottom: 24px; border-bottom: 2px solid #FF6B8A; padding-bottom: 12px; }
     .report-header h1 { font-size: 16pt; color: #FF6B8A; margin-bottom: 4px; }
     .report-header p { font-size: 9pt; color: #666; }
 
-    /* Cards de resumo */
     .summary { display: flex; gap: 16px; margin-bottom: 24px; }
     .card { flex: 1; border: 1px solid #eee; border-radius: 6px; padding: 12px 16px; background: #fafafa; }
     .card .label { font-size: 8pt; text-transform: uppercase; color: #888; margin-bottom: 4px; }
     .card .value { font-size: 16pt; font-weight: bold; color: #FF6B8A; }
 
-    /* Seções */
     .section-title { font-size: 11pt; font-weight: bold; color: #555; text-transform: uppercase;
                      margin: 24px 0 8px; border-bottom: 1px solid #eee; padding-bottom: 4px; }
 
-    /* Tabelas */
     table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 9pt; }
     th { background-color: #f5f5f5; color: #555; text-transform: uppercase; font-size: 8pt;
          padding: 6px 8px; border: 1px solid #ddd; text-align: center; }
     td { padding: 5px 8px; border: 1px solid #ddd; text-align: center; }
     tr:nth-child(even) td { background-color: #fafafa; }
-    .text-danger { color: #dc3545; font-weight: bold; }
-    .badge-entrada { background: #d4edda; color: #155724; padding: 2px 6px; border-radius: 4px; font-size: 8pt; }
-    .badge-saida   { background: #f8d7da; color: #721c24; padding: 2px 6px; border-radius: 4px; font-size: 8pt; }
-    .empty-row td  { color: #aaa; font-style: italic; }
+    .empty-row td { color: #aaa; font-style: italic; }
 
-    /* Rodapé */
     .report-footer { margin-top: 32px; text-align: center; font-size: 8pt; color: #aaa;
                      border-top: 1px solid #eee; padding-top: 8px; }
 
-    /* Quebra de página antes de cada seção principal */
-    .page-break { page-break-before: always; }
-
-    /* Barra de impressão — visível no browser, oculta ao imprimir */
     .print-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 999;
                  background: #FF6B8A; color: #fff; padding: 10px 20px;
                  display: flex; justify-content: space-between; align-items: center;
@@ -60,89 +47,47 @@
     <button onclick="window.print()">🖨 Imprimir / Salvar como PDF</button>
   </div>
 
-  {# Cabeçalho #}
   <div class="report-header">
-    <h1>Relatório de Estoque</h1>
+    <h1>Relatório de Vendas</h1>
     <p>Período: {{ start_date }} a {{ end_date }}</p>
     <p>Gerado em: {% now "d/m/Y H:i" %}</p>
   </div>
 
-  {# Cards de resumo #}
   <div class="summary">
     <div class="card">
-      <div class="label">Total de Peças</div>
-      <div class="value">{{ total_pieces }}</div>
+      <div class="label">Faturamento Líquido</div>
+      <div class="value">R$ {{ total_revenue|floatformat:2 }}</div>
     </div>
     <div class="card">
-      <div class="label">Valor Total do Estoque</div>
-      <div class="value">R$ {{ inventory_valuation|floatformat:2 }}</div>
+      <div class="label">Total de Descontos</div>
+      <div class="value">R$ {{ total_discounts|floatformat:2 }}</div>
+    </div>
+    <div class="card">
+      <div class="label">Vendas Concluídas</div>
+      <div class="value">{{ completed_sales_count }}</div>
     </div>
   </div>
 
-  {# Tabela: Movimentações do Período #}
-  <div class="section-title">Movimentações do Período</div>
+  <div class="section-title">Top 10 Produtos Mais Vendidos</div>
   <table>
     <thead>
       <tr>
-        <th>Data</th>
+        <th>#</th>
         <th>Produto</th>
-        <th>Cor</th>
-        <th>Tamanho</th>
-        <th>Tipo</th>
-        <th>Quantidade</th>
-        <th>Usuário</th>
+        <th>Qtd. Vendida</th>
+        <th>Receita</th>
       </tr>
     </thead>
     <tbody>
-      {% for mov in movements %}
+      {% for item in top_items %}
       <tr>
-        <td>{{ mov.movement_date|date:"d/m/Y H:i" }}</td>
-        <td>{{ mov.product_variation.product.name }}</td>
-        <td>{{ mov.product_variation.color.name }}</td>
-        <td>{{ mov.product_variation.size.name }}</td>
-        <td>
-          {% if mov.movement_type == "ENTRADA" or mov.movement_type == "AJUSTE_ENTRADA" or mov.movement_type == "DEVOLUCAO" %}
-            <span class="badge-entrada">{{ mov.get_movement_type_display }}</span>
-          {% else %}
-            <span class="badge-saida">{{ mov.get_movement_type_display }}</span>
-          {% endif %}
-        </td>
-        <td>{{ mov.quantity }}</td>
-        <td>{{ mov.user.get_full_name|default:mov.user.username }}</td>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ item.product_name_snapshot }}</td>
+        <td>{{ item.total_quantity }}</td>
+        <td>R$ {{ item.total_revenue|floatformat:2 }}</td>
       </tr>
       {% empty %}
-      <tr class="empty-row"><td colspan="7">Nenhuma movimentação no período.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-
-  {# Tabela: Estoque Baixo #}
-  <div class="section-title">Variações com Estoque Baixo</div>
-  <table>
-    <thead>
-      <tr>
-        <th>SKU</th>
-        <th>Produto</th>
-        <th>Cor</th>
-        <th>Tamanho</th>
-        <th>Categoria</th>
-        <th>Estoque Atual</th>
-        <th>Estoque Mínimo</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for var in low_stock_variations %}
-      <tr>
-        <td>{{ var.sku }}</td>
-        <td>{{ var.product.name }}</td>
-        <td>{{ var.color.name }}</td>
-        <td>{{ var.size.name }}</td>
-        <td>{{ var.product.category.name }}</td>
-        <td class="text-danger">{{ var.stock }}</td>
-        <td>{{ var.minimum_stock }}</td>
-      </tr>
-      {% empty %}
-      <tr class="empty-row"><td colspan="7">Nenhuma variação com estoque abaixo do mínimo.</td></tr>
+      <tr class="empty-row"><td colspan="4">Nenhum produto vendido no período.</td></tr>
       {% endfor %}
     </tbody>
   </table>
