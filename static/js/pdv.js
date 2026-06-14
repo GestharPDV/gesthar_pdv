@@ -12,6 +12,7 @@
     let mpMethod = null;
     let mpAmount = 0;
     let mpPollInterval = null;
+    let mpEventSource = null;
     let mpPayerCosts = [];
     let mpBaseAmount = 0;
 
@@ -267,6 +268,7 @@
             mpOrderId = null;
             mpMethod = null;
             mpAmount = 0;
+            mpEventSource = null;
             mpPayerCosts = [];
             mpBaseAmount = 0;
         });
@@ -322,50 +324,71 @@
 
                     detailArea.innerHTML = `
                         <div class="p-4 rounded bg-light border border-2 border-info">
-                            <div class="mb-3">
-                                <span class="material-symbols-outlined fs-1" style="color: #009ee3;">contactless</span>
+                            <div class="text-center mb-3">
+                                <span class="material-symbols-outlined fs-1" style="color:#009ee3;">contactless</span>
+                                <p class="fw-bold text-muted mb-0">MERCADO PAGO POINT</p>
                             </div>
-                            <p class="fw-bold text-muted mb-3">MERCADO PAGO POINT</p>
-                            <label class="small fw-bold text-muted mb-2 d-block">VALOR A RECEBER</label>
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">R$</span>
-                                <input type="number" id="payment-amount-input" class="form-control form-control-lg fw-bold" value="${valorCalculado}" min="0.01" max="${valorCalculado}" step="0.01">
-                            </div>
-                            ${isCredit ? `
-                            <label class="small fw-bold text-muted mb-2 d-block">PARCELAS</label>
-                            <select id="mp-installments" class="form-select form-select-lg mb-3">
-                                <option>Carregando...</option>
-                            </select>
-                            <label class="small fw-bold text-muted mb-2 d-block">QUEM PAGA A TAXA DO PARCELAMENTO?</label>
-                            <div class="btn-group w-100 mb-3" role="group">
-                                <input type="radio" class="btn-check" name="mp-fee-payer" id="mp-fee-seller" value="false" checked>
-                                <label class="btn btn-outline-secondary" for="mp-fee-seller">Vendedor</label>
-                                <input type="radio" class="btn-check" name="mp-fee-payer" id="mp-fee-buyer" value="true">
-                                <label class="btn btn-outline-info" for="mp-fee-buyer">Cliente</label>
-                            </div>` : ''}
-                            <label class="small fw-bold text-muted mb-2 d-block">TEMPO DE EXPIRAÇÃO</label>
-                            <select id="mp-expiration" class="form-select form-select-lg mb-3">
-                                <option value="PT1M">1 minuto</option>
-                                <option value="PT5M">5 minutos</option>
-                                <option value="PT10M">10 minutos</option>
-                                <option value="PT16M" selected>16 minutos (padrão)</option>
-                                <option value="PT30M">30 minutos</option>
-                                <option value="PT1H">1 hora</option>
-                            </select>
-                            <div class="d-flex gap-2 mb-2">
-                                <button class="btn flex-grow-1 py-3 fw-bold" style="background-color:#009ee3;color:white;border:none;" onclick="confirmPayment('${method}')">
+
+                            <div id="mp-form-section">
+                                <label class="small fw-bold text-muted mb-2 d-block">VALOR A RECEBER</label>
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">R$</span>
+                                    <input type="number" id="payment-amount-input" class="form-control form-control-lg fw-bold"
+                                           value="${valorCalculado}" min="0.01" max="${valorCalculado}" step="0.01">
+                                </div>
+                                ${isCredit ? `
+                                <label class="small fw-bold text-muted mb-2 d-block">PARCELAS</label>
+                                <select id="mp-installments" class="form-select form-select-lg mb-3">
+                                    <option>Carregando...</option>
+                                </select>
+                                <label class="small fw-bold text-muted mb-2 d-block">QUEM PAGA A TAXA DO PARCELAMENTO?</label>
+                                <div class="btn-group w-100 mb-3" role="group">
+                                    <input type="radio" class="btn-check" name="mp-fee-payer" id="mp-fee-seller" value="false" checked>
+                                    <label class="btn btn-outline-secondary" for="mp-fee-seller">Vendedor</label>
+                                    <input type="radio" class="btn-check" name="mp-fee-payer" id="mp-fee-buyer" value="true">
+                                    <label class="btn btn-outline-info" for="mp-fee-buyer">Cliente</label>
+                                </div>` : ''}
+                                <label class="small fw-bold text-muted mb-2 d-block">TEMPO DE EXPIRAÇÃO</label>
+                                <select id="mp-expiration" class="form-select form-select-lg mb-3">
+                                    <option value="PT1M">1 minuto</option>
+                                    <option value="PT5M">5 minutos</option>
+                                    <option value="PT10M">10 minutos</option>
+                                    <option value="PT16M" selected>16 minutos (padrão)</option>
+                                    <option value="PT30M">30 minutos</option>
+                                    <option value="PT1H">1 hora</option>
+                                </select>
+                                <button class="btn w-100 py-3 fw-bold" id="btn-mp-send"
+                                        style="background-color:#009ee3;color:white;border:none;"
+                                        onclick="confirmPayment('${method}')">
                                     ENVIAR PARA TERMINAL
                                 </button>
-                                <button class="btn btn-outline-danger py-3 fw-bold" id="btn-cancel-order" disabled onclick="cancelMercadoPagoOrder()">
-                                    CANCELAR ORDER
+                            </div>
+
+                            <div id="mp-waiting-section" style="display:none;">
+                                <div class="text-center py-3">
+                                    <div class="spinner-border mb-3" style="width:3rem;height:3rem;color:#009ee3;" role="status"></div>
+                                    <p class="fw-bold fs-5 mb-1" style="color:#009ee3;">AGUARDANDO PAGAMENTO</p>
+                                    <p class="text-muted small mb-0" id="mp-order-label"></p>
+                                </div>
+                                <div class="d-flex gap-2 mt-3">
+                                    <button class="btn btn-outline-danger flex-grow-1 py-2 fw-bold"
+                                            id="btn-cancel-order" onclick="cancelMercadoPagoOrder()">
+                                        CANCELAR COBRANÇA
+                                    </button>
+                                    <button class="btn btn-warning py-2 fw-bold px-3"
+                                            id="btn-mp-simulate" onclick="simulateMpApproval()">
+                                        SIMULAR
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div id="mp-result-section" style="display:none;">
+                                <div class="text-center py-3" id="mp-result-content"></div>
+                                <button class="btn btn-outline-primary w-100 py-2 fw-bold"
+                                        id="btn-mp-retry" style="display:none;" onclick="resetMpFlow()">
+                                    NOVA COBRANÇA
                                 </button>
                             </div>
-                            <button class="btn btn-success w-100 py-2 fw-bold" id="btn-mp-continue" style="display:none;" onclick="proceedMercadoPagoFlow()">
-                                PAGAMENTO CONCLUÍDO NO TERMINAL
-                            </button>
-                            <button class="btn btn-warning w-100 py-2 fw-bold mt-1" id="btn-mp-simulate" style="display:none;" onclick="simulateMpApproval()">
-                                SIMULAR APROVAÇÃO (TESTE)
-                            </button>
                         </div>
                     `;
 
@@ -380,7 +403,7 @@
                             renderInstallmentOptions(mpBaseAmount);
                         });
 
-                                        document.querySelectorAll('input[name="mp-fee-payer"]').forEach(radio => {
+                        document.querySelectorAll('input[name="mp-fee-payer"]').forEach(radio => {
                             radio.addEventListener('change', () => {
                                 renderInstallmentOptions(mpBaseAmount);
                             });
@@ -389,12 +412,16 @@
 
                 } else if (method === 'PIX') {
                     detailArea.innerHTML = `
-                        <div id="qr-code-placeholder" class="mb-3">
-                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=PagamentoPDV" alt="QR Code">
+                        <div class="p-4 rounded border" style="background-color: var(--bg-card);">
+                            <label class="small fw-bold text-muted mb-2 d-block">VALOR A RECEBER</label>
+                            <div class="input-group mb-4">
+                                <span class="input-group-text">R$</span>
+                                <input type="number" id="payment-amount-input" class="form-control form-control-lg fw-bold"
+                                       value="${valorCalculado}" min="0.01" max="${valorCalculado}" step="0.01">
+                            </div>
+                            <p class="text-muted small mb-3">Solicite o pagamento via PIX ao cliente e confirme após receber.</p>
+                            <button class="btn botao-verde w-100 py-3 fw-bold" onclick="confirmPayment('PIX')">CONFIRMAR RECEBIMENTO DO PIX</button>
                         </div>
-                        <p class="fw-bold text-muted small">ESCANEIE O QR-CODE</p>
-                        <input type="hidden" id="payment-amount-input" value="${valorCalculado}">
-                        <button class="btn botao-verde w-100 mt-3 py-2 fw-bold" onclick="confirmPayment('PIX')">CONFIRMAR PIX</button>
                     `;
                 } else {
                     detailArea.innerHTML = `
@@ -432,13 +459,13 @@
             const expiration = document.getElementById('mp-expiration')?.value || 'PT16M';
             const buyerPaysFee = document.querySelector('input[name="mp-fee-payer"]:checked')?.value === 'true';
 
-            statusAlert.innerText = 'Enviando para o terminal...';
-            statusAlert.classList.remove('d-none', 'alert-danger', 'alert-success');
-            statusAlert.classList.add('alert-warning');
+            const btnSend = document.getElementById('btn-mp-send');
+            if (btnSend) { btnSend.disabled = true; btnSend.innerHTML = '<span class="spinner-border spinner-border-sm"></span> ENVIANDO...'; }
 
             const formData = new FormData();
             formData.append('amount', parseFloat(amountInput.value).toFixed(2));
             formData.append('sale_id', config.salePk);
+            formData.append('payment_method_type', baseMethod);
             formData.append('installments', installments);
             formData.append('expiration_time', expiration);
             formData.append('buyer_pays_fee', buyerPaysFee ? 'true' : 'false');
@@ -458,26 +485,13 @@
 
                     if (!mpOrderId) throw new Error('Order criada sem ID na resposta do MP.');
 
-                    const btnCancel = document.getElementById('btn-cancel-order');
-                    const btnContinue = document.getElementById('btn-mp-continue');
-                    const btnSimulate = document.getElementById('btn-mp-simulate');
-                    if (btnCancel) btnCancel.disabled = false;
-                    if (btnContinue) btnContinue.style.display = 'block';
-                    if (btnSimulate) btnSimulate.style.display = 'block';
-
+                    setMpState('waiting');
                     startMpPolling();
-
-                    let msg = `✓ ORDER ${mpOrderId} ENVIADA. Aguarde na maquininha.`;
-                    if (baseMethod === 'CREDITO') {
-                        msg += `\n${installments}x de R$ ${(mpAmount / parseInt(installments)).toFixed(2)}`;
-                    }
-                    statusAlert.innerText = msg;
-                    statusAlert.classList.remove('alert-warning');
-                    statusAlert.classList.add('alert-success');
                 } else {
                     throw new Error(data.error || JSON.stringify(data.details) || 'Erro ao criar order MP');
                 }
             } catch (err) {
+                if (btnSend) { btnSend.disabled = false; btnSend.innerText = 'ENVIAR PARA TERMINAL'; }
                 statusAlert.innerText = 'ERRO: ' + err.message;
                 statusAlert.classList.remove('d-none', 'alert-warning', 'alert-success');
                 statusAlert.classList.add('alert-danger');
@@ -532,6 +546,8 @@
 
     function showChangeScreen(changeAmount) {
         document.getElementById('step-payment-select').style.display = 'none';
+        const statusAlert = document.getElementById('payment-status-alert');
+        if (statusAlert) statusAlert.classList.add('d-none');
         const stepChange = document.getElementById('step-change');
         stepChange.classList.remove('d-none');
 
@@ -583,16 +599,12 @@
         document.addEventListener('keydown', enterFinalizer);
     }
 
-    // ---- Mercado Pago: concluir pagamento ----
+    // ---- Mercado Pago: concluir pagamento (chamado automaticamente pelo SSE) ----
 
     async function proceedMercadoPagoFlow() {
-        if (!mpOrderId || !mpMethod || !mpAmount) {
-            alert('Nenhum pagamento MP pendente.');
-            return;
-        }
+        if (!mpOrderId || !mpMethod || !mpAmount) return;
         stopMpPolling();
 
-        const statusAlert = document.getElementById('payment-status-alert');
         const formData = new FormData();
         formData.append('method', mpMethod);
         formData.append('amount', mpAmount.toFixed(2));
@@ -603,45 +615,56 @@
                 method: 'POST', body: formData,
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             });
+
+            const contentType = response.headers.get('content-type') || '';
+            if (!contentType.includes('application/json')) {
+                throw new Error(`Sessão expirada ou erro no servidor (${response.status}). Recarregue a página.`);
+            }
+
             const data = await response.json();
 
             if (!(response.ok && data.success)) throw new Error(data.error || 'Erro ao registrar pagamento.');
 
             const remainingLabel = document.querySelector('#step-payment-select .h4');
-            remainingLabel.innerText = 'R$ ' + data.remaining.toFixed(2).replace('.', ',');
+            if (remainingLabel) remainingLabel.innerText = 'R$ ' + data.remaining.toFixed(2).replace('.', ',');
 
             if (data.remaining > 0) {
-                statusAlert.innerText = `PARCIAL REGISTRADO! FALTA: R$ ${data.remaining.toFixed(2).replace('.', ',')}`;
-                statusAlert.classList.remove('d-none', 'alert-danger');
-                statusAlert.classList.add('alert-success');
+                // Pagamento parcial — volta ao formulário para nova cobrança
                 mpOrderId = null; mpMethod = null; mpAmount = 0;
-                const btnCancel = document.getElementById('btn-cancel-order');
-                const btnContinue = document.getElementById('btn-mp-continue');
-                const btnSimulate = document.getElementById('btn-mp-simulate');
-                if (btnCancel) btnCancel.disabled = true;
-                if (btnContinue) btnContinue.style.display = 'none';
-                if (btnSimulate) btnSimulate.style.display = 'none';
+                setMpState('idle');
+                const amtInput = document.getElementById('payment-amount-input');
+                if (amtInput) { amtInput.value = data.remaining.toFixed(2); amtInput.max = data.remaining.toFixed(2); }
+                mpBaseAmount = data.remaining;
+                const statusAlert = document.getElementById('payment-status-alert');
+                if (statusAlert) {
+                    statusAlert.innerText = `PARCIAL REGISTRADO! FALTA: R$ ${data.remaining.toFixed(2).replace('.', ',')}`;
+                    statusAlert.classList.remove('d-none', 'alert-danger', 'alert-warning');
+                    statusAlert.classList.add('alert-success');
+                }
             } else {
                 showChangeScreen(data.change || 0);
             }
         } catch (error) {
-            statusAlert.innerText = 'ERRO: ' + error.message;
-            statusAlert.classList.remove('d-none', 'alert-success', 'alert-warning');
-            statusAlert.classList.add('alert-danger');
+            const statusAlert = document.getElementById('payment-status-alert');
+            if (statusAlert) {
+                statusAlert.innerText = 'ERRO: ' + error.message;
+                statusAlert.classList.remove('d-none', 'alert-success', 'alert-warning');
+                statusAlert.classList.add('alert-danger');
+            }
         }
     }
 
     // ---- Mercado Pago: cancelar order ----
 
     async function cancelMercadoPagoOrder() {
-        if (!mpOrderId) { alert('Nenhuma order ativa.'); return; }
-        if (!confirm(`Cancelar a order ${mpOrderId}?`)) return;
+        if (!mpOrderId) return;
+        if (!confirm('Cancelar a cobrança no terminal?')) return;
         stopMpPolling();
 
-        const statusAlert = document.getElementById('payment-status-alert');
-        statusAlert.innerText = 'Cancelando order...';
-        statusAlert.classList.remove('d-none', 'alert-danger', 'alert-success');
-        statusAlert.classList.add('alert-warning');
+        const btnCancel = document.getElementById('btn-cancel-order');
+        const btnSimulate = document.getElementById('btn-mp-simulate');
+        if (btnCancel) { btnCancel.disabled = true; btnCancel.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Cancelando...'; }
+        if (btnSimulate) btnSimulate.disabled = true;
 
         const formData = new FormData();
         formData.append('order_id', mpOrderId);
@@ -655,24 +678,75 @@
             const data = await resp.json();
 
             if (resp.ok && data.success) {
-                statusAlert.innerText = `✓ ORDER ${mpOrderId} CANCELADA`;
-                statusAlert.classList.remove('alert-warning');
-                statusAlert.classList.add('alert-success');
-                mpOrderId = null; mpMethod = null; mpAmount = 0;
-                const btnCancel = document.getElementById('btn-cancel-order');
-                const btnContinue = document.getElementById('btn-mp-continue');
-                const btnSimulate = document.getElementById('btn-mp-simulate');
-                if (btnCancel) btnCancel.disabled = true;
-                if (btnContinue) btnContinue.style.display = 'none';
-                if (btnSimulate) btnSimulate.style.display = 'none';
+                setMpState('canceled');
             } else {
                 throw new Error(data.error || 'Erro ao cancelar order');
             }
         } catch (err) {
-            statusAlert.innerText = 'ERRO AO CANCELAR: ' + err.message;
-            statusAlert.classList.remove('alert-warning');
-            statusAlert.classList.add('alert-danger');
+            if (btnCancel) { btnCancel.disabled = false; btnCancel.innerText = 'CANCELAR COBRANÇA'; }
+            if (btnSimulate) btnSimulate.disabled = false;
+            const statusAlert = document.getElementById('payment-status-alert');
+            if (statusAlert) {
+                statusAlert.innerText = 'ERRO AO CANCELAR: ' + err.message;
+                statusAlert.classList.remove('d-none', 'alert-warning', 'alert-success');
+                statusAlert.classList.add('alert-danger');
+            }
         }
+    }
+
+    // ---- Mercado Pago: máquina de estados da UI ----
+
+    function setMpState(state) {
+        const formSection    = document.getElementById('mp-form-section');
+        const waitingSection = document.getElementById('mp-waiting-section');
+        const resultSection  = document.getElementById('mp-result-section');
+
+        [formSection, waitingSection, resultSection].forEach(el => { if (el) el.style.display = 'none'; });
+
+        if (state === 'idle') {
+            if (formSection) formSection.style.display = 'block';
+
+        } else if (state === 'waiting') {
+            if (waitingSection) waitingSection.style.display = 'block';
+            const label = document.getElementById('mp-order-label');
+            if (label) label.innerText = `Order: ${mpOrderId}`;
+
+        } else if (state === 'approved') {
+            if (resultSection) resultSection.style.display = 'block';
+            const content = document.getElementById('mp-result-content');
+            if (content) content.innerHTML = `
+                <span class="material-symbols-outlined" style="font-size:3rem;color:#198754;">check_circle</span>
+                <p class="fw-bold fs-5 mt-2 mb-0" style="color:#198754;">PAGAMENTO APROVADO!</p>
+            `;
+            const btnRetry = document.getElementById('btn-mp-retry');
+            if (btnRetry) btnRetry.style.display = 'none';
+
+        } else {
+            // canceled | expired | failed | timeout
+            if (resultSection) resultSection.style.display = 'block';
+            const defs = {
+                canceled: { icon: 'cancel',          color: '#dc3545', text: 'COBRANÇA CANCELADA',  sub: 'Crie uma nova cobrança para continuar.' },
+                expired:  { icon: 'timer_off',        color: '#e67e00', text: 'COBRANÇA EXPIRADA',   sub: 'Crie uma nova cobrança para continuar.' },
+                failed:   { icon: 'error',            color: '#dc3545', text: 'PAGAMENTO RECUSADO',  sub: 'Tente novamente com uma nova cobrança.' },
+                timeout:  { icon: 'hourglass_empty',  color: '#e67e00', text: 'TEMPO ESGOTADO',      sub: 'Crie uma nova cobrança para continuar.' },
+            };
+            const d = defs[state] || defs.failed;
+            const content = document.getElementById('mp-result-content');
+            if (content) content.innerHTML = `
+                <span class="material-symbols-outlined" style="font-size:3rem;color:${d.color};">${d.icon}</span>
+                <p class="fw-bold fs-5 mt-2 mb-1" style="color:${d.color};">${d.text}</p>
+                <p class="text-muted small mb-0">${d.sub}</p>
+            `;
+            const btnRetry = document.getElementById('btn-mp-retry');
+            if (btnRetry) btnRetry.style.display = 'block';
+            mpOrderId = null; mpMethod = null; mpAmount = 0;
+        }
+    }
+
+    function resetMpFlow() {
+        setMpState('idle');
+        const statusAlert = document.getElementById('payment-status-alert');
+        if (statusAlert) statusAlert.classList.add('d-none');
     }
 
     async function loadMpInstallments(amount) {
@@ -737,48 +811,46 @@
         });
     }
 
-    // ---- Mercado Pago: polling de status ----
+    // ---- Mercado Pago: stream de status (SSE) ----
 
     function startMpPolling() {
         stopMpPolling();
-        mpPollInterval = setInterval(async () => {
-            if (!mpOrderId) { stopMpPolling(); return; }
-            try {
-                const resp = await fetch(`${config.mpOrderStatusUrl}?order_id=${mpOrderId}`, {
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                });
-                const data = await resp.json();
-                const status = data.status;
-                const statusAlert = document.getElementById('payment-status-alert');
+        if (!mpOrderId) return;
 
-                if (status === 'paid' || status === 'processed') {
-                    stopMpPolling();
-                    if (statusAlert) {
-                        statusAlert.innerText = `✓ PAGAMENTO APROVADO! Registrando...`;
-                        statusAlert.classList.remove('d-none', 'alert-warning', 'alert-danger');
-                        statusAlert.classList.add('alert-success');
-                    }
-                    await proceedMercadoPagoFlow();
-                } else if (['failed', 'canceled', 'expired'].includes(status)) {
-                    stopMpPolling();
-                    if (statusAlert) {
-                        statusAlert.innerText = `✗ Pagamento ${status}. Tente novamente.`;
-                        statusAlert.classList.remove('d-none', 'alert-warning', 'alert-success');
-                        statusAlert.classList.add('alert-danger');
-                    }
-                    const btnCancel = document.getElementById('btn-cancel-order');
-                    const btnContinue = document.getElementById('btn-mp-continue');
-                    const btnSimulate = document.getElementById('btn-mp-simulate');
-                    if (btnCancel) btnCancel.disabled = true;
-                    if (btnContinue) btnContinue.style.display = 'none';
-                    if (btnSimulate) btnSimulate.style.display = 'none';
-                    mpOrderId = null; mpMethod = null; mpAmount = 0;
-                }
-            } catch (_) { /* silencioso durante polling */ }
-        }, 4000);
+        mpEventSource = new EventSource(`${config.mpStreamUrl}?order_id=${encodeURIComponent(mpOrderId)}`);
+
+        mpEventSource.onmessage = async function (event) {
+            const data = JSON.parse(event.data);
+            const status = data.status;
+
+            if (status === 'paid' || status === 'processed') {
+                stopMpPolling();
+                setMpState('approved');
+                await proceedMercadoPagoFlow();
+            } else if (status === 'at_terminal') {
+                // Terminal recebeu a order — só o terminal físico pode aprovar ou cancelar
+                const btnCancel = document.getElementById('btn-cancel-order');
+                if (btnCancel) { btnCancel.disabled = true; btnCancel.innerText = 'Cancele no terminal'; }
+                const btnSimulate = document.getElementById('btn-mp-simulate');
+                if (btnSimulate) { btnSimulate.disabled = true; btnSimulate.innerText = 'Em andamento...'; }
+                const label = document.getElementById('mp-order-label');
+                if (label) label.innerText = 'Aguardando interação no terminal físico...';
+            } else if (['failed', 'canceled', 'expired', 'timeout'].includes(status)) {
+                stopMpPolling();
+                setMpState(status);
+            }
+        };
+
+        mpEventSource.onerror = function () {
+            // EventSource reconecta automaticamente em caso de falha
+        };
     }
 
     function stopMpPolling() {
+        if (mpEventSource) {
+            mpEventSource.close();
+            mpEventSource = null;
+        }
         if (mpPollInterval) {
             clearInterval(mpPollInterval);
             mpPollInterval = null;
@@ -790,12 +862,8 @@
     async function simulateMpApproval(status = 'processed') {
         if (!mpOrderId) { alert('Nenhuma order ativa para simular.'); return; }
 
-        const statusAlert = document.getElementById('payment-status-alert');
-        if (statusAlert) {
-            statusAlert.innerText = 'Simulando aprovação...';
-            statusAlert.classList.remove('d-none', 'alert-danger', 'alert-success');
-            statusAlert.classList.add('alert-warning');
-        }
+        const btnSimulate = document.getElementById('btn-mp-simulate');
+        if (btnSimulate) { btnSimulate.disabled = true; btnSimulate.innerHTML = '<span class="spinner-border spinner-border-sm"></span>'; }
 
         const formData = new FormData();
         formData.append('order_id', mpOrderId);
@@ -812,13 +880,13 @@
             if (!resp.ok) {
                 throw new Error(data.error || JSON.stringify(data.details) || 'Erro ao simular');
             }
-            if (statusAlert) {
-                statusAlert.innerText = 'Simulação enviada. Aguardando polling confirmar...';
-            }
+            // SSE vai detectar a mudança e avançar automaticamente
         } catch (err) {
+            if (btnSimulate) { btnSimulate.disabled = false; btnSimulate.innerText = 'SIMULAR'; }
+            const statusAlert = document.getElementById('payment-status-alert');
             if (statusAlert) {
                 statusAlert.innerText = 'ERRO na simulação: ' + err.message;
-                statusAlert.classList.remove('alert-warning');
+                statusAlert.classList.remove('d-none', 'alert-warning', 'alert-success');
                 statusAlert.classList.add('alert-danger');
             }
         }
@@ -828,8 +896,8 @@
     window.confirmPayment = confirmPayment;
     window.goToReceipt = goToReceipt;
     window.finishFlow = finishFlow;
-    window.proceedMercadoPagoFlow = proceedMercadoPagoFlow;
     window.cancelMercadoPagoOrder = cancelMercadoPagoOrder;
     window.simulateMpApproval = simulateMpApproval;
+    window.resetMpFlow = resetMpFlow;
 
 })();

@@ -1,7 +1,14 @@
 from decimal import Decimal, InvalidOperation
+import hashlib
+import hmac
 import json
 import os
+import re
+import time
 import uuid
+import logging
+
+logger = logging.getLogger(__name__)
 from datetime import date
 
 import requests
@@ -15,7 +22,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, DetailView, TemplateView
 from django.db.models import Q
-from django.http import JsonResponse
+from django.http import JsonResponse, StreamingHttpResponse
 from django.utils import timezone
 
 from user.permissions import AdminRequiredMixin
@@ -236,6 +243,14 @@ def create_mp_order_view(request):
     expiration_time = request.POST.get('expiration_time') or 'PT16M'
     installments = int(request.POST.get('installments', 1))
     buyer_pays_fee = request.POST.get('buyer_pays_fee') == 'true'
+    payment_method_type = request.POST.get('payment_method_type', 'CREDITO').upper()
+
+    mp_type_map = {
+        'CREDITO': 'credit_card',
+        'DEBITO': 'debit_card',
+        'PIX': 'qr',
+    }
+    mp_default_type = mp_type_map.get(payment_method_type, 'credit_card')
 
     if sale_id:
         sale = get_object_or_404(Sale, pk=sale_id, user=request.user)
@@ -267,6 +282,18 @@ def create_mp_order_view(request):
     if not sale.items.exists():
         return JsonResponse({'error': 'Venda sem itens não pode gerar order.'}, status=400)
 
+    # Impede duplo clique: rejeita se já existe uma order ativa para esta venda
+    active_statuses = ('pending', 'at_terminal', 'open')
+    existing = GatewayPayment.objects.filter(sale=sale, status__in=active_statuses).first()
+    if existing:
+        logger.warning('Tentativa de criar order duplicada para venda %s (order ativa: %s, status: %s)',
+                       sale.pk, existing.order_id, existing.status)
+        return JsonResponse(
+            {'error': 'Já existe uma cobrança ativa para esta venda. Cancele-a antes de criar uma nova.',
+             'order_id': existing.order_id, 'status': existing.status},
+            status=409,
+        )
+
     amount = float(amount_decimal)
 
     access_token = os.environ.get('ACCESS_TOKEN')
@@ -297,37 +324,53 @@ def create_mp_order_view(request):
         }, status=400)
 
     url = 'https://api.mercadopago.com/v1/orders'
-    headers = {
-        'Authorization': f'Bearer {access_token}',
-        'Content-Type': 'application/json',
-        'X-Idempotency-Key': str(uuid.uuid4())
-    }
+    idempotency_key = str(uuid.uuid4())
+
+    payment_method_config = {'default_type': mp_default_type}
+    if payment_method_type == 'CREDITO':
+        payment_method_config['default_installments'] = installments
+        payment_method_config['installments_cost'] = 'buyer' if buyer_pays_fee else 'seller'
 
     payload = {
         'type': 'point',
         'external_reference': external_ref,
         'expiration_time': expiration_time,
         'transactions': {
-            'payments': [ { 'amount': f"{amount:.2f}" } ]
+            'payments': [{'amount': f"{amount:.2f}"}]
         },
         'config': {
             'point': {
                 'terminal_id': terminal_id,
                 'print_on_terminal': 'seller_ticket'
             },
-            'payment_method': {
-                'default_type': 'credit_card',
-                'default_installments': installments,
-                'installments_cost': 'buyer' if buyer_pays_fee else 'seller'
-            }
+            'payment_method': payment_method_config,
         },
         'description': f'Venda PDV #{sale.pk}'
     }
 
-    try:
-        resp = requests.post(url, headers=headers, data=json.dumps(payload), timeout=10)
-    except Exception as e:
-        return JsonResponse({'error': 'Erro ao conectar Mercado Pago: ' + str(e)}, status=500)
+    if sale.customer:
+        c = sale.customer
+        name_parts = c.name.strip().split(' ', 1)
+        payer = {
+            'email': c.email,
+            'first_name': name_parts[0],
+            'last_name': name_parts[1] if len(name_parts) > 1 else '',
+        }
+        doc = re.sub(r'\D', '', c.cpf_cnpj or '')
+        if len(doc) == 11:
+            payer['identification'] = {'type': 'CPF', 'number': doc}
+        elif len(doc) == 14:
+            payer['identification'] = {'type': 'CNPJ', 'number': doc}
+        phone_digits = re.sub(r'\D', '', c.phone or '')
+        if len(phone_digits) >= 10:
+            payer['phone'] = {'area_code': phone_digits[:2], 'number': phone_digits[2:]}
+        payload['payer'] = payer
+
+    resp, err = _mp_request('POST', url, access_token=access_token,
+                            headers={'Content-Type': 'application/json', 'X-Idempotency-Key': idempotency_key},
+                            data=json.dumps(payload))
+    if err:
+        return JsonResponse({'error': 'Erro ao conectar Mercado Pago: ' + err}, status=500)
 
     try:
         data = resp.json()
@@ -378,16 +421,11 @@ def cancel_mp_order_view(request):
         return JsonResponse({'error': 'ACCESS_TOKEN não configurado no ambiente.'}, status=500)
 
     url = f'https://api.mercadopago.com/v1/orders/{order_id}/cancel'
-    headers = {
-        'Authorization': f'Bearer {access_token}',
-        'Content-Type': 'application/json',
-        'X-Idempotency-Key': str(uuid.uuid4())
-    }
 
-    try:
-        resp = requests.post(url, headers=headers, timeout=10)
-    except Exception as e:
-        return JsonResponse({'error': 'Erro ao conectar Mercado Pago: ' + str(e)}, status=500)
+    resp, err = _mp_request('POST', url, access_token=access_token,
+                            headers={'Content-Type': 'application/json', 'X-Idempotency-Key': str(uuid.uuid4())})
+    if err:
+        return JsonResponse({'error': 'Erro ao conectar Mercado Pago: ' + err}, status=500)
 
     try:
         data = resp.json()
@@ -413,50 +451,105 @@ def cancel_mp_order_view(request):
 
 @login_required
 def mp_order_status_view(request):
-    """Consulta o status de uma order no MP e atualiza o registro local."""
+    """Retorna o status atual da order lendo do banco local (atualizado pelo webhook)."""
     order_id = request.GET.get('order_id')
     if not order_id:
         return JsonResponse({'error': 'order_id é obrigatório'}, status=400)
 
-    access_token = os.environ.get('ACCESS_TOKEN')
-    if not access_token:
-        return JsonResponse({'error': 'ACCESS_TOKEN não configurado.'}, status=500)
-
-    try:
-        resp = requests.get(
-            f'https://api.mercadopago.com/v1/orders/{order_id}',
-            headers={'Authorization': f'Bearer {access_token}'},
-            timeout=10,
-        )
-        data = resp.json()
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
-
-    updates = {
-        'status': data.get('status', ''),
-        'status_detail': data.get('status_detail', ''),
-        'raw_payload': data,
-    }
-
-    if data.get('status') in ('processed', 'paid'):
-        mp_payment = (data.get('transactions', {}).get('payments') or [{}])[0]
-        pm = mp_payment.get('payment_method', {})
-        fee_list = mp_payment.get('fee_details') or []
-        total_fee = sum(float(f.get('amount', 0)) for f in fee_list)
-
-        if pm.get('id'):
-            updates['payment_method_id'] = pm['id']
-        if pm.get('installments'):
-            updates['installments'] = int(pm['installments'])
-        if total_fee:
-            updates['fee_amount'] = Decimal(str(total_fee)).quantize(Decimal('0.01'))
-
-    GatewayPayment.objects.filter(order_id=order_id).update(**updates)
+    gp = GatewayPayment.objects.filter(order_id=order_id).values('status', 'status_detail').first()
+    if not gp:
+        return JsonResponse({'error': 'Order não encontrada.'}, status=404)
 
     return JsonResponse({
-        'status': data.get('status', ''),
-        'status_detail': data.get('status_detail', ''),
+        'status': gp['status'],
+        'status_detail': gp['status_detail'],
     })
+
+
+@login_required
+def mp_payment_stream_view(request):
+    """SSE: mantém conexão aberta e envia evento quando o status da order mudar no banco."""
+    order_id = request.GET.get('order_id')
+    if not order_id:
+        return JsonResponse({'error': 'order_id é obrigatório'}, status=400)
+
+    def event_stream():
+        access_token = os.environ.get('ACCESS_TOKEN')
+        last_status = None
+        elapsed = 0
+        last_api_check = 0
+        last_heartbeat = 0
+        max_wait = 2700        # 45 minutos
+        api_check_interval = 30  # consulta MP a cada 30s se banco não mudar
+        heartbeat_interval = 15  # keepalive a cada 15s
+
+        terminal_statuses = ('processed', 'paid', 'canceled', 'expired', 'failed')
+
+        while elapsed < max_wait:
+            try:
+                gp = GatewayPayment.objects.filter(order_id=order_id).values('status', 'status_detail').first()
+                if gp:
+                    status = gp['status']
+
+                    if status != last_status:
+                        last_status = status
+                        payload = json.dumps({'status': status, 'status_detail': gp['status_detail']})
+                        yield f'data: {payload}\n\n'
+                        last_heartbeat = elapsed
+
+                    if status in terminal_statuses:
+                        break
+
+                    # Fallback: se o webhook não atualizou o banco, consulta o MP diretamente
+                    if access_token and (elapsed - last_api_check) >= api_check_interval:
+                        last_api_check = elapsed
+                        try:
+                            resp, err = _mp_request('GET', f'https://api.mercadopago.com/v1/orders/{order_id}',
+                                                    access_token=access_token)
+                            if not err and resp.status_code == 200:
+                                api_data = resp.json()
+                                api_status = api_data.get('status', '')
+                                api_detail = api_data.get('status_detail', '')
+                                if api_status and api_status != status:
+                                    updates = {'status': api_status, 'status_detail': api_detail, 'raw_payload': api_data}
+                                    if api_status in ('processed', 'paid'):
+                                        mp_pmt = (api_data.get('transactions', {}).get('payments') or [{}])[0]
+                                        pm = mp_pmt.get('payment_method', {})
+                                        fee_list = mp_pmt.get('fee_details') or []
+                                        total_fee = sum(float(f.get('amount', 0)) for f in fee_list)
+                                        if pm.get('id'):
+                                            updates['payment_method_id'] = pm['id']
+                                        if pm.get('installments'):
+                                            updates['installments'] = int(pm['installments'])
+                                        if total_fee:
+                                            updates['fee_amount'] = Decimal(str(total_fee)).quantize(Decimal('0.01'))
+                                    GatewayPayment.objects.filter(order_id=order_id).update(**updates)
+                                    logger.info('SSE fallback: order %s atualizada via API (%s → %s)', order_id, status, api_status)
+                                    last_status = api_status
+                                    yield f'data: {json.dumps({"status": api_status, "status_detail": api_detail})}\n\n'
+                                    if api_status in terminal_statuses:
+                                        return
+                        except Exception:
+                            pass
+
+            except Exception:
+                pass
+
+            # Heartbeat para manter a conexão viva em proxies com idle timeout
+            if (elapsed - last_heartbeat) >= heartbeat_interval:
+                yield ': heartbeat\n\n'
+                last_heartbeat = elapsed
+
+            time.sleep(2)
+            elapsed += 2
+
+        logger.warning('SSE timeout: order %s sem resolução após %ds', order_id, max_wait)
+        yield 'data: {"status": "timeout"}\n\n'
+
+    response = StreamingHttpResponse(event_stream(), content_type='text/event-stream')
+    response['Cache-Control'] = 'no-cache'
+    response['X-Accel-Buffering'] = 'no'
+    return response
 
 
 @require_POST
@@ -490,16 +583,47 @@ def mp_simulate_view(request):
             json=payload,
             timeout=10,
         )
-        data = resp.json()
+        data = resp.json() if resp.content else {}
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
-    if resp.status_code not in (200, 201):
+    if resp.status_code not in (200, 201, 204):
         mp_message = data.get('message') or data.get('error') or str(data)
         return JsonResponse(
             {'error': f'MP API ({resp.status_code}): {mp_message}', 'details': data},
             status=resp.status_code,
         )
+
+    # Em desenvolvimento local o webhook não é chamado pelo MP.
+    # Aguarda o MP processar e atualiza o banco diretamente para o SSE detectar.
+    time.sleep(2)
+    try:
+        status_resp = requests.get(
+            f'https://api.mercadopago.com/v1/orders/{order_id}',
+            headers={'Authorization': f'Bearer {access_token}'},
+            timeout=10,
+        )
+        if status_resp.status_code == 200:
+            sdata = status_resp.json()
+            updates = {
+                'status': sdata.get('status', ''),
+                'status_detail': sdata.get('status_detail', ''),
+                'raw_payload': sdata,
+            }
+            if sdata.get('status') in ('processed', 'paid'):
+                mp_payment = (sdata.get('transactions', {}).get('payments') or [{}])[0]
+                pm = mp_payment.get('payment_method', {})
+                fee_list = mp_payment.get('fee_details') or []
+                total_fee = sum(float(f.get('amount', 0)) for f in fee_list)
+                if pm.get('id'):
+                    updates['payment_method_id'] = pm['id']
+                if pm.get('installments'):
+                    updates['installments'] = int(pm['installments'])
+                if total_fee:
+                    updates['fee_amount'] = Decimal(str(total_fee)).quantize(Decimal('0.01'))
+            GatewayPayment.objects.filter(order_id=order_id).update(**updates)
+    except Exception:
+        pass
 
     return JsonResponse({'success': True, 'result': data})
 
@@ -566,37 +690,198 @@ def mp_terminals_view(request):
     return JsonResponse(data, safe=False)
 
 
+def _mp_request(method, url, *, access_token, max_retries=3, **kwargs):
+    """Executa uma requisição à API do MP com retry automático em falhas de rede/timeout.
+
+    Retorna (response, error_str). Se todas as tentativas falharem, error_str descreve o problema.
+    """
+    headers = kwargs.pop('headers', {})
+    headers['Authorization'] = f'Bearer {access_token}'
+    last_error = ''
+    for attempt in range(max_retries):
+        try:
+            resp = requests.request(method, url, headers=headers, timeout=10, **kwargs)
+            return resp, None
+        except requests.Timeout:
+            last_error = 'Timeout ao conectar Mercado Pago'
+        except requests.ConnectionError:
+            last_error = 'Erro de conexão com Mercado Pago'
+        except Exception as e:
+            last_error = str(e)
+        if attempt < max_retries - 1:
+            time.sleep(2 ** attempt)  # 1s, 2s
+    logger.error('MP API falhou após %d tentativas: %s %s — %s', max_retries, method, url, last_error)
+    return None, last_error
+
+
+def _verify_mp_signature(request) -> bool:
+    """Valida a assinatura HMAC-SHA256 enviada pelo Mercado Pago no header x-signature.
+
+    Docs: https://www.mercadopago.com.br/developers/en/docs/your-integrations/notifications/webhooks
+    Template: id:[data.id];request-id:[x-request-id];ts:[ts];
+
+    Em desenvolvimento com ngrok, o ngrok substitui o header x-request-id pelo próprio UUID,
+    quebrando a assinatura. Use MP_SKIP_WEBHOOK_SIGNATURE=True no .env para pular a verificação.
+    """
+    if os.environ.get('MP_SKIP_WEBHOOK_SIGNATURE', '').lower() in ('1', 'true', 'yes'):
+        logger.warning('Webhook MP: verificação de assinatura DESABILITADA (MP_SKIP_WEBHOOK_SIGNATURE=True)')
+        return True
+
+    secret = os.environ.get('MP_WEBHOOK_SECRET', '').strip()
+    if not secret:
+        return False
+
+    x_signature = request.headers.get('x-signature', '')
+    x_request_id = request.headers.get('x-request-id', '')
+
+    # Extrai ts e v1 do header: "ts=1234,v1=abcd..."
+    ts = ''
+    v1 = ''
+    for part in x_signature.split(','):
+        key, _, value = part.partition('=')
+        if key.strip() == 'ts':
+            ts = value.strip()
+        elif key.strip() == 'v1':
+            v1 = value.strip()
+
+    if not ts or not v1:
+        logger.warning('Webhook MP: x-signature sem ts/v1: %s', x_signature)
+        return False
+
+    # data.id vem como query param (ex: ?data.id=123)
+    data_id = request.GET.get('data.id', '')
+
+    parts = []
+    if data_id:
+        parts.append(f'id:{data_id}')
+    if x_request_id:
+        parts.append(f'request-id:{x_request_id}')
+    if ts:
+        parts.append(f'ts:{ts}')
+    signed_template = ';'.join(parts) + ';'
+
+    import binascii
+
+    def _hmac(key_bytes, tpl):
+        return hmac.new(key_bytes, tpl.encode('utf-8'), hashlib.sha256).hexdigest()
+
+    # Dois templates possíveis: com e sem request-id (ngrok injeta X-Request-Id próprio)
+    parts_with_rid = []
+    parts_no_rid = []
+    if data_id:
+        parts_with_rid.append(f'id:{data_id}')
+        parts_no_rid.append(f'id:{data_id}')
+    if x_request_id:
+        parts_with_rid.append(f'request-id:{x_request_id}')
+    if ts:
+        parts_with_rid.append(f'ts:{ts}')
+        parts_no_rid.append(f'ts:{ts}')
+    tpl_with_rid = ';'.join(parts_with_rid) + ';'
+    tpl_no_rid   = ';'.join(parts_no_rid)   + ';'
+
+    key_str = secret.encode('utf-8')
+    try:
+        key_hex = binascii.unhexlify(secret)
+    except Exception:
+        key_hex = None
+
+    combos = [
+        ('str+rid',    key_str, tpl_with_rid),
+        ('str+no_rid', key_str, tpl_no_rid),
+    ]
+    if key_hex:
+        combos += [
+            ('hex+rid',    key_hex, tpl_with_rid),
+            ('hex+no_rid', key_hex, tpl_no_rid),
+        ]
+
+    for name, key, tpl in combos:
+        if hmac.compare_digest(_hmac(key, tpl), v1):
+            logger.info('Webhook MP: assinatura válida via %s (template=%r)', name, tpl)
+            return True
+
+    logger.warning(
+        'Webhook MP: nenhuma combinação bateu. v1=%s tpl_rid=%r tpl_no_rid=%r',
+        v1, tpl_with_rid, tpl_no_rid,
+    )
+    return False
+
+
 @csrf_exempt
 def mp_webhook_view(request):
     """Recebe notificações do Mercado Pago e atualiza o GatewayPayment."""
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
+    if not _verify_mp_signature(request):
+        logger.warning('Webhook MP rejeitado: assinatura inválida (ip=%s)', request.META.get('REMOTE_ADDR'))
+        return JsonResponse({'error': 'Assinatura inválida'}, status=401)
+
     try:
         payload = json.loads(request.body)
     except Exception:
+        logger.warning('Webhook MP rejeitado: JSON inválido')
         return JsonResponse({'error': 'JSON inválido'}, status=400)
 
     topic = payload.get('type') or request.GET.get('topic', '')
 
-    if topic == 'orders_v2':
-        resource_id = payload.get('data', {}).get('id')
-        access_token = os.environ.get('ACCESS_TOKEN')
-        if resource_id and access_token:
-            try:
-                resp = requests.get(
-                    f'https://api.mercadopago.com/v1/orders/{resource_id}',
-                    headers={'Authorization': f'Bearer {access_token}'},
-                    timeout=10,
-                )
-                order_data = resp.json()
-                GatewayPayment.objects.filter(order_id=resource_id).update(
-                    status=order_data.get('status', ''),
-                    status_detail=order_data.get('status_detail', ''),
-                    raw_payload=order_data,
-                )
-            except Exception:
-                pass
+    if topic in ('order', 'orders_v2'):
+        order_data = payload.get('data', {})
+        resource_id = order_data.get('id')
+
+        if resource_id:
+            # orders_v2 payload só contém {"id": "..."} — o status real vem da API
+            access_token = os.environ.get('ACCESS_TOKEN')
+            full_data = None
+            if access_token:
+                try:
+                    resp = requests.get(
+                        f'https://api.mercadopago.com/v1/orders/{resource_id}',
+                        headers={'Authorization': f'Bearer {access_token}'},
+                        timeout=10,
+                    )
+                    if resp.status_code == 200:
+                        full_data = resp.json()
+                except Exception as e:
+                    logger.error('Webhook MP: falha ao buscar order %s: %s', resource_id, e)
+
+            data_source = full_data or order_data
+            new_status = data_source.get('status', '')
+
+            if not new_status:
+                logger.warning('Webhook MP: order %s sem status — ignorando atualização', resource_id)
+            else:
+                updates = {
+                    'status': new_status,
+                    'status_detail': data_source.get('status_detail', ''),
+                    'raw_payload': payload,
+                }
+
+                if full_data:
+                    full_payment = (full_data.get('transactions', {}).get('payments') or [{}])[0]
+                    pm = full_payment.get('payment_method', {})
+                    fee_list = full_payment.get('fee_details') or []
+                    total_fee = sum(float(f.get('amount', 0)) for f in fee_list)
+                    if full_payment.get('id'):
+                        updates['payment_id'] = full_payment['id']
+                    if pm.get('id'):
+                        updates['payment_method_id'] = pm['id']
+                    if pm.get('installments'):
+                        updates['installments'] = int(pm['installments'])
+                    if total_fee:
+                        updates['fee_amount'] = Decimal(str(total_fee)).quantize(Decimal('0.01'))
+                else:
+                    mp_payment = (order_data.get('transactions', {}).get('payments') or [{}])[0]
+                    if mp_payment.get('id'):
+                        updates['payment_id'] = mp_payment['id']
+
+                updated = GatewayPayment.objects.filter(order_id=resource_id).update(**updates)
+                if updated:
+                    logger.info('Webhook MP: order %s → %s', resource_id, new_status)
+                else:
+                    logger.warning('Webhook MP: order %s não encontrada no banco (status: %s)', resource_id, new_status)
+    else:
+        logger.info('Webhook MP: topic ignorado (%s)', topic)
 
     return JsonResponse({'received': True})
 
