@@ -57,6 +57,7 @@ class ProductForm(ModelForm):
             if field.widget.__class__.__name__ in ("CheckboxInput", "ClearableFileInput"):
                 continue
             field.widget.attrs["class"] = TAILWIND_CLASSES
+        _apply_bootstrap_classes(self.fields)
 
 
 class ProductImageForm(ModelForm):
