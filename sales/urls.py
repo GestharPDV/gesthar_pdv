@@ -27,4 +27,16 @@ urlpatterns = [
     path('detail/<int:pk>/', views.SaleDetailView.as_view(), name='sale-detail'),
     path('api/search-products/', views.search_products_api, name='api-search-products'),
     path('relatorios/vendas/', views.SalesReportView.as_view(), name='report-sales'),
+    # Mercado Pago Point
+    path('mp/create-order/', views.create_mp_order_view, name='mp-create-order'),
+    path('mp/cancel-order/', views.cancel_mp_order_view, name='mp-cancel-order'),
+    path('mp/order-status/', views.mp_order_status_view, name='mp-order-status'),
+    path('mp/simulate/', views.mp_simulate_view, name='mp-simulate'),
+    path('mp/terminals/', views.mp_terminals_view, name='mp-terminals'),
+    path('mp/webhook/', views.mp_webhook_view, name='mp-webhook'),
+    path('mp/installments/', views.mp_installments_view, name='mp-installments'),
+    path('mp/stream/', views.mp_payment_stream_view, name='mp-stream'),
+    path('relatorios/vendas/pdf/', views.SalesReportPDFView.as_view(), name='report-sales-pdf'),
+    path('relatorios/financeiro/', views.ReportFinancialView.as_view(), name='report-financial'),
+    path('relatorios/financeiro/pdf/', views.ReportFinancialPDFView.as_view(), name='report-financial-pdf'),
 ]

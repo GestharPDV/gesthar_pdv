@@ -88,28 +88,21 @@ class StockReportPDFView(LoginRequiredMixin, View):
     """
 
     def get(self, request, *args, **kwargs):
+        context = _build_report_context(request)
+        html_string = render_to_string("stock/report_stock_pdf.html", context, request=request)
+        force_download = request.GET.get("download") == "1"
+
         try:
             from weasyprint import HTML
+            pdf_file = HTML(string=html_string, base_url=request.build_absolute_uri("/")).write_pdf()
+            disposition = "attachment" if force_download else "inline"
+            response = HttpResponse(pdf_file, content_type="application/pdf")
+            response["Content-Disposition"] = f'{ disposition}; filename="relatorio_estoque.pdf"'
+            return response
         except (ImportError, OSError):
-            return HttpResponse(
-                "Exportação em PDF não está disponível neste ambiente. "
-                "Instale as dependências do WeasyPrint (GTK/Pango).",
-                status=501,
-                content_type="text/plain; charset=utf-8",
-            )
-
-        context = _build_report_context(request)
-
-        # Renderiza o template dedicado ao PDF (sem sidebar, sem botões)
-        html_string = render_to_string("stock/report_stock_pdf.html", context, request=request)
-
-        # WeasyPrint converte o HTML em PDF com base_url para resolver caminhos estáticos
-        pdf_file = HTML(string=html_string, base_url=request.build_absolute_uri("/")).write_pdf()
-
-        # Define se abre inline (nova guia) ou force-download
-        force_download = request.GET.get("download") == "1"
-        disposition = "attachment" if force_download else "inline"
-
-        response = HttpResponse(pdf_file, content_type="application/pdf")
-        response["Content-Disposition"] = f'{disposition}; filename="relatorio_estoque.pdf"'
-        return response
+            if force_download:
+                html_string = html_string.replace(
+                    "</body>",
+                    "<script>window.addEventListener('load',function(){window.print();});</script></body>",
+                )
+            return HttpResponse(html_string, content_type="text/html; charset=utf-8")
