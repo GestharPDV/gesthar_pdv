@@ -93,9 +93,9 @@
                         border:1px solid #ddd;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
               {% if product_form.instance.cover_image %}
                 <img id="cover-preview-img" src="{{ product_form.instance.cover_image.url }}"
-                     style="width:100%;height:100%;object-fit:cover;">
+                     style="width:100%;height:100%;object-fit:contain;">
               {% else %}
-                <img id="cover-preview-img" src="" style="width:100%;height:100%;object-fit:cover;display:none;">
+                <img id="cover-preview-img" src="" style="width:100%;height:100%;object-fit:contain;display:none;">
                 <span id="cover-preview-placeholder" style="color:#aaa;font-size:0.75rem;text-align:center;padding:4px;">Sem imagem</span>
               {% endif %}
             </div>
@@ -126,10 +126,10 @@
                           overflow:hidden;display:flex;align-items:center;justify-content:center;">
                 {% if form.instance.image %}
                   <img class="img-slot-preview" src="{{ form.instance.image.url }}"
-                       style="width:100%;height:100%;object-fit:cover;">
+                       style="width:100%;height:100%;object-fit:contain;">
                 {% else %}
                   <img class="img-slot-preview" src=""
-                       style="width:100%;height:100%;object-fit:cover;display:none;">
+                       style="width:100%;height:100%;object-fit:contain;display:none;">
                   <span class="img-slot-placeholder" style="color:#aaa;font-size:0.75rem;">Vazio</span>
                 {% endif %}
               </div>

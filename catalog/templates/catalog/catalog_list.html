@@ -26,7 +26,7 @@
     .catalog-header {
       background-color: var(--cor-cabecalho-formulario);
       border-bottom: 1px solid #e8d0d4;
-      padding: 0.65rem 1.5rem;
+      padding: 0.65rem 4rem;
       position: sticky;
       top: 0;
       z-index: 1040;
@@ -45,14 +45,14 @@
     .catalog-search-bar .input-group-text { background-color: #fff; border-color: #ccc; color: var(--cor-fonte-rosa); }
     .catalog-search-bar input { border-color: #ccc; border-left: none; font-size: 0.9rem; background-color: #fff; }
     .catalog-search-bar input:focus { border-color: var(--cor-botao-principal-rosa); box-shadow: 0 0 0 0.15rem rgba(255,118,144,0.25); }
-    .cart-btn { position: relative; background: none; border: none; cursor: pointer; padding: 0.4rem; color: var(--cor-fonte-preta); min-width: 44px; min-height: 44px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+    .cart-btn { position: relative; background: none; border: none; cursor: pointer; padding: 0.4rem; color: var(--cor-fonte-rosa); min-width: 44px; min-height: 44px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
     .cart-btn:hover { color: var(--cor-fonte-rosa); }
     .cart-badge { position: absolute; top: 0; right: 0; background-color: var(--cor-botao-principal-rosa); color: #fff; border-radius: 50%; font-size: 0.65rem; font-weight: 700; min-width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; padding: 0 3px; }
 
     .logo-section { text-align: center; padding: 1.5rem 1rem; background-color: var(--cor-fundo-site); border-bottom: 1px solid #ede0e2; }
     .logo-section img { max-height: 90px; max-width: 280px; width: auto; object-fit: contain; }
 
-    .catalog-layout { display: flex; gap: 1.5rem; padding: 1.5rem; align-items: flex-start; max-width: 1600px; margin: 0 auto; flex: 1; width: 100%; box-sizing: border-box; }
+    .catalog-layout { display: flex; gap: 1.5rem; padding: 1.5rem 4rem; align-items: flex-start; max-width: 1800px; margin: 0 auto; flex: 1; width: 100%; box-sizing: border-box; }
 
     .filter-panel { width: 240px; flex-shrink: 0; background: #fff; border-radius: 12px; border: 1px solid #eee; padding: 1.25rem; position: sticky; top: 80px; }
     .filter-panel h6 { font-weight: 700; color: var(--cor-fonte-rosa); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; margin-bottom: 0.75rem; }
@@ -88,9 +88,9 @@
     .modal-close-btn:hover { background: var(--cor-fundo-cabecalho); color: var(--cor-fonte-rosa); }
     .modal-body-content { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
 
-    .modal-gallery { position: relative; background: var(--cor-fundo-linha); border-radius: 16px 0 0 16px; overflow: hidden; min-height: 340px; }
-    .gallery-main-img { width: 100%; height: 360px; object-fit: cover; }
-    .gallery-placeholder { width: 100%; height: 360px; display: flex; align-items: center; justify-content: center; color: var(--cor-fonte-cinza); font-size: 3rem; }
+    .modal-gallery { position: relative; background: var(--cor-fundo-linha); border-radius: 16px 0 0 16px; overflow: hidden; min-height: 500px; }
+    .gallery-main-img { width: 100%; height: 460px; object-fit: contain; }
+    .gallery-placeholder { width: 100%; height: 460px; display: flex; align-items: center; justify-content: center; color: var(--cor-fonte-cinza); font-size: 3rem; }
     .gallery-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.85); border: none; border-radius: 50%; width: 36px; height: 36px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--cor-fonte-preta); transition: background 0.15s; font-size: 1.1rem; }
     .gallery-nav:hover { background: #fff; color: var(--cor-fonte-rosa); }
     .gallery-prev { left: 0.5rem; }
@@ -167,7 +167,7 @@
       .catalog-layout { padding: 1rem; }
       .modal-body-content { grid-template-columns: 1fr; }
       .modal-gallery { border-radius: 16px 16px 0 0; min-height: 240px; }
-      .gallery-main-img, .gallery-placeholder { height: 240px; }
+      .gallery-main-img, .gallery-placeholder { height: 320px; }
       .filter-toggle-btn { display: flex; justify-content: flex-end; margin-bottom: 0.5rem; }
     }
     @media (max-width: 767px) {
@@ -446,7 +446,7 @@
           <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
           <path d="M11.99 0C5.366 0 .003 5.366.003 11.99c0 2.12.558 4.106 1.529 5.834L0 24l6.336-1.508A11.951 11.951 0 0 0 11.99 24C18.614 24 24 18.634 24 11.99 24 5.366 18.634 0 11.99 0z" fill-rule="evenodd" clip-rule="evenodd"/>
         </svg>
-        Finalizar Pedido via WhatsApp
+        Finalizar Pedido
       </button>
     </div>
 
@@ -573,7 +573,16 @@ function showToast(message, type = 'success') {
 let galleryImages = [];
 let galleryIndex = 0;
 
-function renderGallery(images) { galleryImages = images; galleryIndex = 0; updateGalleryDisplay(); renderThumbnails(); }
+function renderGallery(images, coverUrl = null) {
+  if (coverUrl) {
+    galleryImages = [{ url: coverUrl, isCover: true }, ...images];
+  } else {
+    galleryImages = images;
+  }
+  galleryIndex = 0;
+  updateGalleryDisplay();
+  renderThumbnails();
+}
 
 function updateGalleryDisplay() {
   const mainImg = document.getElementById('galleryMainImg');
@@ -625,7 +634,7 @@ function populateModal(product) {
   document.getElementById('modalProductName').textContent = product.name;
   document.getElementById('modalProductPrice').textContent = 'R$ ' + parseFloat(product.price).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
   document.getElementById('modalProductDesc').textContent = product.description || '';
-  renderGallery(product.images);
+  renderGallery(product.images, product.cover);
   renderVariations(product);
   const qtyInput = document.getElementById('modalQty');
   if (qtyInput) { qtyInput.value = 1; qtyInput.max = product.total_stock; }
@@ -758,7 +767,7 @@ function finalizeOrder() {
     .then(r => r.json())
     .then(data => { if (data.url) { clearCart(); closeCartDrawer(); window.open(data.url, '_blank'); } else { showToast(data.error || 'Erro ao finalizar pedido.', 'error'); } })
     .catch(() => showToast('Erro de conexão. Tente novamente.', 'error'))
-    .finally(() => { if (btn) { btn.disabled = false; btn.textContent = 'Finalizar Pedido via WhatsApp'; } });
+    .finally(() => { if (btn) { btn.disabled = false; btn.textContent = 'Finalizar Pedido'; } });
 }
 
 function getCsrfToken() {
