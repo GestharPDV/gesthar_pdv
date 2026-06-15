@@ -328,7 +328,7 @@
           >ESTOQUE</a
         >
         {% if user.role == 'ADMIN' or user.is_superuser %}
-        <a href="#" class="d-block p-2 link-sidebar text-decoration-none small"
+        <a href="{% url 'sales:report-financial' %}" class="d-block p-2 link-sidebar text-decoration-none small"
           >FINANCEIRO</a
         >
         <a href="{% url 'sales:report-sales' %}" class="d-block p-2 link-sidebar text-decoration-none small"

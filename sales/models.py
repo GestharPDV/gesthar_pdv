@@ -291,6 +291,9 @@ class SaleItem(models.Model):
     product_name_snapshot = models.CharField(max_length=255, blank=True)
     quantity = models.PositiveIntegerField(default=1)
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+    unit_cost = models.DecimalField(
+        max_digits=10, decimal_places=2, default=Decimal("0.00"), verbose_name="Custo Unitário"
+    )
     discount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     total_price = models.DecimalField(max_digits=12, decimal_places=2)
 
@@ -316,6 +319,7 @@ class SaleItem(models.Model):
             self.product_name_snapshot = str(self.variation)
             if self.unit_price is None:
                 self.unit_price = self.variation.product.selling_price
+            self.unit_cost = self.variation.product.cost_price
 
         if not isinstance(self.unit_price, Decimal):
             self.unit_price = Decimal(str(self.unit_price or 0))
