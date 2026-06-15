@@ -127,6 +127,37 @@ class CloseRegisterForm(forms.ModelForm):
 
 
 class PaymentForm(forms.ModelForm):
+    # Campos adicionais para Mercado Pago Point
+    installments = forms.ChoiceField(
+        label="Parcelas",
+        required=False,
+        choices=[
+            (1, "1x à vista"),
+            (2, "2x"),
+            (3, "3x"),
+            (4, "4x"),
+            (5, "5x"),
+            (6, "6x"),
+        ],
+        widget=forms.Select(attrs={"class": "form-select"}),
+        initial=1,
+    )
+    
+    expiration_time = forms.ChoiceField(
+        label="Tempo de Expiração",
+        required=False,
+        choices=[
+            ("PT1M", "1 minuto"),
+            ("PT5M", "5 minutos"),
+            ("PT10M", "10 minutos"),
+            ("PT16M", "16 minutos (padrão)"),
+            ("PT30M", "30 minutos"),
+            ("PT1H", "1 hora"),
+        ],
+        widget=forms.Select(attrs={"class": "form-select"}),
+        initial="PT16M",
+    )
+    
     class Meta:
         model = SalePayment
         fields = ["method", "amount"]

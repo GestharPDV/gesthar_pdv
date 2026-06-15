@@ -291,6 +291,9 @@ class SaleItem(models.Model):
     product_name_snapshot = models.CharField(max_length=255, blank=True)
     quantity = models.PositiveIntegerField(default=1)
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+    unit_cost = models.DecimalField(
+        max_digits=10, decimal_places=2, default=Decimal("0.00"), verbose_name="Custo Unitário"
+    )
     discount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     total_price = models.DecimalField(max_digits=12, decimal_places=2)
 
@@ -316,6 +319,7 @@ class SaleItem(models.Model):
             self.product_name_snapshot = str(self.variation)
             if self.unit_price is None:
                 self.unit_price = self.variation.product.selling_price
+            self.unit_cost = self.variation.product.cost_price
 
         if not isinstance(self.unit_price, Decimal):
             self.unit_price = Decimal(str(self.unit_price or 0))
@@ -374,3 +378,111 @@ class SalePayment(models.Model):
                 "Não é possível adicionar pagamentos a uma venda finalizada."
             )
         super().save(*args, **kwargs)
+
+
+class GatewayPayment(models.Model):
+    class Provider(models.TextChoices):
+        MERCADO_PAGO = "MERCADO_PAGO", "Mercado Pago"
+
+    sale = models.ForeignKey(
+        Sale,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="gateway_payments",
+        verbose_name="Venda",
+    )
+    provider = models.CharField(
+        max_length=30,
+        choices=Provider.choices,
+        default=Provider.MERCADO_PAGO,
+        db_index=True,
+        verbose_name="Gateway",
+    )
+    order_id = models.CharField(
+        max_length=80,
+        unique=True,
+        db_index=True,
+        verbose_name="Order ID",
+    )
+    payment_id = models.CharField(
+        max_length=80,
+        blank=True,
+        verbose_name="Payment ID",
+    )
+    external_reference = models.CharField(
+        max_length=120,
+        blank=True,
+        db_index=True,
+        verbose_name="Referência Externa",
+    )
+    terminal_id = models.CharField(
+        max_length=120,
+        blank=True,
+        verbose_name="Terminal",
+    )
+    amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        verbose_name="Valor",
+    )
+    fee_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        verbose_name="Taxa do Gateway",
+    )
+    payment_method_id = models.CharField(
+        max_length=40,
+        blank=True,
+        verbose_name="Bandeira",
+    )
+    installments = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        verbose_name="Parcelas",
+    )
+    buyer_pays_fee = models.BooleanField(
+        null=True,
+        blank=True,
+        verbose_name="Cliente paga taxa",
+    )
+    status = models.CharField(
+        max_length=40,
+        blank=True,
+        db_index=True,
+        verbose_name="Status",
+    )
+    status_detail = models.CharField(
+        max_length=80,
+        blank=True,
+        verbose_name="Detalhe do Status",
+    )
+    created_date = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Criado no Gateway",
+    )
+    canceled_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Cancelado em",
+    )
+    raw_payload = models.JSONField(
+        default=dict,
+        blank=True,
+        verbose_name="Payload Completo",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Pagamento Gateway"
+        verbose_name_plural = "Pagamentos Gateway"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.get_provider_display()} - {self.order_id}"
