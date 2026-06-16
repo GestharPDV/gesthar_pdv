@@ -17,8 +17,8 @@ from product.services import (
 )
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
-from .models import Product
-from .forms import ProductForm, ProductSupplierFormSet, ProductVariationFormSet
+from .models import Product, ProductImage
+from .forms import ProductForm, ProductSupplierFormSet, ProductVariationFormSet, ProductImageFormSet
 
 
 class ProductCreateView(LoginRequiredMixin, View):
@@ -26,14 +26,15 @@ class ProductCreateView(LoginRequiredMixin, View):
 
     def get(self, request, *args, **kwargs):
         product_form = ProductForm()
-
         supplier_formset = ProductSupplierFormSet(prefix="suppliers")
         variation_formset = ProductVariationFormSet(prefix="variations")
+        image_formset = ProductImageFormSet(prefix="images")
 
         context = {
             "product_form": product_form,
             "supplier_formset": supplier_formset,
             "variation_formset": variation_formset,
+            "image_formset": image_formset,
             "page_title": "Cadastro de Produto",
             "button_text": "Finalizar Cadastro",
         }
@@ -41,29 +42,37 @@ class ProductCreateView(LoginRequiredMixin, View):
 
     @transaction.atomic
     def post(self, request, *args, **kwargs):
-        product_form = ProductForm(request.POST)
+        product_form = ProductForm(request.POST, request.FILES)
         supplier_formset = ProductSupplierFormSet(request.POST, prefix="suppliers")
         variation_formset = ProductVariationFormSet(request.POST, prefix="variations")
+        image_formset = ProductImageFormSet(request.POST, request.FILES, prefix="images")
 
-        # Valida todos os formulários
         is_product_form_valid = product_form.is_valid()
         is_supplier_formset_valid = supplier_formset.is_valid()
         is_variation_formset_valid = variation_formset.is_valid()
+        is_image_formset_valid = image_formset.is_valid()
 
         if (
             is_product_form_valid
             and is_supplier_formset_valid
             and is_variation_formset_valid
+            and is_image_formset_valid
         ):
-            # Primeiro, salva o produto para obter um ID
             product = product_form.save()
 
-            # Associa os formsets ao produto recém-criado
             supplier_formset.instance = product
             supplier_formset.save()
 
             variation_formset.instance = product
             variation_formset.save()
+
+            image_formset.instance = product
+            new_images = image_formset.save(commit=False)
+            for i, img in enumerate(new_images, 1):
+                img.order = i
+                img.save()
+            for obj in image_formset.deleted_objects:
+                obj.delete()
 
             messages.success(
                 request, f'Produto "{product.name}" cadastrado com sucesso!'
@@ -76,6 +85,7 @@ class ProductCreateView(LoginRequiredMixin, View):
                 "product_form": product_form,
                 "supplier_formset": supplier_formset,
                 "variation_formset": variation_formset,
+                "image_formset": image_formset,
                 "page_title": "Cadastro de Produto",
                 "button_text": "Finalizar Cadastro",
             }
@@ -86,22 +96,20 @@ class ProductUpdateView(LoginRequiredMixin, View):
     template_name = "product/product_form.html"
 
     def get(self, request, pk, *args, **kwargs):
-        # 1. Busca o produto existente ou retorna 404
         product = get_object_or_404(Product, pk=pk)
 
-        # 2. Pré-preenche os formulários com a 'instance' do produto
         product_form = ProductForm(instance=product)
         supplier_formset = ProductSupplierFormSet(instance=product, prefix="suppliers")
-        variation_formset = ProductVariationFormSet(
-            instance=product, prefix="variations"
-        )
+        variation_formset = ProductVariationFormSet(instance=product, prefix="variations")
+        image_formset = ProductImageFormSet(instance=product, prefix="images")
 
         context = {
             "product_form": product_form,
             "supplier_formset": supplier_formset,
             "variation_formset": variation_formset,
-            "page_title": "Editar Produto",  # [MUDOU]
-            "button_text": "Salvar Alterações",  # [MUDOU]
+            "image_formset": image_formset,
+            "page_title": "Editar Produto",
+            "button_text": "Salvar Alterações",
         }
         return render(request, self.template_name, context)
 
@@ -109,27 +117,39 @@ class ProductUpdateView(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         product = get_object_or_404(Product, pk=pk)
 
-        product_form = ProductForm(request.POST, instance=product)
+        product_form = ProductForm(request.POST, request.FILES, instance=product)
         supplier_formset = ProductSupplierFormSet(
             request.POST, instance=product, prefix="suppliers"
         )
         variation_formset = ProductVariationFormSet(
             request.POST, instance=product, prefix="variations"
         )
+        image_formset = ProductImageFormSet(
+            request.POST, request.FILES, instance=product, prefix="images"
+        )
 
         is_product_form_valid = product_form.is_valid()
         is_supplier_formset_valid = supplier_formset.is_valid()
         is_variation_formset_valid = variation_formset.is_valid()
+        is_image_formset_valid = image_formset.is_valid()
 
         if (
             is_product_form_valid
             and is_supplier_formset_valid
             and is_variation_formset_valid
+            and is_image_formset_valid
         ):
-
             product = product_form.save()
             supplier_formset.save()
             variation_formset.save()
+
+            image_formset.instance = product
+            new_images = image_formset.save(commit=False)
+            for i, img in enumerate(new_images, 1):
+                img.order = i
+                img.save()
+            for obj in image_formset.deleted_objects:
+                obj.delete()
 
             messages.success(
                 request, f'Produto "{product.name}" atualizado com sucesso!'
@@ -141,6 +161,7 @@ class ProductUpdateView(LoginRequiredMixin, View):
                 "product_form": product_form,
                 "supplier_formset": supplier_formset,
                 "variation_formset": variation_formset,
+                "image_formset": image_formset,
                 "page_title": "Editar Produto",
                 "button_text": "Salvar Alterações",
             }

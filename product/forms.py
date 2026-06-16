@@ -7,6 +7,7 @@ from django.forms import (
 )
 from .models import (
     Product,
+    ProductImage,
     ProductSupplier,
     ProductVariation,
     Category,
@@ -35,6 +36,7 @@ class ProductForm(ModelForm):
             "description",
             "selling_price",
             "category",
+            "cover_image",
             "is_active",
         ]
         widgets = {
@@ -45,6 +47,25 @@ class ProductForm(ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["category"].queryset = Category.objects.filter(is_active=True)
         _apply_bootstrap_classes(self.fields)
+        self.fields["cover_image"].required = False
+        self.fields["cover_image"].widget.attrs.update({
+            "accept": "image/*",
+            "class": "form-control",
+        })
+
+
+class ProductImageForm(ModelForm):
+    class Meta:
+        model = ProductImage
+        fields = ["image"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["image"].required = False
+        self.fields["image"].widget.attrs.update({
+            "accept": "image/*",
+            "class": "form-control form-control-sm",
+        })
 
 
 class ProductSupplierForm(ModelForm):
@@ -109,4 +130,13 @@ ProductVariationFormSet = inlineformset_factory(
     can_delete=True,
     min_num=1,
     validate_min=True,
+)
+
+ProductImageFormSet = inlineformset_factory(
+    parent_model=Product,
+    model=ProductImage,
+    form=ProductImageForm,
+    extra=3,
+    max_num=3,
+    can_delete=True,
 )
