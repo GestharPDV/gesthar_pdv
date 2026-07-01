@@ -17,8 +17,8 @@ User = get_user_model()
 # cada entrada tem: chave única, função de checagem e função de mensagem.
 MILESTONES = [
     {
-        'key': '35_weeks',
-        'check': lambda semanas, hoje, dpp: semanas >= 35 and hoje <= dpp,
+        'key': '30_weeks',
+        'check': lambda semanas, hoje, dpp: semanas >= 30 and hoje <= dpp,
         'message': lambda c: (
             f"{c.name} atingiu {c.current_weeks} semanas gestacionais! "
             "Considere oferecer itens de enxoval."
