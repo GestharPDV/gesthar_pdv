@@ -19,7 +19,7 @@ class Notification(models.Model):
     milestone_key = models.CharField(
         max_length=50,
         verbose_name='Marco',
-        help_text="Ex: '35_weeks', 'post_partum'",
+        help_text="Ex: '30_weeks', 'post_partum'",
     )
     is_read = models.BooleanField(default=False, verbose_name='Lida')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Criada em')

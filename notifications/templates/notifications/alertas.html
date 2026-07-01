@@ -55,7 +55,8 @@
 
       <div class="d-flex align-items-center gap-1 flex-shrink-0">
         {% if notif.customer.phone %}
-        <a href="https://wa.me/55{{ notif.customer.phone|cut:' '|cut:'('|cut:')'|cut:'-' }}"
+        {% with wa_name=notif.customer.name|urlencode %}
+        <a href="https://wa.me/55{{ notif.customer.phone|cut:' '|cut:'('|cut:')'|cut:'-' }}?text=Oi%2C+{{ wa_name }}%21+Tudo+bem%3F%0A%0APassando+para+te+dar+parab%C3%A9ns+pelas+30+semanas%21+A+contagem+regressiva+come%C3%A7ou.+%F0%9F%A5%B9%0A%0AA+gente+sabe+que+nessa+fase+a+mala+do+beb%C3%AA+j%C3%A1+est%C3%A1+quase+pronta%2C+mas+viemos+te+fazer+um+lembrete+com+muito+carinho%3A+voc%C3%AA+j%C3%A1+preparou+a+SUA+bolsa+maternidade%3F%0A%0AMuitas+mam%C3%A3es+acabam+esquecendo+de+si+mesmas+com+a+correria%2C+ent%C3%A3o+separamos+looks+super+confort%C3%A1veis+para+o+seu+p%C3%B3s-parto+aqui+na+Linda+Gestante.%0A%0ASe+quiser+dar+uma+olhada+nas+pe%C3%A7as+para+garantir+o+seu+conforto+no+hospital%2C+%C3%A9+s%C3%B3+me+avisar+que+te+mando+as+op%C3%A7%C3%B5es+no+seu+tamanho%21+%F0%9F%A5%B0"
            target="_blank" rel="noopener noreferrer"
            class="btn btn-sm btn-success d-flex align-items-center gap-1 py-1 px-2"
            title="Abrir WhatsApp">
@@ -64,6 +65,7 @@
           </svg>
           <span style="font-size:.75rem">WhatsApp</span>
         </a>
+        {% endwith %}
         {% endif %}
 
         {% if notif.is_read %}
