@@ -28,9 +28,10 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-oeg=j03p*vavs$)=^#it)4%&u=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = [h.strip() for h in os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',') if h.strip()]
+_allowed_hosts_env = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,pdv.gesthar.com.br')
+ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts_env.split(',') if h.strip()]
 
-CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',') if o.strip()]
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.getenv('CSRF_TRUSTED_ORIGINS', 'https://pdv.gesthar.com.br').split(',') if o.strip()]
 
 
 # Application definition
