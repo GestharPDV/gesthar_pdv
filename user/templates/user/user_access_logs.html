@@ -1,0 +1,413 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+  .log-badge-LOGIN    { background: linear-gradient(135deg, #28a745, #20c997); }
+  .log-badge-LOGOUT   { background: linear-gradient(135deg, #6c757d, #495057); }
+  .log-badge-EDIT     { background: linear-gradient(135deg, #fd7e14, #e67e22); }
+  .log-badge-CREATE   { background: linear-gradient(135deg, #007bff, #6610f2); }
+  .log-badge-DELETE   { background: linear-gradient(135deg, #dc3545, #c0392b); }
+  .log-badge-OTHER    { background: linear-gradient(135deg, #adb5bd, #868e96); }
+
+  .log-icon-LOGIN  { color: #28a745; }
+  .log-icon-LOGOUT { color: #6c757d; }
+  .log-icon-EDIT   { color: #fd7e14; }
+  .log-icon-CREATE { color: #007bff; }
+  .log-icon-DELETE { color: #dc3545; }
+  .log-icon-OTHER  { color: #adb5bd; }
+
+  .log-row {
+    transition: background-color 0.15s ease;
+  }
+  .log-row:hover {
+    background-color: rgba(var(--bs-primary-rgb, 13, 110, 253), 0.04) !important;
+  }
+
+  .filter-pill {
+    border-radius: 50px;
+    padding: 0.3rem 1.1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    transition: all 0.2s;
+    border: 1.5px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .filter-pill:hover, .filter-pill.active {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+  }
+  .filter-pill.all       { background: var(--cor-botao-principal-rosa); color: #fff; border-color: var(--cor-botao-principal-rosa); }
+  .filter-pill.LOGIN     { background: #d4edda; color: #155724; border-color: #c3e6cb; }
+  .filter-pill.LOGOUT    { background: #e2e3e5; color: #383d41; border-color: #d6d8db; }
+  .filter-pill.EDIT      { background: #ffecd2; color: #7d4300; border-color: #ffd7a0; }
+  .filter-pill.CREATE    { background: #cce5ff; color: #004085; border-color: #b8daff; }
+  .filter-pill.DELETE    { background: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+
+  .filter-pill.LOGIN.active  { background: #28a745; color: #fff; border-color: #28a745; }
+  .filter-pill.LOGOUT.active { background: #6c757d; color: #fff; border-color: #6c757d; }
+  .filter-pill.EDIT.active   { background: #fd7e14; color: #fff; border-color: #fd7e14; }
+  .filter-pill.CREATE.active { background: #007bff; color: #fff; border-color: #007bff; }
+  .filter-pill.DELETE.active { background: #dc3545; color: #fff; border-color: #dc3545; }
+
+  .ip-badge {
+    font-family: 'Courier New', monospace;
+    font-size: 0.78rem;
+    background: rgba(0,0,0,0.06);
+    padding: 2px 8px;
+    border-radius: 6px;
+    color: var(--cor-fonte-cinza);
+  }
+
+  .log-table th {
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--cor-fonte-cinza);
+    border-bottom: 2px solid rgba(0,0,0,0.08);
+    white-space: nowrap;
+  }
+
+  .log-table td {
+    vertical-align: middle;
+    font-size: 0.875rem;
+    padding: 0.7rem 1rem;
+  }
+
+  .action-type-badge {
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 3px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  .counter-card {
+    border-radius: 14px;
+    padding: 1rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+  }
+
+  .counter-card .counter-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .counter-card .counter-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    line-height: 1.1;
+  }
+
+  .counter-card .counter-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--cor-fonte-cinza);
+    font-weight: 600;
+  }
+</style>
+
+<div class="pr-20 pl-20 pb-4">
+
+  <!-- Cabeçalho -->
+  <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-3">
+    <div>
+      <h1 class="titulo mb-0">LOGS DE ACESSO</h1>
+      <p class="small mb-0 mt-1" style="color: var(--cor-fonte-cinza);">
+        Histórico de atividades dos usuários no sistema — somente administradores têm acesso.
+      </p>
+    </div>
+    <a href="{% url 'user:user-list' %}"
+       class="btn btn-sm btn-outline-secondary rounded-pill px-3 d-flex align-items-center gap-2"
+       style="font-size:0.8rem;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+      Voltar
+    </a>
+  </div>
+
+  <!-- Cards de resumo -->
+  <div class="row g-3 mb-4">
+    {% with total=page_obj.paginator.count %}
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="counter-card" style="background: linear-gradient(135deg,#fff5f8,#ffe4eb);">
+        <div class="counter-icon" style="background:#ff4d6d22;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#ff4d6d">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+          </svg>
+        </div>
+        <div>
+          <div class="counter-value">{{ total }}</div>
+          <div class="counter-label">Total de Registros</div>
+        </div>
+      </div>
+    </div>
+    {% endwith %}
+    {% for atype, alabel in action_type_choices %}
+    {% with count=logs_by_type|default:0 %}
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="counter-card" style="background: {% if atype == 'LOGIN' %}linear-gradient(135deg,#f0fff4,#d4edda){% elif atype == 'LOGOUT' %}linear-gradient(135deg,#f8f9fa,#e2e3e5){% elif atype == 'EDIT' %}linear-gradient(135deg,#fff8f0,#ffecd2){% elif atype == 'CREATE' %}linear-gradient(135deg,#f0f7ff,#cce5ff){% elif atype == 'DELETE' %}linear-gradient(135deg,#fff5f5,#f8d7da){% else %}linear-gradient(135deg,#f8f9fa,#e9ecef){% endif %};">
+        <div class="counter-icon" style="background: {% if atype == 'LOGIN' %}#28a74522{% elif atype == 'LOGOUT' %}#6c757d22{% elif atype == 'EDIT' %}#fd7e1422{% elif atype == 'CREATE' %}#007bff22{% elif atype == 'DELETE' %}#dc354522{% else %}#adb5bd22{% endif %};">
+          {% if atype == 'LOGIN' %}
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#28a745">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+          </svg>
+          {% elif atype == 'LOGOUT' %}
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#6c757d">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+          </svg>
+          {% elif atype == 'EDIT' %}
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#fd7e14">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+          </svg>
+          {% elif atype == 'CREATE' %}
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#007bff">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+          </svg>
+          {% elif atype == 'DELETE' %}
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#dc3545">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6"/>
+          </svg>
+          {% else %}
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#adb5bd">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          {% endif %}
+        </div>
+        <div>
+          <div class="counter-value">{{ type_counts|default:"0" }}</div>
+          <div class="counter-label">{{ alabel }}</div>
+        </div>
+      </div>
+    </div>
+    {% endwith %}
+    {% endfor %}
+  </div>
+
+  <!-- Filtros e busca -->
+  <div class="d-flex flex-wrap align-items-center gap-3 mb-3">
+    <!-- Pesquisa -->
+    <form method="GET" action="{% url 'user:user-access-logs' %}"
+          class="d-flex align-items-center gap-2 flex-grow-1" style="max-width: 380px;">
+      {% if action_type %}
+        <input type="hidden" name="action_type" value="{{ action_type }}">
+      {% endif %}
+      <div class="position-relative w-100">
+        <input
+          id="log_search"
+          type="text"
+          name="query"
+          value="{{ query }}"
+          class="form-control rounded-pill bg-transparent pe-5 w-100"
+          style="color: var(--cor-fonte-preta); border-color: #ced4da; font-size:0.875rem;"
+          placeholder="Buscar por usuário, ação ou IP..."
+        />
+        <button type="submit" aria-label="Pesquisar"
+                style="color: var(--cor-fonte-cinza) !important"
+                class="position-absolute end-0 top-50 translate-middle-y border-0 bg-transparent p-0 pe-3">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+               stroke-width="1.5" stroke="currentColor" width="18" height="18">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M21 21l-4.35-4.35M11 18.5a7.5 7.5 0 100-15 7.5 7.5 0 000 15z"/>
+          </svg>
+        </button>
+      </div>
+      {% if query %}
+      <a href="{% url 'user:user-access-logs' %}{% if action_type %}?action_type={{ action_type }}{% endif %}"
+         class="btn btn-outline-danger rounded-circle d-flex align-items-center justify-content-center shadow-sm flex-shrink-0"
+         style="width:34px;height:34px;padding:0;" title="Limpar busca">
+        <span style="font-size:1.1rem;line-height:1">&times;</span>
+      </a>
+      {% endif %}
+    </form>
+
+    <!-- Filtros por tipo -->
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+      <a href="{% url 'user:user-access-logs' %}{% if query %}?query={{ query }}{% endif %}"
+         class="filter-pill all {% if not action_type %}active{% endif %}">
+        Todos
+      </a>
+      {% for atype, alabel in action_type_choices %}
+      <a href="?{% if query %}query={{ query }}&{% endif %}action_type={{ atype }}"
+         class="filter-pill {{ atype }} {% if action_type == atype %}active{% endif %}">
+        {{ alabel }}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Tabela -->
+  <div class="rounded-4 shadow-sm border border-light overflow-hidden">
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle mb-0 text-center log-table text-nowrap">
+        <thead>
+          <tr class="cabecalho">
+            <th style="width:40px">#</th>
+            <th>TIPO</th>
+            <th class="text-start">USUÁRIO</th>
+            <th class="text-start">AÇÃO</th>
+            <th>ENDEREÇO IP</th>
+            <th>DATA / HORA</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in logs %}
+          <tr class="log-row align-middle">
+            <td class="text-muted" style="font-size:0.75rem;">{{ log.pk }}</td>
+
+            <td>
+              <span class="action-type-badge log-badge-{{ log.action_type }}">
+                {{ log.get_action_type_display }}
+              </span>
+            </td>
+
+            <td class="text-start">
+              {% if log.user %}
+                <div class="d-flex align-items-center gap-2">
+                  <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                       style="width:30px;height:30px;font-size:0.75rem;font-weight:700;color:#fff;
+                              background: linear-gradient(135deg, var(--cor-botao-principal-rosa), #ff8fab);">
+                    {{ log.user.get_full_name|slice:":1"|upper|default:log.user.email|slice:":1"|upper }}
+                  </div>
+                  <div>
+                    <div style="font-size:0.85rem;font-weight:600;">
+                      {{ log.user.get_full_name|default:log.user.email }}
+                    </div>
+                    <div style="font-size:0.72rem;color:var(--cor-fonte-cinza);">
+                      {{ log.user.email }}
+                      {% if log.user.role == 'ADMIN' %}
+                        <span class="badge bg-primary ms-1" style="font-size:0.6rem;">ADMIN</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              {% else %}
+                <span class="text-muted fst-italic" style="font-size:0.8rem;">Usuário removido</span>
+              {% endif %}
+            </td>
+
+            <td class="text-start" style="max-width:320px; white-space:normal; word-break:break-word;">
+              <div class="d-flex align-items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor"
+                     class="log-icon-{{ log.action_type }} flex-shrink-0">
+                  {% if log.action_type == 'LOGIN' %}
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+                  {% elif log.action_type == 'LOGOUT' %}
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                  {% elif log.action_type == 'EDIT' %}
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                  {% elif log.action_type == 'CREATE' %}
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                  {% elif log.action_type == 'DELETE' %}
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6"/>
+                  {% else %}
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  {% endif %}
+                </svg>
+                <span>{{ log.action }}</span>
+              </div>
+            </td>
+
+            <td>
+              {% if log.ip_address %}
+                <span class="ip-badge">{{ log.ip_address }}</span>
+              {% else %}
+                <span class="text-muted" style="font-size:0.8rem;">—</span>
+              {% endif %}
+            </td>
+
+            <td>
+              <div style="font-size:0.82rem;font-weight:600;">{{ log.timestamp|date:"d/m/Y" }}</div>
+              <div style="font-size:0.75rem;color:var(--cor-fonte-cinza);">{{ log.timestamp|date:"H:i:s" }}</div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" class="text-center py-5" style="color: var(--cor-fonte-cinza);">
+              <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none"
+                   viewBox="0 0 24 24" stroke="currentColor" class="mb-2 opacity-50">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+              </svg>
+              <div class="fw-semibold mt-1">Nenhum log encontrado.</div>
+              {% if query or action_type %}
+              <a href="{% url 'user:user-access-logs' %}"
+                 class="text-decoration-none fw-bold mt-2 d-inline-block"
+                 style="color: var(--cor-fonte-rosa)">Limpar filtros</a>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Paginação -->
+  {% if is_paginated %}
+  <nav class="mt-4 d-flex justify-content-center" aria-label="Paginação de logs">
+    <ul class="pagination pagination-sm gap-1 mb-0">
+      {% if page_obj.has_previous %}
+      <li class="page-item">
+        <a class="page-link rounded-pill px-3"
+           href="?page={{ page_obj.previous_page_number }}{% if query %}&query={{ query }}{% endif %}{% if action_type %}&action_type={{ action_type }}{% endif %}">
+          &laquo;
+        </a>
+      </li>
+      {% endif %}
+
+      {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+        <li class="page-item active">
+          <span class="page-link rounded-pill px-3"
+                style="background: var(--cor-botao-principal-rosa); border-color: var(--cor-botao-principal-rosa);">
+            {{ num }}
+          </span>
+        </li>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+        <li class="page-item">
+          <a class="page-link rounded-pill px-3"
+             href="?page={{ num }}{% if query %}&query={{ query }}{% endif %}{% if action_type %}&action_type={{ action_type }}{% endif %}">
+            {{ num }}
+          </a>
+        </li>
+        {% endif %}
+      {% endfor %}
+
+      {% if page_obj.has_next %}
+      <li class="page-item">
+        <a class="page-link rounded-pill px-3"
+           href="?page={{ page_obj.next_page_number }}{% if query %}&query={{ query }}{% endif %}{% if action_type %}&action_type={{ action_type }}{% endif %}">
+          &raquo;
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+
+</div>
+{% endblock %}

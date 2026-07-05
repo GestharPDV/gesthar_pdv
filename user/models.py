@@ -102,6 +102,15 @@ class UserGesthar(AbstractUser):
 
 
 class UserActionLog(models.Model):
+
+    class ActionType(models.TextChoices):
+        LOGIN = 'LOGIN', 'Login'
+        LOGOUT = 'LOGOUT', 'Logout'
+        EDIT = 'EDIT', 'Edição'
+        CREATE = 'CREATE', 'Cadastro'
+        DELETE = 'DELETE', 'Exclusão'
+        OTHER = 'OTHER', 'Outro'
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -111,6 +120,15 @@ class UserActionLog(models.Model):
         verbose_name='Usuário',
     )
     action = models.CharField(max_length=255, verbose_name='Ação')
+    action_type = models.CharField(
+        max_length=20,
+        choices=ActionType.choices,
+        default=ActionType.OTHER,
+        verbose_name='Tipo de Ação',
+    )
+    ip_address = models.GenericIPAddressField(
+        null=True, blank=True, verbose_name='Endereço IP'
+    )
     timestamp = models.DateTimeField(auto_now_add=True, verbose_name='Data/Hora')
 
     class Meta:

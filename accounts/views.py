@@ -6,7 +6,7 @@ from django.contrib.auth import update_session_auth_hash
 from django.contrib import messages
 from django.core.cache import cache
 from user.form import UserGestharCreationForm
-from user.models import UserGesthar
+from user.models import UserGesthar, UserActionLog
 from .forms import EmailAuthenticationForm
 
 # Limite de tentativas de login por IP
@@ -81,6 +81,11 @@ def user_create_view(request):
         form = UserGestharCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
+            UserActionLog.objects.create(
+                user=request.user,
+                action=f"Cadastrou novo usuário #{user.pk} ({user.get_full_name()})",
+                action_type=UserActionLog.ActionType.CREATE,
+            )
             messages.success(request, f'Usuário "{user.get_full_name()}" cadastrado com sucesso!')
             return redirect("user:user-list")
     else:

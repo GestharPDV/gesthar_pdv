@@ -49,6 +49,39 @@ class UserListView(LoginRequiredMixin, AdminRequiredMixin, ListView):
         return context
 
 
+class UserAccessLogListView(LoginRequiredMixin, AdminRequiredMixin, ListView):
+    """Exibe o histórico completo de logs de acesso — restrito ao Administrador."""
+    model = UserActionLog
+    template_name = "user/user_access_logs.html"
+    context_object_name = "logs"
+    paginate_by = 30
+
+    def get_queryset(self):
+        queryset = UserActionLog.objects.select_related('user').order_by('-timestamp')
+        query = self.request.GET.get('query', '').strip()
+        action_type = self.request.GET.get('action_type', '').strip()
+
+        if query:
+            queryset = queryset.filter(
+                Q(user__first_name__icontains=query)
+                | Q(user__last_name__icontains=query)
+                | Q(user__email__icontains=query)
+                | Q(action__icontains=query)
+                | Q(ip_address__icontains=query)
+            )
+        if action_type:
+            queryset = queryset.filter(action_type=action_type)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['query'] = self.request.GET.get('query', '')
+        context['action_type'] = self.request.GET.get('action_type', '')
+        context['action_type_choices'] = UserActionLog.ActionType.choices
+        return context
+
+
 def _is_last_admin(user):
     """Retorna True se o usuário for o único administrador ativo."""
     return (
@@ -93,6 +126,7 @@ def profile_edit_view(request, pk):
                 UserActionLog.objects.create(
                     user=request.user,
                     action=f"Editou usuário #{user.pk} ({user.get_full_name()})",
+                    action_type=UserActionLog.ActionType.EDIT,
                 )
                 messages.success(request, f'Usuário "{user.get_full_name()}" atualizado com sucesso!')
                 return redirect("user:user-list")
@@ -135,6 +169,7 @@ class UserDeleteView(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
         UserActionLog.objects.create(
             user=request.user,
             action=f"Inativou usuário #{self.object.pk} ({self.object.get_full_name()})",
+            action_type=UserActionLog.ActionType.DELETE,
         )
         messages.success(request, f'Usuário "{self.object.get_full_name()}" inativado com sucesso!')
         return redirect(self.success_url)
