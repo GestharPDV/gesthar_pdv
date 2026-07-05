@@ -370,14 +370,25 @@
                                     <p class="fw-bold fs-5 mb-1" style="color:#009ee3;">AGUARDANDO PAGAMENTO</p>
                                     <p class="text-muted small mb-0" id="mp-order-label"></p>
                                 </div>
-                                <div class="d-flex gap-2 mt-3">
-                                    <button class="btn btn-outline-danger flex-grow-1 py-2 fw-bold"
+                                <div class="mt-3">
+                                    <label class="small fw-bold text-muted mb-1 d-block">SIMULAR STATUS (somente teste)</label>
+                                    <div class="d-flex gap-2 mb-2">
+                                        <select id="mp-simulate-status" class="form-select">
+                                            <option value="processed" selected>processed — aprovado</option>
+                                            <option value="failed">failed — recusado</option>
+                                            <option value="canceled">canceled — cancelado</option>
+                                            <option value="expired">expired — expirado</option>
+                                            <option value="action_required">action_required — ação no terminal</option>
+                                            <option value="refunded">refunded — estorno (após processed)</option>
+                                        </select>
+                                        <button class="btn btn-warning fw-bold px-3"
+                                                id="btn-mp-simulate" onclick="simulateMpApproval()">
+                                            SIMULAR
+                                        </button>
+                                    </div>
+                                    <button class="btn btn-outline-danger w-100 py-2 fw-bold"
                                             id="btn-cancel-order" onclick="cancelMercadoPagoOrder()">
                                         CANCELAR COBRANÇA
-                                    </button>
-                                    <button class="btn btn-warning py-2 fw-bold px-3"
-                                            id="btn-mp-simulate" onclick="simulateMpApproval()">
-                                        SIMULAR
                                     </button>
                                 </div>
                             </div>
@@ -859,15 +870,23 @@
 
     // ---- Mercado Pago: simulação de aprovação (apenas em teste) ----
 
-    async function simulateMpApproval(status = 'processed') {
+    async function simulateMpApproval() {
         if (!mpOrderId) { alert('Nenhuma order ativa para simular.'); return; }
+
+        const status = document.getElementById('mp-simulate-status')?.value || 'processed';
 
         const btnSimulate = document.getElementById('btn-mp-simulate');
         if (btnSimulate) { btnSimulate.disabled = true; btnSimulate.innerHTML = '<span class="spinner-border spinner-border-sm"></span>'; }
 
+        // Mapeia o método da order (CREDITO/DEBITO/PIX) para o tipo esperado pela simulação do MP
+        const mpTypeMap = { 'CREDITO': 'credit_card', 'DEBITO': 'debit_card', 'PIX': 'qr' };
+
         const formData = new FormData();
         formData.append('order_id', mpOrderId);
         formData.append('status', status);
+        if (mpMethod && mpTypeMap[mpMethod]) {
+            formData.append('payment_method_type', mpTypeMap[mpMethod]);
+        }
         formData.append('csrfmiddlewaretoken', getCsrf());
 
         try {

@@ -570,9 +570,21 @@ def mp_simulate_view(request):
         return JsonResponse({'error': 'ACCESS_TOKEN não configurado.'}, status=500)
 
     status = request.POST.get('status', 'processed')
-    payment_method_type = request.POST.get('payment_method_type', 'credit_card')
 
+    # Campos opcionais aceitos pela simulação do MP (POST /v1/orders/{id}/events),
+    # conforme a doc de testes: payment_method_type, payment_method_id, status_detail
+    # e installments. Encaminhamos apenas os que vierem preenchidos.
     payload = {'status': status}
+    for field in ('payment_method_type', 'payment_method_id', 'status_detail'):
+        val = request.POST.get(field)
+        if val:
+            payload[field] = val
+    installments = request.POST.get('installments')
+    if installments:
+        try:
+            payload['installments'] = int(installments)
+        except (TypeError, ValueError):
+            pass
 
     try:
         resp = requests.post(
@@ -580,7 +592,6 @@ def mp_simulate_view(request):
             headers={
                 'Authorization': f'Bearer {access_token}',
                 'Content-Type': 'application/json',
-                'X-Test-Scope': 'sandbox',
             },
             json=payload,
             timeout=10,
