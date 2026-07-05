@@ -731,10 +731,13 @@ def _verify_mp_signature(request) -> bool:
     """Valida a assinatura HMAC-SHA256 enviada pelo Mercado Pago no header x-signature.
 
     Docs: https://www.mercadopago.com.br/developers/en/docs/your-integrations/notifications/webhooks
-    Template: id:[data.id];request-id:[x-request-id];ts:[ts];
+    Template: id:[data.id_minusculo];request-id:[x-request-id];ts:[ts];
+    - data.id DEVE ser convertido para minúsculas no manifest (exigência da doc do MP:
+      "ORD01JQ..." vira "ord01jq...").
+    - secret é usado como chave UTF-8; HMAC-SHA256 em hex comparado ao v1 do header.
 
-    Em desenvolvimento com ngrok, o ngrok substitui o header x-request-id pelo próprio UUID,
-    quebrando a assinatura. Use MP_SKIP_WEBHOOK_SIGNATURE=True no .env para pular a verificação.
+    MP_SKIP_WEBHOOK_SIGNATURE=True pula a verificação — use apenas em dev, enquanto o
+    secret correto da aplicação (o MESMO app do ACCESS_TOKEN) não estiver configurado.
     """
     if os.environ.get('MP_SKIP_WEBHOOK_SIGNATURE', '').lower() in ('1', 'true', 'yes'):
         logger.warning('Webhook MP: verificação de assinatura DESABILITADA (MP_SKIP_WEBHOOK_SIGNATURE=True)')
@@ -761,8 +764,10 @@ def _verify_mp_signature(request) -> bool:
         logger.warning('Webhook MP: x-signature sem ts/v1: %s', x_signature)
         return False
 
-    # data.id vem como query param (ex: ?data.id=123)
-    data_id = request.GET.get('data.id', '')
+    # data.id vem como query param (ex: ?data.id=123). A doc do MP exige converter
+    # para minúsculas quando o id é alfanumérico maiúsculo (ORD01... -> ord01...);
+    # lowercase é seguro para ids numéricos/já minúsculos.
+    data_id = request.GET.get('data.id', '').lower()
 
     parts = []
     if data_id:
