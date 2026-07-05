@@ -1,49 +1,47 @@
 {% load static %}
 
 <style>
-  /* --- ESTADOS DA SIDEBAR --- */
+  /* --- SIDEBAR: RETRAÍDA POR PADRÃO, EXPANDE NO HOVER --- */
   #sidebar-wrapper {
-    transition: all 0.3s;
-    width: 280px;
+    width: 80px;
+    overflow: hidden;
+    transition: width 0.3s ease;
     background-color: var(--cor-fundo-site);
   }
 
-  #sidebar-wrapper.collapsed {
-    width: 80px !important;
+  #sidebar-wrapper:hover {
+    width: 280px;
   }
 
   /* Esconder textos e elementos extras quando retraído */
-  #sidebar-wrapper.collapsed .text-label,
-  #sidebar-wrapper.collapsed .chev,
-  #sidebar-wrapper.collapsed .logo-large,
-  #sidebar-wrapper.collapsed .logo-footer,
-  #sidebar-wrapper.collapsed .collapse {
+  #sidebar-wrapper:not(:hover) .text-label,
+  #sidebar-wrapper:not(:hover) .chev,
+  #sidebar-wrapper:not(:hover) .logo-large,
+  #sidebar-wrapper:not(:hover) .logo-footer,
+  #sidebar-wrapper:not(:hover) .collapse,
+  #sidebar-wrapper:not(:hover) .logo-container {
     display: none !important;
   }
 
-  /* Centralizar ícones */
-  #sidebar-wrapper.collapsed .link-sidebar {
+  /* Centralizar ícones quando retraído */
+  #sidebar-wrapper:not(:hover) .link-sidebar {
     justify-content: center !important;
     padding-left: 0 !important;
     padding-right: 0 !important;
   }
 
-  #sidebar-wrapper.collapsed nav {
+  #sidebar-wrapper:not(:hover) nav {
     align-items: center;
   }
 
   /* Segurança para margens */
-  #sidebar-wrapper.collapsed .ms-4 {
+  #sidebar-wrapper:not(:hover) .ms-4 {
     margin-left: 0 !important;
   }
 
-  /* Centralizar botão do menu quando retraído */
-  #sidebar-wrapper.collapsed .header-sidebar {
+  /* Centralizar cabeçalho quando retraído */
+  #sidebar-wrapper:not(:hover) .header-sidebar {
     justify-content: center !important;
-  }
-
-  #sidebar-wrapper.collapsed .logo-container {
-    display: none !important;
   }
 
   /* Botão de logout usando variáveis do projeto */
@@ -66,7 +64,7 @@
   style="z-index: 10"
 >
   <div
-    class="p-3 d-flex align-items-center justify-content-between header-sidebar"
+    class="p-3 d-flex align-items-center justify-content-center header-sidebar"
   >
     <div class="logo-container mx-auto">
       <a href="{% url 'base:home' %}">
@@ -78,28 +76,6 @@
         />
       </a>
     </div>
-
-    <button
-      id="btn-toggle-sidebar"
-      class="btn btn-sm border-0"
-      style="color: var(--cor-fonte-cinza)"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M4 6h16M4 12h16M4 18h16"
-        />
-      </svg>
-    </button>
   </div>
 
   <nav
@@ -397,6 +373,11 @@
           class="d-block p-2 link-sidebar text-decoration-none small"
           >VISUALIZAR</a
         >
+        <a
+          href="{% url 'user:user-access-logs' %}"
+          class="d-block p-2 link-sidebar text-decoration-none small"
+          >LOGS DE ACESSO</a
+        >
       </div>
     </div>
     {% endif %}
@@ -494,24 +475,3 @@
   </div>
 </aside>
 
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const toggleBtn = document.getElementById("btn-toggle-sidebar");
-    const sidebar = document.getElementById("sidebar-wrapper");
-
-    // Função para alternar
-    toggleBtn.addEventListener("click", function () {
-      sidebar.classList.toggle("collapsed");
-
-      // Salvar preferência no navegador
-      const isCollapsed = sidebar.classList.contains("collapsed");
-      localStorage.setItem("sidebar-collapsed", isCollapsed);
-    });
-
-    // Restaurar estado ao carregar a página
-    const savedState = localStorage.getItem("sidebar-collapsed");
-    if (savedState === "true") {
-      sidebar.classList.add("collapsed");
-    }
-  });
-</script>

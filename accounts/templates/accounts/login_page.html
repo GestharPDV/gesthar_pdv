@@ -44,7 +44,40 @@
 
                             <div class="mb-3">
                                 {{ form.password.label_tag }}
-                                {{ form.password|add_class:'form-control rounded-3 py-2' }}
+                                <div class="position-relative">
+                                    {{ form.password|add_class:'form-control rounded-3 py-2 pe-5' }}
+                                    <button
+                                        type="button"
+                                        id="toggle-password"
+                                        aria-label="Mostrar/ocultar senha"
+                                        onclick="
+                                            var inp = document.getElementById('id_password');
+                                            var isText = inp.type === 'text';
+                                            inp.type = isText ? 'password' : 'text';
+                                            document.getElementById('eye-open').classList.toggle('d-none', !isText);
+                                            document.getElementById('eye-closed').classList.toggle('d-none', isText);
+                                        "
+                                        class="position-absolute end-0 top-50 translate-middle-y border-0 bg-transparent p-0 pe-3"
+                                        style="color: var(--cor-fonte-cinza); cursor: pointer; z-index: 5;"
+                                        tabindex="-1"
+                                    >
+                                        <!-- Olho aberto (padrão visível) -->
+                                        <svg id="eye-open" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                             fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                                                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                                                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                        </svg>
+                                        <!-- Olho fechado (oculto por padrão) -->
+                                        <svg id="eye-closed" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                             fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                             aria-hidden="true" class="d-none">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                                                  d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.97 9.97 0 012.563-4.308m3.104-2.389A9.956 9.956 0 0112 5c4.477 0 8.268 2.943 9.542 7a9.973 9.973 0 01-1.22 2.553M15 12a3 3 0 11-4.243-4.243M3 3l18 18"/>
+                                        </svg>
+                                    </button>
+                                </div>
                                 {% if form.password.errors %}
                                     <div class="invalid-feedback d-block">{{ form.password.errors|join:", " }}</div>
                                 {% endif %}
