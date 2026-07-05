@@ -321,12 +321,14 @@
 
                 if (isMp) {
                     const isCredit = baseMethod === 'CREDITO';
+                    const methodLabel = { CREDITO: 'CRÉDITO', DEBITO: 'DÉBITO', PIX: 'PIX' }[baseMethod] || baseMethod;
 
                     detailArea.innerHTML = `
                         <div class="p-4 rounded bg-light border border-2 border-info">
                             <div class="text-center mb-3">
                                 <span class="material-symbols-outlined fs-1" style="color:#009ee3;">contactless</span>
-                                <p class="fw-bold text-muted mb-0">MERCADO PAGO POINT</p>
+                                <p class="fw-bold mb-0" style="color:#009ee3;font-size:1.5rem;line-height:1.1;">${methodLabel}</p>
+                                <p class="text-muted small mb-0">Mercado Pago Point</p>
                             </div>
 
                             <div id="mp-form-section">
@@ -351,9 +353,9 @@
                                 <label class="small fw-bold text-muted mb-2 d-block">TEMPO DE EXPIRAÇÃO</label>
                                 <select id="mp-expiration" class="form-select form-select-lg mb-3">
                                     <option value="PT1M">1 minuto</option>
-                                    <option value="PT5M">5 minutos</option>
+                                    <option value="PT5M" selected>5 minutos (padrão)</option>
                                     <option value="PT10M">10 minutos</option>
-                                    <option value="PT16M" selected>16 minutos (padrão)</option>
+                                    <option value="PT16M">16 minutos</option>
                                     <option value="PT30M">30 minutos</option>
                                     <option value="PT1H">1 hora</option>
                                 </select>
@@ -467,7 +469,7 @@
             }
 
             const installments = document.getElementById('mp-installments')?.value || '1';
-            const expiration = document.getElementById('mp-expiration')?.value || 'PT16M';
+            const expiration = document.getElementById('mp-expiration')?.value || 'PT5M';
             const buyerPaysFee = document.querySelector('input[name="mp-fee-payer"]:checked')?.value === 'true';
 
             const btnSend = document.getElementById('btn-mp-send');
@@ -640,12 +642,10 @@
             if (remainingLabel) remainingLabel.innerText = 'R$ ' + data.remaining.toFixed(2).replace('.', ',');
 
             if (data.remaining > 0) {
-                // Pagamento parcial — volta ao formulário para nova cobrança
+                // Pagamento parcial — limpa a seleção e volta pro estado "Aguardando seleção..."
                 mpOrderId = null; mpMethod = null; mpAmount = 0;
-                setMpState('idle');
-                const amtInput = document.getElementById('payment-amount-input');
-                if (amtInput) { amtInput.value = data.remaining.toFixed(2); amtInput.max = data.remaining.toFixed(2); }
                 mpBaseAmount = data.remaining;
+                resetPaymentSelection();
                 const statusAlert = document.getElementById('payment-status-alert');
                 if (statusAlert) {
                     statusAlert.innerText = `PARCIAL REGISTRADO! FALTA: R$ ${data.remaining.toFixed(2).replace('.', ',')}`;
@@ -716,6 +716,9 @@
 
         if (state === 'idle') {
             if (formSection) formSection.style.display = 'block';
+            // reabilita o botão de envio (evita ficar preso em "ENVIANDO...")
+            const btnSend = document.getElementById('btn-mp-send');
+            if (btnSend) { btnSend.disabled = false; btnSend.innerText = 'ENVIAR PARA TERMINAL'; }
 
         } else if (state === 'waiting') {
             if (waitingSection) waitingSection.style.display = 'block';
@@ -751,6 +754,14 @@
             const btnRetry = document.getElementById('btn-mp-retry');
             if (btnRetry) btnRetry.style.display = 'block';
             mpOrderId = null; mpMethod = null; mpAmount = 0;
+        }
+    }
+
+    function resetPaymentSelection() {
+        document.querySelectorAll('.btn-payment-option').forEach(b => b.classList.remove('active'));
+        const detailArea = document.getElementById('payment-detail-area');
+        if (detailArea) {
+            detailArea.innerHTML = '<div class="py-5 text-muted opacity-50"><span class="material-symbols-outlined fs-1">payments</span><p>Aguardando seleção...</p></div>';
         }
     }
 
