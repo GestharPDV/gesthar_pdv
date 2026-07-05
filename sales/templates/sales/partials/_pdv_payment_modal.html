@@ -26,7 +26,7 @@
 
                             {% for code, name in payment_form.fields.method.choices %}
                                 {% if code == 'CREDITO' or code == 'DEBITO' or code == 'PIX' %}
-                                <button type="button" class="btn btn-payment-option py-3 fw-bold w-100 btn-mp-option" data-method="{{ code }}_mp" style="border: 2px solid #009ee3; background-color: #f0f9ff;">
+                                <button type="button" class="btn btn-payment-option btn-mp-option py-3 fw-bold w-100" data-method="{{ code }}_mp">
                                     {{ name|upper }}<br><small style="font-size: 0.75rem; opacity: 0.8;">(Mercado Pago)</small>
                                 </button>
                                 {% endif %}
