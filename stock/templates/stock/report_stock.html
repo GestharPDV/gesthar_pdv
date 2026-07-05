@@ -231,11 +231,14 @@
   const categoryData = {{ category_chart_json|safe }};
   const colorData = {{ color_chart_json|safe }};
 
-  // Paleta de cores para o gráfico de pizza
+  // Paleta de cores para os gráficos (ordem de prioridade por nº de séries)
   const PALETTE = [
-    "#FF6B8A", "#FF9EB5", "#FFB3C6", "#FFC8D8",
-    "#FFDDEA", "#FF4D6D", "#C9184A", "#FF85A1",
-    "#FB6F92", "#FFB3C1",
+    '#EE7490', // Rosa   — índice 0
+    '#6FB7E9', // Azul   — índice 1
+    '#A88BE8', // Roxo   — índice 2
+    '#82C88A', // Verde  — índice 3
+    '#F5A36B', // Laranja — índice 4
+    '#FFF06C', // Amarelo — índice 5 (exclusivo do relatório de estoque)
   ];
 
   // ── Gráfico de Pizza: Estoque por Categoria ──
@@ -263,7 +266,7 @@
       datasets: [{
         label: "Peças em Estoque",
         data: colorData.data,
-        backgroundColor: "#FF6B8A",
+        backgroundColor: PALETTE.slice(0, colorData.labels.length),
         borderRadius: 4,
       }],
     },
