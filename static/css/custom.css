@@ -188,9 +188,55 @@ th.rodape {
   text-decoration: none;
 }
 
+/* ------------------------------------ */
+/* Botões de seleção de forma de pagamento (modal do PDV) */
+/* ------------------------------------ */
+
+.btn-payment-option {
+  border: 2px solid var(--cor-fundo-linha);
+  background-color: #ffffff;
+  color: var(--cor-fonte-preta);
+  transition: transform .12s ease, box-shadow .12s ease, background-color .12s ease, border-color .12s ease;
+}
+
+.btn-payment-option:hover {
+  border-color: var(--cor-botao-principal-rosa);
+  color: var(--cor-fonte-preta);
+}
+
+/* Estado SELECIONADO — preenchido, para ficar inconfundível */
+.btn-payment-option.active {
+  background-color: var(--cor-botao-principal-rosa) !important;
+  border-color: var(--cor-botao-principal-rosa) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(255, 118, 144, .45);
+  transform: translateY(-1px);
+}
+
+/* Botões do Mercado Pago (azul) */
+.btn-mp-option {
+  border: 2px solid #009ee3;
+  background-color: #f0f9ff;
+  color: #026b96;
+}
+
+.btn-mp-option:hover {
+  border-color: #009ee3;
+  background-color: #e0f2fd;
+  color: #026b96;
+}
+
+.btn-mp-option.active {
+  background-color: #009ee3 !important;
+  border-color: #009ee3 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(0, 158, 227, .45);
+  transform: translateY(-1px);
+}
+
 
 /* ------------------------------------ */
-/* Formularios e Tabelas */ 
+/* Formularios e Tabelas */
 /* ------------------------------------ */
 
 /* Forçando textos de tabelas e cards para ficarem na cor preta padrão */ 

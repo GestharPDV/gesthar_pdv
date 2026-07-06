@@ -147,6 +147,9 @@ def pdv_view(request):
         "payment_form": payment_form,
         "available_products": available_products, 
         "customer_form": IdentifyCustomerForm(),
+        # Só habilita os botões de simulação de pagamento em desenvolvimento.
+        # Em produção (DEBUG=False) a simulação é bloqueada no backend (mp_simulate_view).
+        "mp_allow_simulate": settings.DEBUG,
     }
     return render(request, "sales/pdv.html", context)
 
@@ -435,6 +438,18 @@ def cancel_mp_order_view(request):
         return JsonResponse({'error': 'Resposta inválida do Mercado Pago', 'raw': resp.text}, status=502)
 
     if resp.status_code not in (200, 201):
+        errors = data.get('errors') if isinstance(data, dict) else None
+        err_code = errors[0].get('code', '') if isinstance(errors, list) and errors else ''
+        # Order já enviada ao terminal físico: o MP não deixa cancelar pela API
+        # (status 'at_terminal'). O operador precisa cancelar na maquininha; o
+        # webhook chega logo depois e o PDV se atualiza sozinho pelo SSE.
+        if resp.status_code == 409 and (err_code == 'cannot_cancel_order' or 'at_terminal' in json.dumps(data)):
+            return JsonResponse(
+                {'error': 'A cobrança já está no terminal. Cancele direto na maquininha — '
+                          'o sistema detecta o cancelamento automaticamente.',
+                 'code': 'at_terminal', 'details': data},
+                status=409,
+            )
         mp_message = data.get('message') or data.get('error') or str(data)
         return JsonResponse(
             {'error': f'MP API ({resp.status_code}): {mp_message}', 'details': data},
@@ -570,9 +585,21 @@ def mp_simulate_view(request):
         return JsonResponse({'error': 'ACCESS_TOKEN não configurado.'}, status=500)
 
     status = request.POST.get('status', 'processed')
-    payment_method_type = request.POST.get('payment_method_type', 'credit_card')
 
+    # Campos opcionais aceitos pela simulação do MP (POST /v1/orders/{id}/events),
+    # conforme a doc de testes: payment_method_type, payment_method_id, status_detail
+    # e installments. Encaminhamos apenas os que vierem preenchidos.
     payload = {'status': status}
+    for field in ('payment_method_type', 'payment_method_id', 'status_detail'):
+        val = request.POST.get(field)
+        if val:
+            payload[field] = val
+    installments = request.POST.get('installments')
+    if installments:
+        try:
+            payload['installments'] = int(installments)
+        except (TypeError, ValueError):
+            pass
 
     try:
         resp = requests.post(
@@ -580,7 +607,6 @@ def mp_simulate_view(request):
             headers={
                 'Authorization': f'Bearer {access_token}',
                 'Content-Type': 'application/json',
-                'X-Test-Scope': 'sandbox',
             },
             json=payload,
             timeout=10,
@@ -720,10 +746,13 @@ def _verify_mp_signature(request) -> bool:
     """Valida a assinatura HMAC-SHA256 enviada pelo Mercado Pago no header x-signature.
 
     Docs: https://www.mercadopago.com.br/developers/en/docs/your-integrations/notifications/webhooks
-    Template: id:[data.id];request-id:[x-request-id];ts:[ts];
+    Template: id:[data.id_minusculo];request-id:[x-request-id];ts:[ts];
+    - data.id DEVE ser convertido para minúsculas no manifest (exigência da doc do MP:
+      "ORD01JQ..." vira "ord01jq...").
+    - secret é usado como chave UTF-8; HMAC-SHA256 em hex comparado ao v1 do header.
 
-    Em desenvolvimento com ngrok, o ngrok substitui o header x-request-id pelo próprio UUID,
-    quebrando a assinatura. Use MP_SKIP_WEBHOOK_SIGNATURE=True no .env para pular a verificação.
+    MP_SKIP_WEBHOOK_SIGNATURE=True pula a verificação — use apenas em dev, enquanto o
+    secret correto da aplicação (o MESMO app do ACCESS_TOKEN) não estiver configurado.
     """
     if os.environ.get('MP_SKIP_WEBHOOK_SIGNATURE', '').lower() in ('1', 'true', 'yes'):
         logger.warning('Webhook MP: verificação de assinatura DESABILITADA (MP_SKIP_WEBHOOK_SIGNATURE=True)')
@@ -750,8 +779,10 @@ def _verify_mp_signature(request) -> bool:
         logger.warning('Webhook MP: x-signature sem ts/v1: %s', x_signature)
         return False
 
-    # data.id vem como query param (ex: ?data.id=123)
-    data_id = request.GET.get('data.id', '')
+    # data.id vem como query param (ex: ?data.id=123). A doc do MP exige converter
+    # para minúsculas quando o id é alfanumérico maiúsculo (ORD01... -> ord01...);
+    # lowercase é seguro para ids numéricos/já minúsculos.
+    data_id = request.GET.get('data.id', '').lower()
 
     parts = []
     if data_id:
