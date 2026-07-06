@@ -147,6 +147,9 @@ def pdv_view(request):
         "payment_form": payment_form,
         "available_products": available_products, 
         "customer_form": IdentifyCustomerForm(),
+        # Só habilita os botões de simulação de pagamento em desenvolvimento.
+        # Em produção (DEBUG=False) a simulação é bloqueada no backend (mp_simulate_view).
+        "mp_allow_simulate": settings.DEBUG,
     }
     return render(request, "sales/pdv.html", context)
 
@@ -435,6 +438,18 @@ def cancel_mp_order_view(request):
         return JsonResponse({'error': 'Resposta inválida do Mercado Pago', 'raw': resp.text}, status=502)
 
     if resp.status_code not in (200, 201):
+        errors = data.get('errors') if isinstance(data, dict) else None
+        err_code = errors[0].get('code', '') if isinstance(errors, list) and errors else ''
+        # Order já enviada ao terminal físico: o MP não deixa cancelar pela API
+        # (status 'at_terminal'). O operador precisa cancelar na maquininha; o
+        # webhook chega logo depois e o PDV se atualiza sozinho pelo SSE.
+        if resp.status_code == 409 and (err_code == 'cannot_cancel_order' or 'at_terminal' in json.dumps(data)):
+            return JsonResponse(
+                {'error': 'A cobrança já está no terminal. Cancele direto na maquininha — '
+                          'o sistema detecta o cancelamento automaticamente.',
+                 'code': 'at_terminal', 'details': data},
+                status=409,
+            )
         mp_message = data.get('message') or data.get('error') or str(data)
         return JsonResponse(
             {'error': f'MP API ({resp.status_code}): {mp_message}', 'details': data},
