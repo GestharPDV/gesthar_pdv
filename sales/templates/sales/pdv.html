@@ -28,6 +28,7 @@
     data-mp-terminals-url="{% url 'sales:mp-terminals' %}"
     data-mp-installments-url="{% url 'sales:mp-installments' %}"
     data-mp-stream-url="{% url 'sales:mp-stream' %}"
+    data-mp-allow-simulate="{% if mp_allow_simulate %}1{% endif %}"
     data-sale-pk="{{ sale.pk }}"
     data-csrf-token="{{ csrf_token }}">
 </div>

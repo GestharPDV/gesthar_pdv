@@ -322,6 +322,26 @@
                 if (isMp) {
                     const isCredit = baseMethod === 'CREDITO';
                     const methodLabel = { CREDITO: 'CRÉDITO', DEBITO: 'DÉBITO', PIX: 'PIX' }[baseMethod] || baseMethod;
+                    // Botões de simulação só aparecem em desenvolvimento (data-mp-allow-simulate).
+                    const allowSimulate = config.mpAllowSimulate === '1';
+                    const simulateBlock = allowSimulate ? `
+                                <div class="mt-3">
+                                    <label class="small fw-bold text-muted mb-1 d-block">SIMULAR STATUS (somente teste)</label>
+                                    <div class="d-flex gap-2">
+                                        <select id="mp-simulate-status" class="form-select">
+                                            <option value="processed" selected>processed — aprovado</option>
+                                            <option value="failed">failed — recusado</option>
+                                            <option value="canceled">canceled — cancelado</option>
+                                            <option value="expired">expired — expirado</option>
+                                            <option value="action_required">action_required — ação no terminal</option>
+                                            <option value="refunded">refunded — estorno (após processed)</option>
+                                        </select>
+                                        <button class="btn btn-warning fw-bold px-3"
+                                                id="btn-mp-simulate" onclick="simulateMpApproval()">
+                                            SIMULAR
+                                        </button>
+                                    </div>
+                                </div>` : '';
 
                     detailArea.innerHTML = `
                         <div class="p-4 rounded bg-light border border-2 border-info">
@@ -372,22 +392,8 @@
                                     <p class="fw-bold fs-5 mb-1" style="color:#009ee3;">AGUARDANDO PAGAMENTO</p>
                                     <p class="text-muted small mb-0" id="mp-order-label"></p>
                                 </div>
+                                ${simulateBlock}
                                 <div class="mt-3">
-                                    <label class="small fw-bold text-muted mb-1 d-block">SIMULAR STATUS (somente teste)</label>
-                                    <div class="d-flex gap-2 mb-2">
-                                        <select id="mp-simulate-status" class="form-select">
-                                            <option value="processed" selected>processed — aprovado</option>
-                                            <option value="failed">failed — recusado</option>
-                                            <option value="canceled">canceled — cancelado</option>
-                                            <option value="expired">expired — expirado</option>
-                                            <option value="action_required">action_required — ação no terminal</option>
-                                            <option value="refunded">refunded — estorno (após processed)</option>
-                                        </select>
-                                        <button class="btn btn-warning fw-bold px-3"
-                                                id="btn-mp-simulate" onclick="simulateMpApproval()">
-                                            SIMULAR
-                                        </button>
-                                    </div>
                                     <button class="btn btn-outline-danger w-100 py-2 fw-bold"
                                             id="btn-cancel-order" onclick="cancelMercadoPagoOrder()">
                                         CANCELAR COBRANÇA
@@ -670,12 +676,16 @@
     async function cancelMercadoPagoOrder() {
         if (!mpOrderId) return;
         if (!confirm('Cancelar a cobrança no terminal?')) return;
-        stopMpPolling();
 
+        // IMPORTANTE: não paramos o SSE aqui. Se a order já estiver no terminal,
+        // o MP recusa o cancelamento pela API (409) e o operador terá que cancelar
+        // na maquininha — nesse caso o stream precisa continuar ouvindo o webhook.
         const btnCancel = document.getElementById('btn-cancel-order');
         const btnSimulate = document.getElementById('btn-mp-simulate');
         if (btnCancel) { btnCancel.disabled = true; btnCancel.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Cancelando...'; }
         if (btnSimulate) btnSimulate.disabled = true;
+
+        const statusAlert = document.getElementById('payment-status-alert');
 
         const formData = new FormData();
         formData.append('order_id', mpOrderId);
@@ -689,14 +699,29 @@
             const data = await resp.json();
 
             if (resp.ok && data.success) {
+                // Cancelada pela API (ainda não tinha ido ao terminal): encerra o fluxo.
+                stopMpPolling();
                 setMpState('canceled');
+            } else if (data.code === 'at_terminal') {
+                // A maquininha já assumiu a cobrança. Continua ouvindo o webhook para
+                // que o cancelamento feito no terminal apareça aqui automaticamente.
+                if (!mpEventSource && mpOrderId) startMpPolling();
+                if (btnCancel) { btnCancel.disabled = true; btnCancel.innerText = 'Cancele no terminal'; }
+                if (btnSimulate) btnSimulate.disabled = false;
+                if (statusAlert) {
+                    statusAlert.innerText = data.error;
+                    statusAlert.classList.remove('d-none', 'alert-danger', 'alert-success');
+                    statusAlert.classList.add('alert-warning');
+                }
             } else {
                 throw new Error(data.error || 'Erro ao cancelar order');
             }
         } catch (err) {
+            // Erro real (rede/servidor): reabilita os botões e garante que o SSE
+            // continue ouvindo (não deixa a cobrança "órfã" sem atualização).
             if (btnCancel) { btnCancel.disabled = false; btnCancel.innerText = 'CANCELAR COBRANÇA'; }
             if (btnSimulate) btnSimulate.disabled = false;
-            const statusAlert = document.getElementById('payment-status-alert');
+            if (!mpEventSource && mpOrderId) startMpPolling();
             if (statusAlert) {
                 statusAlert.innerText = 'ERRO AO CANCELAR: ' + err.message;
                 statusAlert.classList.remove('d-none', 'alert-warning', 'alert-success');
@@ -766,7 +791,10 @@
     }
 
     function resetMpFlow() {
-        setMpState('idle');
+        // "NOVA COBRANÇA": volta ao estado limpo "Aguardando seleção...".
+        // Assim o botão nunca fica preso em "ENVIANDO..." e o caixa pode iniciar
+        // outra cobrança do zero (inclusive de outro método, ex.: dois PIX seguidos).
+        resetPaymentSelection();
         const statusAlert = document.getElementById('payment-status-alert');
         if (statusAlert) statusAlert.classList.add('d-none');
     }
